@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "Z8S180 Breakout"
 Date "2023-06-04"
-Rev "1.0"
+Rev "1.1"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -30,7 +30,7 @@ U 1 1 6486EB89
 P 9250 5050
 F 0 "U1" H 10700 6150 50  0000 L CNN
 F 1 "Z8S18020FSG" H 9000 5050 50  0000 L CNN
-F 2 "Package_QFP:PQFP-80_14x20mm_P0.8mm" H 10650 6400 50  0001 C CNN
+F 2 "jb-footprint:PQFP-80_14x20mm_P0.8mm" H 10650 6400 50  0001 C CNN
 F 3 "" H 10650 6400 50  0001 C CNN
 	1    9250 5050
 	1    0    0    -1  
@@ -750,7 +750,7 @@ F 3 "~" H 5550 1550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5200 1450 5550 1450
+	5200 1450 5300 1450
 Connection ~ 5550 1450
 Wire Wire Line
 	5550 1450 6000 1450
@@ -758,7 +758,7 @@ Connection ~ 6000 1450
 Wire Wire Line
 	6000 1450 6200 1450
 Wire Wire Line
-	5200 1650 5550 1650
+	5200 1650 5300 1650
 Connection ~ 5550 1650
 Wire Wire Line
 	5550 1650 6000 1650
@@ -898,7 +898,7 @@ Text Label 4750 4000 0    50   ~ 0
 ~HALT
 Text Label 4750 3900 0    50   ~ 0
 ~TEND1
-Text Label 4750 3800 0    50   ~ 0
+Text Label 5950 3800 2    50   ~ 0
 ~DREQ1
 Text Label 5950 5300 2    50   ~ 0
 ~CE
@@ -930,7 +930,7 @@ Text Label 5950 4000 2    50   ~ 0
 ~RD
 Text Label 5950 3900 2    50   ~ 0
 ~WR
-Text Label 5950 3800 2    50   ~ 0
+Text Label 4750 3800 0    50   ~ 0
 ~M1
 Wire Wire Line
 	8900 1550 8750 1550
@@ -1045,6 +1045,78 @@ F 1 "Logo_Open_Hardware_Small" H 16150 8725 50  0001 C CNN
 F 2 "Symbol:OSHW-Logo2_9.8x8mm_SilkScreen" H 16150 8950 50  0001 C CNN
 F 3 "~" H 16150 8950 50  0001 C CNN
 	1    16150 8950
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG0101
+U 1 1 657E0B1B
+P 5300 1450
+F 0 "#FLG0101" H 5300 1525 50  0001 C CNN
+F 1 "PWR_FLAG" H 5300 1623 50  0000 C CNN
+F 2 "" H 5300 1450 50  0001 C CNN
+F 3 "~" H 5300 1450 50  0001 C CNN
+	1    5300 1450
+	1    0    0    -1  
+$EndComp
+Connection ~ 5300 1450
+Wire Wire Line
+	5300 1450 5550 1450
+$Comp
+L power:PWR_FLAG #FLG0102
+U 1 1 657E16AA
+P 5300 1650
+F 0 "#FLG0102" H 5300 1725 50  0001 C CNN
+F 1 "PWR_FLAG" H 5300 1823 50  0000 C CNN
+F 2 "" H 5300 1650 50  0001 C CNN
+F 3 "~" H 5300 1650 50  0001 C CNN
+	1    5300 1650
+	-1   0    0    1   
+$EndComp
+Connection ~ 5300 1650
+Wire Wire Line
+	5300 1650 5550 1650
+$Comp
+L Mechanical:MountingHole H4
+U 1 1 65813670
+P 10200 9400
+F 0 "H4" H 10300 9446 50  0000 L CNN
+F 1 "MountingHole" H 10300 9355 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 10200 9400 50  0001 C CNN
+F 3 "~" H 10200 9400 50  0001 C CNN
+	1    10200 9400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H3
+U 1 1 6581477E
+P 10200 9200
+F 0 "H3" H 10300 9246 50  0000 L CNN
+F 1 "MountingHole" H 10300 9155 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 10200 9200 50  0001 C CNN
+F 3 "~" H 10200 9200 50  0001 C CNN
+	1    10200 9200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H2
+U 1 1 65814A12
+P 10200 9000
+F 0 "H2" H 10300 9046 50  0000 L CNN
+F 1 "MountingHole" H 10300 8955 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 10200 9000 50  0001 C CNN
+F 3 "~" H 10200 9000 50  0001 C CNN
+	1    10200 9000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H1
+U 1 1 65814BEB
+P 10200 8800
+F 0 "H1" H 10300 8846 50  0000 L CNN
+F 1 "MountingHole" H 10300 8755 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.7mm_M2.5" H 10200 8800 50  0001 C CNN
+F 3 "~" H 10200 8800 50  0001 C CNN
+	1    10200 8800
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC
