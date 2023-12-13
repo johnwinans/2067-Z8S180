@@ -1,6 +1,10 @@
 # 2067-Z8S180
 Z8S180 Breakout Board
 
+There is a YouTube playlist for the [Z80-Nouveau](https://www.youtube.com/playlist?list=PL3by7evD3F52rUbThUNDYGxNpKFF1HCNT) project for which this board is an early prototype.
+
+Note that this board plugs into an FPGA board.  See: [2057-ICE40HX4K-TQ144-breakout](https://github.com/johnwinans/2057-ICE40HX4K-TQ144-breakout).
+
 # WARNING
 
 Some have reported issues with footprints and the M1 signal on Rev 1.0.
