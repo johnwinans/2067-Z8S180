@@ -50,13 +50,13 @@ set_io phi      42
 set_io rfsh_n   43
 set_io st       32
 set_io tend1_n  48
-set_io wait_n   37
+set_io -pullup yes	wait_n   37
 
 set_io reset_n  28
 
-set_io we_n     143
-set_io oe_n     12
-set_io ce_n     11
+set_io 				we_n     143
+set_io 				oe_n     12
+set_io 				ce_n     11
 
 set_io hwclk    52
 

@@ -55,8 +55,12 @@ module top (
     end
 
     assign extal = ctr[18];
-
     assign led = a[15:8];
 
+    assign busreq_n = 1'bz;
+    assign dreq1_n = 1'bz;
+    assign int_n = 3'bz;
+    assign nmi_n = 1'bz;
+    assign wait_n = 1'bz;
 
 endmodule
