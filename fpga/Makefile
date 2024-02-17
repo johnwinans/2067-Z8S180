@@ -1,6 +1,7 @@
 TOP=.
 
 SUBDIRS= \
-	nop
+	nop \
+	loop
 
 include $(TOP)/Make.rules
