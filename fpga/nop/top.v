@@ -49,13 +49,13 @@ module top (
 
     assign d = rd_n == 0 ? { 8'b0 } : { 8'bz };
 
-    reg [18:0]     ctr;
+    reg [15:0]     ctr;
     always @(posedge hwclk) begin
         ctr <= ctr + 1;
     end
 
-    assign extal = ctr[18];
-    assign led = a[15:8];
+    assign extal = ctr[15];
+    assign led = ~a[15:8];
 
     assign busreq_n = 1'bz;
     assign dreq1_n = 1'bz;

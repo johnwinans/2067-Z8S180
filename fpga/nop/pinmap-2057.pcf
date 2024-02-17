@@ -40,10 +40,10 @@ set_io -pullup yes 	int_n[1] 26
 set_io -pullup yes 	int_n[2] 29
 set_io -pullup yes	nmi_n    25
 
-set_io 				mreq_n   38
-set_io 				iorq_n   41
-set_io 				rd_n     44
-set_io 				wr_n     47
+set_io -pullup yes	mreq_n   38
+set_io -pullup yes	iorq_n   41
+set_io -pullup yes 	rd_n     44
+set_io -pullup yes	wr_n     47
 
 set_io m1_n     55
 set_io phi      42
