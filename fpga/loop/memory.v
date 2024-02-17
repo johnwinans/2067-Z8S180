@@ -21,22 +21,36 @@
 
 // A simple ROM with an endless loop in it.
 
-module boot_rom (
-    input wire [3:0]    addr,
-    output wire [7:0]   data
+module boot_loop (
+    input wire [8:0]    addr,
+    output reg [7:0]   data
     );
 
     always @(*)
         case (addr)
-        9'h00:  data = 8'h00;       // NOP 
-        9'h01:  data = 8'h00;       // NOP
-        9'h02:  data = 8'h00;       // NOP
-        9'h03:  data = 8'h00;       // NOP
-        9'h04:  data = 8'hc3;       // JMP
-        9'h05:  data = 8'h00;       // (LSB target address) 0
-        9'h06:  data = 8'h00;       // (MSB target address) 0
+        9'h00:  data = 8'hc3;       // JMP 0x0000
+        9'h01:  data = 8'h00;
+        9'h02:  data = 8'h00;
         default:
-                data = 0;
+            data = 0;
         endcase
+endmodule
 
+module boot_noref (
+    input wire [8:0]    addr,
+    output reg [7:0]   data
+    );
+
+    always @(*)
+        case (addr)
+        9'h00:  data = 8'h3e;       // LD A,0
+        9'h01:  data = 8'h00;
+        9'h02:  data = 8'hd3;       // OUT (0x36),A (shut off refresh)
+        9'h03:  data = 8'h36;
+        9'h04:  data = 8'hc3;       // JMP 0x0003
+        9'h05:  data = 8'h04;
+        9'h06:  data = 8'h00;
+        default:
+            data = 0;
+        endcase
 endmodule

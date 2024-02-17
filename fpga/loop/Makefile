@@ -6,7 +6,8 @@ include $(TOP)/Make.rules
 .PHONY: all clean burn world timings
 
 FILES= \
-	top.v
+	top.v \
+	memory.v
 
 all:: top.bin
 
@@ -15,7 +16,6 @@ top.json: $(FILES)
 
 timing: top.asc
 	icetime -tmd $(DEVICE) $^
-
 
 counter_tb.vvp: counter_tb.v counter.v
 	iverilog -o $@ $^

@@ -66,29 +66,31 @@ module top (
 
     );
 
-    assign reset_n = s1_n;
+    wire [7:0]  rom_data;       // ROM output data bus
 
-    assign d = rd_n == 0 ? { 8'b0 } : { 8'bz };
+    // Instantiate the boot ROM
+    boot_loop boot_rom ( .addr(a[8:0]), .data(rom_data));
+    //boot_noref boot_rom ( .addr(a[8:0]), .data(rom_data));
 
-    reg [15:0]     ctr;
+    assign reset_n = s1_n;      // route the reset signal to the CPU
+
+    // When the CPU is reading, sent it data from our ROM
+    assign d = (~mreq_n & ~rd_n) ? rom_data : 8'bz;
+
+    // divide the hwclk by 2 to generate a 12.5MHZ clock for the CPU
+    reg [19:0]  clk_div;
     always @(posedge hwclk) begin
-        ctr <= ctr + 1;
+        clk_div <= clk_div + 1;
     end
 
-    assign extal = ctr[15];
-    assign led = ~a[15:8];
+    assign extal = clk_div[0];      // route the derived clock to the CPU
 
-    assign busreq_n = 1'bz;
-    assign dreq1_n = 1'bz;
-    assign int_n = 3'bz;
-    assign nmi_n = 1'bz;
-    assign wait_n = 1'bz;
+    assign led = ~a[7:0];       // show the LSB of the address bus 
 
-    wire [8:0]  rom_data;
-
-    memory boot_rom (
-                .addr(a[3:0]),
-                .data(rom_data)
-                );
+    assign busreq_n = 1'b1;     // de-assert /BUSREQ
+    assign dreq1_n = 1'b1;      // de-assert /DREQ1
+    assign int_n = 3'b1;        // de-assert /INT0 /INT1 /INT2
+    assign nmi_n = 1'b1;        // de-assert /NMI
+    assign wait_n = 1'b1;       // de-assert /WAIT
 
 endmodule
