@@ -4,16 +4,16 @@ module top (
     output wire [7:0]   led,
 
     input wire [19:0]   a,
-    output wire [7:0]   d,
+    inout wire [7:0]   	d,
 
     input wire          busack_n,
-    output wire         busreq_n,
+    inout wire         	busreq_n,
 
     output wire         ce_n,
     output wire         oe_n,
     output wire         we_n,
 
-    output wire         dreq1_n,
+    inout wire         	dreq1_n,
 
     input wire          e,
     output wire         extal,
@@ -21,8 +21,8 @@ module top (
 
     input wire          halt_n,
 
-    output wire [2:0]   int_n,
-    output wire         nmi_n,
+    inout wire [2:0]    int_n,
+    inout wire          nmi_n,
 
     input wire          rd_n,
     input wire          wr_n,
@@ -34,7 +34,7 @@ module top (
     input wire          rfsh_n,
     input wire          st,
     input wire          tend1_n,
-    output wire         wait_n,
+    inout wire         	wait_n,
 
     input wire          hwclk,
 
@@ -47,7 +47,7 @@ module top (
 
     assign reset_n = s1_n;
 
-    assign d = rd_n == 0 ? { 8'b0 } : { 8'bz };
+    assign d = rd_n == 0 ? { 8'b0 } : { 8{1'bz} };
 
     reg [15:0]     ctr;
     always @(posedge hwclk) begin
@@ -57,10 +57,10 @@ module top (
     assign extal = ctr[15];
     assign led = ~a[15:8];
 
-    assign busreq_n = 1'bz;
-    assign dreq1_n = 1'bz;
-    assign int_n = 3'bz;
-    assign nmi_n = 1'bz;
+    assign busreq_n = 1'b1;		// 1'bz;
+    assign dreq1_n = 1'b1;		// 1'bz;
+    assign int_n = 3'b111;		// 3'bz;
+    assign nmi_n = 1'b1;		// 1'bz;
     assign wait_n = 1'bz;
 
 endmodule
