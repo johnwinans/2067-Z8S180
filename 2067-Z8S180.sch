@@ -1119,4 +1119,108 @@ F 3 "~" H 10200 8800 50  0001 C CNN
 	1    10200 8800
 	1    0    0    -1  
 $EndComp
+Text Notes 4500 3800 0    50   Italic 10
+55
+Text Notes 4500 3900 0    50   Italic 10
+48
+Text Notes 4500 4000 0    50   Italic 10
+45
+Text Notes 4500 4100 0    50   Italic 10
+43
+Text Notes 4500 4200 0    50   Italic 10
+41
+Text Notes 4500 4300 0    50   Italic 10
+38
+Text Notes 4500 4400 0    50   Italic 10
+34
+Text Notes 4500 4500 0    50   Italic 10
+32
+Text Notes 4500 4600 0    50   Italic 10
+29
+Text Notes 4500 4700 0    50   Italic 10
+26
+Text Notes 4500 4800 0    50   Italic 10
+24
+Text Notes 4500 4900 0    50   Italic 10
+22
+Text Notes 4500 5000 0    50   Italic 10
+20
+Text Notes 4500 5100 0    50   Italic 10
+18
+Text Notes 4500 5200 0    50   Italic 10
+16
+Text Notes 4500 5300 0    50   Italic 10
+12
+Text Notes 4500 5400 0    50   Italic 10
+10
+Text Notes 4500 5500 0    50   Italic 10
+8
+Text Notes 4500 5600 0    50   Italic 10
+4
+Text Notes 4500 5700 0    50   Italic 10
+2
+Text Notes 4500 5800 0    50   Italic 10
+144
+Text Notes 4500 5900 0    50   Italic 10
+142
+Text Notes 4500 6000 0    50   Italic 10
+139
+Text Notes 4500 6100 0    50   Italic 10
+137
+Text Notes 4500 6200 0    50   Italic 10
+135
+Text Notes 4500 6300 0    50   Italic 10
+130
+Text Notes 6150 6300 0    50   Italic 10
+129
+Text Notes 6150 6200 0    50   Italic 10
+134
+Text Notes 6150 6100 0    50   Italic 10
+136
+Text Notes 6150 6000 0    50   Italic 10
+138
+Text Notes 6150 5900 0    50   Italic 10
+141
+Text Notes 6150 5800 0    50   Italic 10
+143
+Text Notes 6150 5700 0    50   Italic 10
+1
+Text Notes 6150 5600 0    50   Italic 10
+3
+Text Notes 6150 5500 0    50   Italic 10
+7
+Text Notes 6150 5400 0    50   Italic 10
+9
+Text Notes 6150 5300 0    50   Italic 10
+11
+Text Notes 6150 5200 0    50   Italic 10
+15
+Text Notes 6150 5100 0    50   Italic 10
+17
+Text Notes 6150 5000 0    50   Italic 10
+19
+Text Notes 6150 4900 0    50   Italic 10
+21
+Text Notes 6150 4800 0    50   Italic 10
+23
+Text Notes 6150 4700 0    50   Italic 10
+25
+Text Notes 6150 4600 0    50   Italic 10
+28
+Text Notes 6150 4500 0    50   Italic 10
+31
+Text Notes 6150 4400 0    50   Italic 10
+33
+Text Notes 6150 4300 0    50   Italic 10
+37
+Text Notes 6150 4200 0    50   Italic 10
+39
+Text Notes 6150 4100 0    50   Italic 10
+42
+Text Notes 6150 4000 0    50   Italic 10
+44
+Text Notes 6150 3900 0    50   Italic 10
+47
+Text Notes 6150 3800 0    50   Italic 10
+49
 $EndSCHEMATC
