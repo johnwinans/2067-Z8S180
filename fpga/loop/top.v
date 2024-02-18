@@ -75,7 +75,7 @@ module top (
 
     assign reset_n = s1_n;      // route the reset signal to the CPU
 
-    // When the CPU is reading, sent it data from our ROM
+    // When the CPU is reading, send it data from our ROM
     assign d = (~mreq_n & ~rd_n) ? rom_data : 8'bz;
 
     // divide the hwclk by 2 to generate a 12.5MHZ clock for the CPU
