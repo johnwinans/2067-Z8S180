@@ -2,6 +2,7 @@ TOP=.
 
 SUBDIRS= \
 	nop \
-	loop
+	loop \
+	prog
 
 include $(TOP)/Make.rules
