@@ -25,7 +25,7 @@ module top (
     output wire [7:0]   led,
 
     input wire [19:0]   a,
-    output wire [7:0]   d,
+    inout wire [7:0]    d,          // bidirectional
 
     input wire          busack_n,
     output wire         busreq_n,
@@ -78,20 +78,25 @@ module top (
     // When the CPU is reading, send it data from our ROM
     assign d = (~mreq_n & ~rd_n) ? rom_data : 8'bz;
 
-    // divide the hwclk by 2 to generate a 12.5MHZ clock for the CPU
-    reg [19:0]  clk_div;
+    // extal = 25000000/2 = 12.5mhz
+    localparam CLK_BITS = 1;
+    reg [CLK_BITS-1:0]     ctr;
     always @(posedge hwclk) begin
-        clk_div <= clk_div + 1;
+        ctr <= ctr + 1;
     end
 
-    assign extal = clk_div[0];  // route the derived clock to the CPU
+    assign extal = ctr[CLK_BITS-1];
 
-    assign led = ~a[7:0];       // show the LSB of the address bus 
+    assign led = ~a[7:0];           // LEDs are active-low
 
-    assign busreq_n = 1'b1;     // de-assert /BUSREQ
-    assign dreq1_n = 1'b1;      // de-assert /DREQ1
-    assign int_n = 3'b111;      // de-assert /INT0 /INT1 /INT2
-    assign nmi_n = 1'b1;        // de-assert /NMI
-    assign wait_n = 1'b1;       // de-assert /WAIT
+    // de-assert everything
+    assign busreq_n = 1'b1;         // do not request the bus
+    assign dreq1_n = 1'b1;          // do not request a DMA operation
+    assign int_n = 3'b111;          // do not request any IRQs
+    assign nmi_n = 1'b1;            // do not request an NMI
+    assign wait_n = 1'b1;           // do not request any wait states
+    assign ce_n = 1'b1;             // do not enable the SRAM
+    assign oe_n = 1'b1;             // do not pass go,
+    assign we_n = 1'b1;             // do not collect $200
 
 endmodule

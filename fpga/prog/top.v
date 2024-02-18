@@ -25,7 +25,7 @@ module top (
     output wire [7:0]   led,
 
     input wire [19:0]   a,
-    inout wire [7:0]    d,          // INOUT
+    inout wire [7:0]    d,          // bidirectional
 
     input wire          busack_n,
     output wire         busreq_n,
@@ -78,13 +78,14 @@ module top (
     // from ROM, else tri-state the bus.
     assign d = (~mreq_n && ~rd_n && a < 20'h200) ? rom_data : 8'bz;
 
-    // divide the hwclk by 2 to generate a 12.5MHZ clock for the CPU
-    reg [19:0]  clk_div;
+    // Use a counter to divide the clock speed down
+    localparam CLK_BITS = 1;
+    reg [CLK_BITS-1:0]     ctr;
     always @(posedge hwclk) begin
-        clk_div <= clk_div + 1;
+        ctr <= ctr + 1;
     end
 
-    assign extal = clk_div[0];      // route the derived clock to the CPU
+    assign extal = ctr[CLK_BITS-1]; // clock for the CPU
 
     assign led = ~a[7:0];       // show the LSB of the address bus 
 
@@ -95,6 +96,7 @@ module top (
     assign wait_n = 1'b1;       // de-assert /WAIT
 
     // Enable the static RAM on memory cycles to addresses >= 0x200.
+    // This should work OK only because the hwclk is 2+ times faster than PHI.
     assign ce_n = ~(~mreq_n && a >= 20'h200);
     assign oe_n = mreq_n | rd_n;
     assign we_n = mreq_n | wr_n;
