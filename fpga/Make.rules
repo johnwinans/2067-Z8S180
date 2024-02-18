@@ -68,6 +68,7 @@ DEVICE		?= up5k
 PACKAGE		?= sg48
 FLASH_PROG	?= sudo iceprog -d i:0x0403:0x6014
 PINMAP		?= pinmap-upduino.pcf
+FREQ		?= 25
 
 ###################################################################
 # Rules that know how to build and simulate Verilog apps 
@@ -84,7 +85,7 @@ PINMAP		?= pinmap-upduino.pcf
 
 # Use nextpnr-ice40 to build from a JSON file
 %.asc : %.json
-	$(NEXTPNR) --$(DEVICE) --package $(PACKAGE) --pcf $(PINMAP) --asc $@ --json $<
+	$(NEXTPNR) --$(DEVICE) --package $(PACKAGE) --pcf $(PINMAP) --freq $(FREQ) --asc $@ --json $<
 
 # Use arachne-pnr to build from a BLIF file 
 %.asc : %.blif
