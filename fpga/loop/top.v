@@ -84,13 +84,13 @@ module top (
         clk_div <= clk_div + 1;
     end
 
-    assign extal = clk_div[0];      // route the derived clock to the CPU
+    assign extal = clk_div[0];  // route the derived clock to the CPU
 
     assign led = ~a[7:0];       // show the LSB of the address bus 
 
     assign busreq_n = 1'b1;     // de-assert /BUSREQ
     assign dreq1_n = 1'b1;      // de-assert /DREQ1
-    assign int_n = 3'b1;        // de-assert /INT0 /INT1 /INT2
+    assign int_n = 3'b111;      // de-assert /INT0 /INT1 /INT2
     assign nmi_n = 1'b1;        // de-assert /NMI
     assign wait_n = 1'b1;       // de-assert /WAIT
 
