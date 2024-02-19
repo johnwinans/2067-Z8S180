@@ -71,3 +71,22 @@ set_io 				led[7]   107
 
 set_io -pullup yes 	s1_n     102
 set_io -pullup yes 	s2_n     105
+
+
+# A bunch of pins on the bottom for test-points
+set_io				tp[0]		56
+set_io				tp[1]		61
+set_io				tp[2]		63
+set_io				tp[3]		73
+set_io				tp[4]		75
+set_io				tp[5]		78
+set_io				tp[6]		80
+set_io				tp[7]		82
+set_io				tp[8]		84
+set_io				tp[9]		87
+set_io				tp[10]		90
+set_io				tp[11]		93
+set_io				tp[12]		95
+set_io				tp[13]		97
+set_io				tp[14]		99
+set_io				tp[15]		101
