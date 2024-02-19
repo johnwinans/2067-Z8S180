@@ -57,15 +57,7 @@ module top (
     input wire          tend1_n,
     output wire         wait_n,
 
-    input wire          hwclk,
-
-    output wire [7:0]   led,
-
-    input wire          s1_n,
-    input wire          s2_n,
-
     output wire [15:0]  tp          // handy-dandy test-point outputs
- 
     );
  
     assign tp = { st, rfsh_n, wr_n, rd_n, iorq_n, mreq_n, m1_n, phi, extal };
@@ -73,7 +65,7 @@ module top (
     assign reset_n = s1_n;
 
     // ONLY when the CPU is reading shall we drive the data bus
-    assign d = rd_n == 0 ? { 8'b0 } : { 8{1'bz} };
+    assign d = ( rd_n == 0 ? { 8'b0 } : { 8{1'bz} } );
 
     // extal = 25000000/16777216 = 1.5hz (approx)
     //localparam CLK_BITS = 24;

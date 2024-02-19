@@ -57,13 +57,6 @@ module top (
     input wire          tend1_n,
     output wire         wait_n,
 
-    input wire          hwclk,
-
-    output wire [7:0]   led,
-
-    input wire          s1_n,
-    input wire          s2_n,
-
     output wire [15:0]  tp          // handy-dandy test-point outputs
  
     );
