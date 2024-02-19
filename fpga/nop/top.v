@@ -62,9 +62,13 @@ module top (
     output wire [7:0]   led,
 
     input wire          s1_n,
-    input wire          s2_n
+    input wire          s2_n,
 
+    output wire [15:0]  tp          // handy-dandy test-point outputs
+ 
     );
+ 
+    assign tp = { st, rfsh_n, wr_n, rd_n, iorq_n, mreq_n, m1_n, phi, extal };
 
     assign reset_n = s1_n;
 
@@ -72,7 +76,9 @@ module top (
     assign d = rd_n == 0 ? { 8'b0 } : { 8{1'bz} };
 
     // extal = 25000000/16777216 = 1.5hz (approx)
-    localparam CLK_BITS = 24;
+    //localparam CLK_BITS = 24;
+    localparam CLK_BITS = 22;
+    //localparam CLK_BITS = 1;
 
     // Use a counter to divide the clock speed down to human speed.
     reg [CLK_BITS-1:0]     ctr;
@@ -80,9 +86,10 @@ module top (
         ctr <= ctr + 1;
     end
 
-    assign extal = ctr[CLK_BITS-1]; // VERY slow clock for the CPU
+    assign extal = ctr[CLK_BITS-1]; // slow clock for the CPU
 
-    assign led = ~a[15:8];          // recall that the LEDs light when low
+    //assign led = ~a[15:8];          // recall that the LEDs light when low
+    assign led = ~a[7:0];           // recall that the LEDs light when low
 
     // de-assert everything
     assign busreq_n = 1'b1;         // do not request the bus
