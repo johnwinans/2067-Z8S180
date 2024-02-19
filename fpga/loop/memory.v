@@ -44,10 +44,10 @@ module boot_noref (
     always @(*)
         case (addr)
         9'h00:  data = 8'h3e;       // LD A,0
-        9'h01:  data = 8'h00;
+        9'h01:  data = 8'h00;       // XXX this /should/ be done with an OUT0
         9'h02:  data = 8'hd3;       // OUT (0x36),A (shut off refresh)
         9'h03:  data = 8'h36;
-        9'h04:  data = 8'hc3;       // JMP 0x0003
+        9'h04:  data = 8'hc3;       // JMP 0x0004
         9'h05:  data = 8'h04;
         9'h06:  data = 8'h00;
         default:
