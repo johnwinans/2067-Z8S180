@@ -62,9 +62,13 @@ module top (
     output wire [7:0]   led,
 
     input wire          s1_n,
-    input wire          s2_n
+    input wire          s2_n,
+
+    output wire [15:0]  tp          // handy-dandy test-point outputs
 
     );
+
+    assign tp = { st, rfsh_n, wr_n, rd_n, iorq_n, mreq_n, m1_n, phi, extal };
 
     wire [7:0]  rom_data;       // ROM output data bus
 
