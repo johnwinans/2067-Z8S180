@@ -1,22 +1,28 @@
 # 2067-Z8S180
 Z8S180 Breakout Board
 
-There is a YouTube playlist for the [Z80-Nouveau](https://www.youtube.com/playlist?list=PL3by7evD3F52rUbThUNDYGxNpKFF1HCNT) project for which this board is an early prototype.
-
-Note that this board plugs into an FPGA board.  See: [2057-ICE40HX4K-TQ144-breakout](https://github.com/johnwinans/2057-ICE40HX4K-TQ144-breakout).
-
-# WARNING
-
-Some have reported issues with footprints and the M1 signal on Rev 1.0.
-
-An attempt has been made to address these issues in Rev 1.1.  But Rev 1.1 has not yet been tested.
-
-Unless you want to help debug and design the second revision of this board, I *strongly* recommend waiting on building this project until a such future revision has been verified as operational!
+- There is a YouTube playlist that discusses the [Z80-Nouveau](https://www.youtube.com/playlist?list=PL3by7evD3F52rUbThUNDYGxNpKFF1HCNT) project for which this board is an early prototype.
+- There is a [Verilog/FPGA YouTube tutorial series](https://www.youtube.com/playlist?list=PL3by7evD3F52On-ws9pcdQuEL-rYbNNFB)
+- [Verilog examples](https://github.com/johnwinans/Verilog-Examples) that go along with the above YouTube tutorial.
+- This board plugs into the [2057-ICE40HX4K-TQ144-breakout](https://github.com/johnwinans/2057-ICE40HX4K-TQ144-breakout) board.
 
 ![PCB image](./2067-Z8S180.png)
 
+# Useful DOC
+
+- [Schematic PDF](./2067-Z8S180.pdf)
+- [Latest release with gerbers](https://github.com/johnwinans/2067-Z8S180/releases/latest)
+- [Z80 CPU User Manual UM008011](https://www.zilog.com/docs/z80/um0080.pdf)
+- [Z8S180 Customer Procurement Specification](http://www.zilog.com/docs/z180/dc4077.pdf)
+- [Z80180 Microprocessor Unit Product Specification](https://www.zilog.com/docs/z180/ps0140.pdf)
+
 # Revision History
 
-- 1.1 Change CPU footprint to make the pads longer
+## 1.1 Change CPU footprint to make the pads longer
 - add mounting holes
 - add labels to the pins on J2
+
+## 1.2 Thermal Relief
+- reduce spoke widths
+- keep polygon pours off the CPU GND pins
+- Connect SRAM A20 to GNU w/cuttable track
