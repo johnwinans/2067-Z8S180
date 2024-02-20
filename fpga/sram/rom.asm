@@ -17,13 +17,13 @@
         ; Each time we make a pass, we rotate A to the right so we are setting
         ; one bit at a time in the RAM.
 
-        ld      a,1
+        ld      a,3
 
 loop:   
         ld      hl,0x0200       ; copy entire address range of 0000-ffff over itself.
-        ld      (hl),a          ; zero the first byte
-        ld      de,0x0201       ; copy into the next one
-        ld      bc,0x0000
+        ld      (hl),a          ; store A ito the first byte
+        ld      de,0x0201       ; copy it into the next one
+        ld      bc,0xfdff       ; and repeat the copy through the end of the RAM
         ldir
 
         rrca                    ; rotate A to the right (with wrap around)
