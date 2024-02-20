@@ -61,6 +61,7 @@ module top (
  
     );
  
+    // note that the test points here are different from the previous test proggies
     assign tp = { we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
 
     wire [7:0]  rom_data;       // ROM output data bus
