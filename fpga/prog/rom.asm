@@ -9,8 +9,10 @@
         ; DRAM refresh and wait states that are enabled after reset.
 
         ld      a,0
-        out     (0x36),a        ; RCR = 0 = disables the refresh controller
-        out     (0x32),a        ; DCNTL = 0 = zero wait states
+        //out0     (0x36),a        ; RCR = 0 = disables the refresh controller
+        db      0xdd,0x39,036   ; hand-made OUT0 instruction
+        //out0     (0x32),a        ; DCNTL = 0 = zero wait states
+        db      0xdd,0x39,0x32  ; hand-made OUT0 instruction
 
 loop:   
         jp      loop

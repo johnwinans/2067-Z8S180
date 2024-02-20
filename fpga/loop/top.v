@@ -66,9 +66,9 @@ module top (
     wire [7:0]  rom_data;       // ROM output data bus
 
     // Instantiate the boot ROM
-    //boot_loop boot_rom ( .addr(a[8:0]), .data(rom_data));
+    boot_loop boot_rom ( .addr(a[8:0]), .data(rom_data));
     //boot_noref boot_rom ( .addr(a[8:0]), .data(rom_data));
-    boot_noref_nowait boot_rom ( .addr(a[8:0]), .data(rom_data));
+    //boot_noref_nowait boot_rom ( .addr(a[8:0]), .data(rom_data));
 
     assign reset_n = s1_n;      // route the reset signal to the CPU
 
