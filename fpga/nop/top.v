@@ -20,44 +20,44 @@
 //**************************************************************************
 
 module top (
-    input wire          hwclk,
-    input wire          s1_n,
-    output wire [7:0]   led,
+    input wire          hwclk,      // 25MHZ oscillator on the 2057 FPGA board
+    input wire          s1_n,       // press-button on the 2057 FPGA board
+    output wire [7:0]   led,        // LEDs on the 2057 FPGA board
 
-    input wire [19:0]   a,
-    inout wire [7:0]    d,          // the data bus is bidirectional
+    input wire [19:0]   a,          // Z8S180 address bus
+    inout wire [7:0]    d,          // Z8S180 data bus is bidirectional  <-------------
 
-    input wire          busack_n,
-    output wire         busreq_n,
+    input wire          busack_n,   // Z8S180 /BUSACK
+    output wire         busreq_n,   // Z8S180 /BUSREQ
 
-    output wire         ce_n,
-    output wire         oe_n,
-    output wire         we_n,
+    output wire         ce_n,       // SRAM /CE
+    output wire         oe_n,       // SRAM /OE
+    output wire         we_n,       // SRAM /WE
 
-    output wire         dreq1_n,
+    output wire         dreq1_n,    // Z8S180 /DREQ1
 
-    input wire          e,
-    output wire         extal,
-    input wire          phi,
+    input wire          e,          // Z8S180 E
+    output wire         extal,      // Z8S180 EXTAL (main clock from FPGA to CPU)
+    input wire          phi,        // Z8S180 reference clock output
 
-    input wire          halt_n,
+    input wire          halt_n,     // Z8S180 /HALT status pin
 
-    output wire [2:0]   int_n,
-    output wire         nmi_n,
+    output wire [2:0]   int_n,      // Z8S180 INT0, 1, 2
+    output wire         nmi_n,      // Z8S180 NMI
 
-    input wire          rd_n,
-    input wire          wr_n,
-    input wire          iorq_n,
-    input wire          mreq_n,
-    input wire          m1_n,
+    input wire          rd_n,       // Z8S180 /RD
+    input wire          wr_n,       // Z8S180 /WR
+    input wire          iorq_n,     // Z8S180 /IORQ
+    input wire          mreq_n,     // Z8S180 /MREQ
+    input wire          m1_n,       // Z8S180 /M1
 
-    output wire         reset_n,
-    input wire          rfsh_n,
-    input wire          st,
-    input wire          tend1_n,
-    output wire         wait_n,
+    output wire         reset_n,    // Z8S180 /RESET
+    input wire          rfsh_n,     // Z8S180 /RFSH
+    input wire          st,         // Z8S180 /ST
+    input wire          tend1_n,    // Z8S180 /TEND1
+    output wire         wait_n,     // Z8S180 /WAIT
 
-    output wire [15:0]  tp          // handy-dandy test-point outputs
+    output wire [15:0]  tp          // handy-dandy test-points on the 2057 FPGA board
     );
  
     assign tp = { st, rfsh_n, wr_n, rd_n, iorq_n, mreq_n, m1_n, phi, extal };
