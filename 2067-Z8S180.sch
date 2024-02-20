@@ -5,8 +5,8 @@ $Descr USLedger 17000 11000
 encoding utf-8
 Sheet 1 1
 Title "Z8S180 Breakout"
-Date "2023-12-10"
-Rev "1.1"
+Date "2024-02-19"
+Rev "1.2"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -452,7 +452,6 @@ Text Label 12500 5800 0    50   ~ 0
 A18
 Text Label 12500 5900 0    50   ~ 0
 A19
-NoConn ~ 12950 6000
 Text Label 12500 6150 0    50   ~ 0
 ~CE
 Text Label 12500 6250 0    50   ~ 0
@@ -1223,4 +1222,25 @@ Text Notes 6150 3900 0    50   Italic 10
 47
 Text Notes 6150 3800 0    50   Italic 10
 49
+$Comp
+L power:GND #PWR?
+U 1 1 65D61870
+P 12100 6000
+F 0 "#PWR?" H 12100 5750 50  0001 C CNN
+F 1 "GND" H 12105 5827 50  0000 C CNN
+F 2 "" H 12100 6000 50  0001 C CNN
+F 3 "" H 12100 6000 50  0001 C CNN
+	1    12100 6000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12950 6000 12100 6000
+Text Notes 14350 5600 0    51   ~ 0
+IS61WV5128FBLL-10TLI\nIS61WV10248EDBLL-10TLI\nIS61WV20488BLL-10TLI
+Text Notes 14350 5300 0    50   ~ 10
+Viable SRAM substitutes:
+Text Notes 12300 9850 0    39   ~ 0
+Copyright (C) 2019, 2023 John Winans\n\nThis documentation describes Open Hardware and is licensed under the CERN OHL v. 1.2.\n\nYou may redistribute and modify this documentation under the terms of the CERN OHL v.1.2. (http://ohwr.org/cernohl). \nThis documentation is distributed WITHOUT ANY EXPRESS OR IMPLIED WARRANTY, INCLUDING OF MERCHANTABILITY, \nSATISFACTORY QUALITY AND FITNESS FOR A PARTICULAR PURPOSE.  Please see the CERN OHL v.1.2 for applicable conditions\n\nIf you chose to manufacture products based on this design, please notify me (see license section 4.2) via john@winans.org\n
+Text Notes 14700 9250 0    50   ~ 10
+https://github.com/johnwinans/2067-Z8S180
 $EndSCHEMATC
