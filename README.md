@@ -6,8 +6,6 @@ Z8S180 Breakout Board
 - [Verilog examples](https://github.com/johnwinans/Verilog-Examples) that go along with the above YouTube tutorial.
 - This board plugs into the [2057-ICE40HX4K-TQ144-breakout](https://github.com/johnwinans/2057-ICE40HX4K-TQ144-breakout) board.
 
-![PCB image](./2067-Z8S180.png)
-
 # Useful DOC
 
 - [Schematic PDF](./2067-Z8S180.pdf)
@@ -15,6 +13,8 @@ Z8S180 Breakout Board
 - [Z80 CPU User Manual UM008011](https://www.zilog.com/docs/z80/um0080.pdf)
 - [Z8S180 Customer Procurement Specification](http://www.zilog.com/docs/z180/dc4077.pdf)
 - [Z80180 Microprocessor Unit Product Specification](https://www.zilog.com/docs/z180/ps0140.pdf)
+
+![PCB image](./2067-Z8S180.png)
 
 # Revision History
 
