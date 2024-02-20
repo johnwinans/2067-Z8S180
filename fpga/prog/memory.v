@@ -35,7 +35,7 @@ module memory (
         $readmemh("rom.hex", mem);
     end
 
-    // if this /not/ edge-triggered then Yosys will /not/ infer a sysMEM block
+    // if this is /not/ edge-triggered then Yosys will /not/ infer a sysMEM block!
     always @(posedge rd_clk)
         data <= mem[addr];
 
