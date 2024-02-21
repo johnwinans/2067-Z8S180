@@ -1,7 +1,6 @@
 ; This is loaded into what the CPU will see in address range 00000-001ff.
 
 ; The cheezy assembler I am using does not support the 180's OUT0 instruction.
-; BUT... if (and ONLY if) I am outputting a zero value, the result is the same.
 
         org 0
 
@@ -9,8 +8,10 @@
         ; DRAM refresh and wait states that are enabled after reset.
 
         ld      a,0
-        out     (0x36),a        ; RCR = 0 = disables the refresh controller
-        out     (0x32),a        ; DCNTL = 0 = zero wait states
+        ;out     (0x36),a        ; RCR = 0 = disables the refresh controller
+        db      0xed,0x39,0x36
+        ;out     (0x32),a        ; DCNTL = 0 = zero wait states
+        db      0xed,0x39,0x32
 
 
         ; Padd RAM so we can see if the decode logic is working
