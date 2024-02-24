@@ -4,20 +4,20 @@ to itself in a loop.
 There are three variations:
 
 ```
-JMP .				; endless loop
+JMP .               ; endless loop
 ```
 
 ```
 LD A,0
-OUT0 (0x36),A		; shut off automatic refresh feature
-JMP .				; endless loop
+OUT0 (0x36),A       ; shut off automatic refresh feature
+JMP .               ; endless loop
 ```
 
 ```
 LD A,0
-OUT0 (0x36),A		; shut off automatic refresh feature
-OUT0 (0x32),A		; shut off the wait-state generator
-JMP .				; endless loop
+OUT0 (0x36),A       ; shut off automatic refresh feature
+OUT0 (0x32),A       ; shut off the wait-state generator
+JMP .               ; endless loop
 ```
 
 
