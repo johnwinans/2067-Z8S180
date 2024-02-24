@@ -21,7 +21,7 @@ JMP .               ; endless loop
 ```
 
 
-Note that this ses the Z8S180 instruction `OUT0` because the regular Z80 `OUT` instruction.
+Note that this uses the Z8S180 instruction `OUT0` because the regular Z80 `OUT` instruction.
 See the following from the Z80 CPU User Manual:
 
 OUT (n),A
