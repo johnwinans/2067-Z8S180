@@ -28,7 +28,7 @@ module boot_loop (
 
     always @(*)
         case (addr)
-        9'h00:  data = 8'hc3;       // JMP 0x0000
+        9'h00:  data = 8'hc3;       // JP 0x0000
         9'h01:  data = 8'h00;
         9'h02:  data = 8'h00;
         default:
@@ -48,7 +48,7 @@ module boot_noref (
         9'h02:  data = 8'hed;       // OUT0 (0x36),A (shut off refresh)
         9'h03:  data = 8'h39; 
         9'h04:  data = 8'h36;
-        9'h05:  data = 8'hc3;       // JMP 0x0005
+        9'h05:  data = 8'hc3;       // JP 0x0005
         9'h06:  data = 8'h05;
         9'h07:  data = 8'h00;
         default:
@@ -71,7 +71,7 @@ module boot_noref_nowait (
         9'h05:  data = 8'hed;       // OUT0 (0x32),A (shut off wait-state generator)
         9'h06:  data = 8'h39;
         9'h07:  data = 8'h32;
-        9'h08:  data = 8'hc3;       // JMP 0x0008
+        9'h08:  data = 8'hc3;       // JP 0x0008
         9'h09:  data = 8'h08;
         9'h0a:  data = 8'h00;
         default:
