@@ -12,8 +12,8 @@ Z8S180 Breakout Board
 - [Latest release with gerbers](https://github.com/johnwinans/2067-Z8S180/releases/latest)
 - [Z80 CPU User Manual UM008011](https://www.zilog.com/docs/z80/um0080.pdf)
 - [Z8S180 Manuals](https://zilog.com/index.php?option=com_product&Itemid=26&task=docs&businessLine=&parent_id=139&familyId=19&productId=Z8S180)
-    - [Z8S180 DS0060 - Customer Product Specification DS0060](https://www.zilog.com/docs/z180/z8s180ps.pdf)
-    - [Z80180 UM005004-0918 - User Manual](https://www.zilog.com/docs/z180/um0050.pdf)
+    - [Z8S180 DS0060 - Product Specification](https://www.zilog.com/docs/z180/z8s180ps.pdf)
+    - [Z80180 UM0050 - User Manual](https://www.zilog.com/docs/z180/um0050.pdf)
 
 ![PCB image](./2067-Z8S180.png)
 
