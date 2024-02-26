@@ -67,7 +67,8 @@ module top (
     wire [7:0]  rom_data;       // ROM output data bus
 
     // Instantiate the boot ROM
-    memory rom ( .rd_clk(hwclk), .addr(a[8:0]), .data(rom_data));
+    //memory rom ( .rd_clk(hwclk), .addr(a[8:0]), .data(rom_data));
+    memory rom ( .rd_clk(phi), .addr(a[8:0]), .data(rom_data));
 
     assign reset_n = s1_n;      // route the reset signal to the CPU
 
@@ -83,6 +84,7 @@ module top (
     end
 
     assign extal = ctr[CLK_BITS-1]; // clock for the CPU
+    //assign extal = hwclk;
 
     reg [7:0] ffff;
     // ffff_we is true when writing to memory address ffff

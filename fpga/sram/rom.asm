@@ -18,10 +18,10 @@
         ; Each time we make a pass, we rotate A to the right so we are setting
         ; one bit at a time in the RAM.
 
-        ld      a,3
+        ld      a,3             ; 3H = 0000_0011B
 
 loop:   
-        ld      hl,0x0200       ; copy entire address range of 0000-ffff over itself.
+        ld      hl,0x0200       ; copy entire address range of 0200-ffff over itself.
         ld      (hl),a          ; store A ito the first byte
         ld      de,0x0201       ; copy it into the next one
         ld      bc,0xfdff       ; and repeat the copy through the end of the RAM
