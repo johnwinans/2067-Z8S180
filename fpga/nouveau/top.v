@@ -20,7 +20,7 @@
 //**************************************************************************
 
 module top (
-    input wire          hwclk,
+    input wire          hwclk,      // 25MHZ oscillator
     input wire          s1_n,
     output wire [7:0]   led,
 
@@ -106,6 +106,7 @@ module top (
         end
     end
 
+`ifdef NOT
     // Use a counter to divide the clock speed down
     localparam CLK_BITS = 1;        // set to 1 for 25/2 = 12.5MHZ
     reg [CLK_BITS-1:0]     ctr;
@@ -115,11 +116,22 @@ module top (
 
     // select an extal clock for the CPU (note this can/will impact the ASCI bit rate)!
     // at the time of this writing:
-    //      12.5MHZ = 19531 (close enough to pass for 19200)
-    //      25MHZ   = 39062 (close enough to pass for 38400)
-
+    //      12.5MHZ     = 19531 (close enough to pass for 19200)
+    //      25MHZ       = 39062 (close enough to pass for 38400)
     assign extal = ctr[CLK_BITS-1];     // Use the ctr to divide hwclk down
+
+`else
     //assign extal = hwclk;               // Run at the full 25MHZ (might be overclocking the CPU)
+
+    // Consider integrating the output locked into a future automatic power-up reset timer.
+    // 18.432MHZ = 57600 (when running at X/2)
+    // 18.432MHZ = 115200 (when running at X/1)
+    wire pll_out;
+    pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal) ); 
+    //SB_GB sbGlobalBuffer_inst( .USER_SIGNAL_TO_GLOBAL_BUFFER(pll_out), .GLOBAL_BUFFER_OUTPUT(extal) );
+
+`endif
+
 
     // decoders for the GPIO ports and shadow boot-ROM reset
     wire ioreq_rd_f0;       // gpio input
