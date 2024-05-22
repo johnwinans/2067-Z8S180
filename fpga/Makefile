@@ -3,6 +3,9 @@ TOP=.
 SUBDIRS= \
 	nop \
 	loop \
-	prog
+	prog \
+	sram \
+	asci \
+	nouveau
 
 include $(TOP)/Make.rules
