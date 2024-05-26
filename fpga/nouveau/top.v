@@ -119,9 +119,9 @@ module top (
     //      12.5MHZ     = 19531 (close enough to pass for 19200)
     //      25MHZ       = 39062 (close enough to pass for 38400)
     assign extal = ctr[CLK_BITS-1];     // Use the ctr to divide hwclk down
+    //assign extal = hwclk;               // Run at the full 25MHZ (might be overclocking the CPU)
 
 `else
-    //assign extal = hwclk;               // Run at the full 25MHZ (might be overclocking the CPU)
 
     // Consider integrating the output locked into a future automatic power-up reset timer.
     // 18.432MHZ = 57600 (when running at X/2)
