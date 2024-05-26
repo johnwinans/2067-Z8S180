@@ -126,7 +126,7 @@ module top (
     // Consider integrating the output locked into a future automatic power-up reset timer.
     // 18.432MHZ = 57600 (when running at X/2)
     // 18.432MHZ = 115200 (when running at X/1)
-    wire pll_out;
+    //wire pll_out;
     pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal) ); 
     //SB_GB sbGlobalBuffer_inst( .USER_SIGNAL_TO_GLOBAL_BUFFER(pll_out), .GLOBAL_BUFFER_OUTPUT(extal) );
 
