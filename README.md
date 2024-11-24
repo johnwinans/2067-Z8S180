@@ -26,4 +26,4 @@ Z8S180 Breakout Board
 ## 1.2 Thermal Relief
 - reduce spoke widths
 - keep polygon pours off the CPU GND pins
-- Connect SRAM A20 to GNU w/cuttable track
+- Connect SRAM A20 to GND w/cuttable track
