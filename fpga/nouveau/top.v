@@ -71,7 +71,8 @@ module top (
     localparam RAM_START = 20'h1000;
 
     // note that the test points here are different from the previous test proggies
-    assign tp = { we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
+    assign tp = { phi, e, iorq_n, we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
+    //            87   84 82      80    78    75    73    63    61      56
 
     wire [7:0]  rom_data;       // ROM output data bus
 
