@@ -141,7 +141,7 @@ module top (
 
     //wire iorq_sync_gate = m1_n && ~iorq_n;       // during INT ACK iorq_n rises after m1_n & false-trigger?
     //wire iorq_sync_gate = ~iorq_n && (~rd_n || ~wr_n);    // can overrun into next t1 after internal IO
-    wire iorq_sync_gate = ~iorq_n && (~rd_n || ~wr_n) && (a[7:0] > 8'h40); // only look at external addr range
+    wire iorq_sync_gate = ~iorq_n && (~rd_n || ~wr_n) && (a[7:0] >= 8'h40); // only look at external addr range
 
     wire iorq_tick;
     iorq_fsm iorq_sync ( 

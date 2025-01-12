@@ -23,8 +23,8 @@
 
 // NOTE: This is NOT useful for a general purpose synchronizer because this
 //      expects the input signal to meet the FPGA's setup and hold times with
-//      the S180 configured to operate in IOC=0 mode.
-//      When operating in IOC=0 mode, a read operation will take place during 
+//      the S180 configured to operate in IOC=1 mode.
+//      When operating in IOC=1 mode, a read operation will take place during 
 //      Tw and a write will take place during T3.
 module iorq_fsm (
     input wire          phi,            // the CPU phi clock
@@ -32,7 +32,7 @@ module iorq_fsm (
     output wire         iorq_tick       // true for one phi period during CPU t3 cycle
     );
  
-    reg [1:0]   sync;                   // this is used as a 2-biut shift register
+    reg [1:0]   sync;                   // this is used as a 2-but shift register
 
     always @(posedge phi) begin
         sync <= {sync[0], iorq};        // shift iorq through the shift register
