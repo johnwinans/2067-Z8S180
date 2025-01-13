@@ -1,6 +1,6 @@
 //**************************************************************************
 //
-//    Copyright (C) 2024  John Winans
+//    Copyright (C) 2024,2025  John Winans
 //
 //    This library is free software; you can redistribute it and/or
 //    modify it under the terms of the GNU Lesser General Public
@@ -105,6 +105,9 @@ module top (
         end else if (ioreq_rd_f0) begin // CPU is reading the boot ROM latch reset
             dout = ioreq_rd_f0_data;
             dbus_out = 1;
+        end else if (mreq_bram_rd) begin // CPU is reading from the test memory
+            dout = bram_mem_rd_data;
+            dbus_out = 1;
         end
     end
 
@@ -119,8 +122,8 @@ module top (
     wire ioreq_rd_fe = iorq_tick && ~rd_n && (a[7:0] == 8'hfe); // flash select disable access port
 
     // the VDP is at address 0x80-0x81
-    wire ioreq_rd_vdp = iorq_tick && ~rd_n && (a[7:0] == 8'b1000000x);
-    wire ioreq_wr_vdp = iorq_tick && ~wr_n && (a[7:0] == 8'b1000000x); 
+    wire ioreq_rd_vdp = iorq_tick && ~rd_n && (a[7:1] == 7'b1000000);
+    wire ioreq_wr_vdp = iorq_tick && ~wr_n && (a[7:1] == 7'b1000000); 
 
     wire ioreq_rd_j3 = iorq_tick && ~rd_n && (a[7:0] == 8'ha8);         // joystick J3 read-only
     wire ioreq_rd_j4 = iorq_tick && ~rd_n && (a[7:0] == 8'ha9);         // joystick J4 read-only
@@ -149,6 +152,29 @@ module top (
         .iorq(iorq_sync_gate),
         .iorq_tick(iorq_tick) 
         );
+
+    //////////////////////////
+
+    // some direct-mapped memory
+    wire [10:0]  bram_raddr;
+    wire [10:0]  bram_waddr;
+    reg [7:0] bram_mem [0:511];
+
+    wire mreq_bram_rd = (~mreq_n && ~rd_n && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200);  // fpga memory test region
+    wire mreq_bram_wr = (~mreq_n && ~wr_n && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200);  // fpga memory test region
+    reg [7:0] bram_mem_rd_data;
+
+    always @(negedge phi) begin
+        if ( mreq_bram_wr )
+            bram_mem[a-'h8000] <= d;
+        else if ( mreq_bram_rd ) begin
+            bram_mem_rd_data <= bram_mem[a-'h8000];
+            //bram_mem_rd_data <= a[7:0];      // XXX test hack
+        end
+    end
+
+    //////////////////////////
+
 
     // show some signals from the GPIO ports on the LEDs for reference
     assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};          // display the current GPIO out port value
