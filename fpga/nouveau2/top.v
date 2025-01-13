@@ -119,8 +119,8 @@ module top (
     wire ioreq_rd_fe = iorq_tick && ~rd_n && (a[7:0] == 8'hfe); // flash select disable access port
 
     // the VDP is at address 0x80-0x81
-    wire ioreq_rd_vdp = iorq_tick && ~rd_n && (a[7:0] == 8'b1000000x);
-    wire ioreq_wr_vdp = iorq_tick && ~wr_n && (a[7:0] == 8'b1000000x); 
+    wire ioreq_rd_vdp = iorq_tick && ~rd_n && (a[7:1] == 7'b1000000);
+    wire ioreq_wr_vdp = iorq_tick && ~wr_n && (a[7:1] == 7'b1000000); 
 
     wire ioreq_rd_j3 = iorq_tick && ~rd_n && (a[7:0] == 8'ha8);         // joystick J3 read-only
     wire ioreq_rd_j4 = iorq_tick && ~rd_n && (a[7:0] == 8'ha9);         // joystick J4 read-only
