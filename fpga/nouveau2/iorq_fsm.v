@@ -32,7 +32,7 @@ module iorq_fsm (
     output wire         iorq_tick       // true for one phi period during CPU t3 cycle
     );
  
-    reg [1:0]   sync;                   // this is used as a 2-but shift register
+    reg [1:0]   sync;                   // this is used as a 2-bit shift register
 
     always @(posedge phi) begin
         sync <= {sync[0], iorq};        // shift iorq through the shift register
