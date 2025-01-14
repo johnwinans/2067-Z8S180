@@ -160,7 +160,7 @@ module top (
     wire ioreq_rd_j3 = iorq_rd && (a[7:0] == 8'ha8);
     wire ioreq_rd_j3_tick = iorq_rd_tick && (a[7:0] == 8'ha8);         // joystick J3
 
-    wire ioreq_rd_j4 = iorq_wr && (a[7:0] == 8'ha9);
+    wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
     wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);         // joystick J4
 
     // ROM memory address decoder (address bus is 20 bits wide)
