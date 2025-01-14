@@ -5,6 +5,9 @@ include $(TOP)/Make.2057.rules
 # use a locally defined pinmap so the SD card pins don't generate warnings in the other test apps
 PINMAP		= ./pinmap-2057.pcf
 
+FREQ		= 110	# test for fun
+
+
 include $(TOP)/Make.rules
 
 .PHONY: all clean burn world timings
@@ -12,7 +15,8 @@ include $(TOP)/Make.rules
 FILES= \
 	top.v \
 	memory.v \
-	iorq_fsm.v \
+	iorq_rd_fsm.v \
+	iorq_wr_fsm.v \
 	pll_25_18432.v
 
 all:: top.bin
@@ -52,10 +56,14 @@ pll_25_18432.v:
 
 
 
-# iorq_fsm test bench
-iorq_fsm_tb.vvp : iorq_fsm_tb.v iorq_fsm.v
+iorq_rd_fsm_tb.vvp : iorq_rd_fsm_tb.v iorq_rd_fsm.v
 	iverilog -o $@ $^
 
-iorq: iorq_fsm_tb.vcd
+iorqr: iorq_rd_fsm_tb.vcd
 	gtkwave $^
 
+iorq_wr_fsm_tb.vvp : iorq_wr_fsm_tb.v iorq_wr_fsm.v
+	iverilog -o $@ $^
+
+iorqw: iorq_wr_fsm_tb.vcd
+	gtkwave $^

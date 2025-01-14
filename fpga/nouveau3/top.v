@@ -1,6 +1,6 @@
 //**************************************************************************
 //
-//    Copyright (C) 2024,2025  John Winans
+//    Copyright (C) 2024  John Winans
 //
 //    This library is free software; you can redistribute it and/or
 //    modify it under the terms of the GNU Lesser General Public
@@ -65,119 +65,124 @@ module top (
     input wire          sd_det,
 
     output wire [15:0]  tp          // handy-dandy test-point outputs
- 
     );
- 
+
     localparam RAM_START = 20'h1000;
 
     // note that the test points here are different from the previous test proggies
-    assign tp = { iorq_tick, phi, e, iorq_n, we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
-    //            90         87   84 82      80    78    75    73    63    61      56
+    assign tp = { iorq_wr_tick, iorq_rd_tick, phi, e, iorq_n, we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
+    //            93            90            87   84 82      80    78    75    73    63    61      56
 
-    wire [7:0]  rom_data;       // ROM output data bus
+    wire [7:0]  rom_data;           // ROM output data bus
+    memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data));        // a boot ROM
 
-    // Instantiate the boot ROM
-    //memory rom ( .rd_clk(hwclk), .addr(a[11:0]), .data(rom_data));
-    memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data));
+    assign reset_n = s1_n;          // route the reset signal to the CPU (should debounce this)
 
-    assign reset_n = s1_n;      // route the reset signal to the CPU
+    // When the CPU is reading from the FPGA drive the bus, else tri-state it.
+    reg [7:0] dout;                 // what to write to data bus when requested
+    reg dbus_out;                   // 1 if the FPGA shoudl drive the data bus
+    assign d = dbus_out ? dout : 8'bz;  // a tri-state driver
 
-    // When the CPU is reading from the low 4K bytes, send it data 
-    // from ROM, else tri-state the bus.
-    reg [7:0] dout;
-    reg dbus_out;      // 1 if the FPGA is outputting to the data bus
-    assign d = dbus_out ? dout : 8'bz;
-
-    reg rom_sel;                    // true when the boot ROM is accessible
+    reg rom_sel;                    // true when the boot ROM is enabled
     always @(posedge phi)
         if ( ~reset_n )
             rom_sel <= 1;           // after a hard reset, the boot ROM is enabled...
         else if ( ioreq_rd_fe )     // until there is a read from IO port 0xfe
-            rom_sel <= 0;               
+            rom_sel <= 0;
 
     // Determine if the FPGA will drive the data bus and with what
     always @(*) begin
-        dbus_out = 0;
+/*
+        // A priority encoder (the compiler doesn't know only 1 cond is true)
+        dbus_out = 1;
         dout = 8'bx;
-        if ( mreq_rom ) begin           // CPU is reading the boot ROM
-            dout = rom_data;
-            dbus_out = 1;
-        end else if (ioreq_rd_f0) begin // CPU is reading the boot ROM latch reset
-            dout = ioreq_rd_f0_data;
-            dbus_out = 1;
-        end else if (mreq_bram_rd) begin // CPU is reading from the test memory
-            dout = bram_mem_rd_data;
-            dbus_out = 1;
-        end
+        if ( mreq_rom )
+            dout = rom_data;            // CPU is reading the boot ROM
+        else if (ioreq_rd_f0)
+            dout = ioreq_rd_f0_data;    // CPU is reading the gpio input
+        else
+            dbus_out = 0;
+*/
+        dbus_out = 1;
+        dout = 8'bx;
+
+        (* parallel_case *)     // no more than one case can match (one-hot)
+        case (1)
+        mreq_rom:       dout = rom_data;            // CPU reading boot ROM memory
+        ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // CPU reading gpio input
+        default:        dbus_out = 0;
+        endcase
     end
 
     // Consider integrating the output locked into a future automatic power-up reset timer.
     // 18.432MHZ = 57600 (when running at X/2)
     // 18.432MHZ = 115200 (when running at X/1)
-    pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal) ); 
+    pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal) );
 
-    // addres decoders for the memory, IO ports and shadow boot-ROM reset port
-    wire ioreq_rd_f0 = iorq_tick && ~rd_n && (a[7:0] == 8'hf0); // gpio input
-    wire ioreq_wr_f1 = iorq_tick && ~wr_n && (a[7:0] == 8'hf1); // gpio output
-    wire ioreq_rd_fe = iorq_tick && ~rd_n && (a[7:0] == 8'hfe); // flash select disable access port
 
-    // the VDP is at address 0x80-0x81
-    wire ioreq_rd_vdp = iorq_tick && ~rd_n && (a[7:1] == 7'b1000000);
-    wire ioreq_wr_vdp = iorq_tick && ~wr_n && (a[7:1] == 7'b1000000); 
+    // for read cycle: latch value on first phi falling edge after iorq becomes true:
+    // fsm counting falling phi when rd is true & enable when count = 0 && iorq is true
+    wire    iorq_rd_tick;
+    iorq_rd_fsm rd_fsm (.reset(~s1_n), .phi(phi), .iorq(~iorq_n), .rd(~rd_n), .rd_tick(iorq_rd_tick) );
 
-    wire ioreq_rd_j3 = iorq_tick && ~rd_n && (a[7:0] == 8'ha8);         // joystick J3 read-only
-    wire ioreq_rd_j4 = iorq_tick && ~rd_n && (a[7:0] == 8'ha9);         // joystick J4 read-only
+    // for a write cycle: latch value on second phi falling edge after iorq becomes true:
+    // fsm counting falling phi when wr is true and enable when count = 1
+    wire    iorq_wr_tick;
+    iorq_wr_fsm wr_fsm (.reset(~s1_n), .phi(phi), .iorq(~iorq_n), .wr(~wr_n), .wr_tick(iorq_wr_tick) );
 
-    wire mreq_rom = rom_sel && ~mreq_n && ~rd_n && a < RAM_START;
+
+    // qualified asynchronous bus enable signals
+    wire iorq_rd = ~iorq_n && ~rd_n;
+    wire iorq_wr = ~iorq_n && ~wr_n;
+    wire mem_rd = ~mreq_n && ~rd_n;
+    wire mem_wr = ~mreq_n && ~wr_n;
+
+    // IO addres decoders (two variations):
+    //  signal       = CPU asynchronous IO cycle
+    //  signal_tick  = FPGA ff clock enable synchronized to phi
+
+    // gpio input
+    wire ioreq_rd_f0 = iorq_rd && (a[7:0] == 8'hf0);                // gpio input
+    wire ioreq_rd_f0_tick = iorq_rd_tick && (a[7:0] == 8'hf0);
+
+    wire ioreq_wr_f1 = iorq_wr && (a[7:0] == 8'hf1);                // gpio output
+    wire ioreq_wr_f1_tick  = iorq_wr_tick && (a[7:0] == 8'hf1);
+
+    wire ioreq_rd_fe = iorq_rd && (a[7:0] == 8'hfe);                // flash select disable access port
+    wire ioreq_rd_fe_tick = iorq_rd_tick && (a[7:0] == 8'hfe);
+
+    // The VDP regs are at address 0x80-0x81 (note LSB is not decoded)
+    wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);
+    wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);
+    wire ioreq_rd_vdp_tick = iorq_rd_tick && (a[7:1] == 7'b1000000);
+    wire ioreq_wr_vdp_tick = iorq_wr_tick && (a[7:1] == 7'b1000000);
+
+    wire ioreq_rd_j3 = iorq_rd && (a[7:0] == 8'ha8);
+    wire ioreq_rd_j3_tick = iorq_rd_tick && (a[7:0] == 8'ha8);         // joystick J3
+
+    wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
+    wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);         // joystick J4
+
+    // ROM memory address decoder (address bus is 20 bits wide)
+    // All following are suitable for our needs but can have very different number of LUTs!
+    // a good example of optimizing for space/time
+    //wire mreq_rom = rom_sel && mem_rd && a < RAM_START;       // if accessing low RAM during boot
+    //wire mreq_rom = rom_sel && mem_rd && a[15:12] == 0;       // top 4 MSBs of bottom 4K are zero
+    wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
 
     // The GPIO output latch
     reg [7:0] gpio_out;
-    always @(negedge ioreq_wr_f1)
-        gpio_out <= d;
-
-    wire [7:0] ioreq_rd_f0_data = {sd_miso,sd_det,6'bx};  // data value when reading port F0
-
-    // We can use this to synchronize iorq_n to the phi clock to create a one phi period
-    // wide enable "tick" signal during an IO read or write operation.
-    // Note that including ~rd_n & ~wr_n eliminates an iorq_n during interrupt acknowledge.
-    // with IOC=1 this will read on tw & write on t3
-
-    //wire iorq_sync_gate = m1_n && ~iorq_n;       // during INT ACK iorq_n rises after m1_n & false-trigger?
-    //wire iorq_sync_gate = ~iorq_n && (~rd_n || ~wr_n);    // can overrun into next t1 after internal IO
-    wire iorq_sync_gate = ~iorq_n && (~rd_n || ~wr_n) && (a[7:0] >= 8'h40); // only look at external addr range
-
-    wire iorq_tick;
-    iorq_fsm iorq_sync ( 
-        .phi(phi), 
-        .iorq(iorq_sync_gate),
-        .iorq_tick(iorq_tick) 
-        );
-
-    //////////////////////////
-
-    // some direct-mapped memory
-    wire [10:0]  bram_raddr;
-    wire [10:0]  bram_waddr;
-    reg [7:0] bram_mem [0:511];
-
-    wire mreq_bram_rd = (~mreq_n && ~rd_n && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200);  // fpga memory test region
-    wire mreq_bram_wr = (~mreq_n && ~wr_n && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200);  // fpga memory test region
-    reg [7:0] bram_mem_rd_data;
-
     always @(negedge phi) begin
-        if ( mreq_bram_wr )
-            bram_mem[a-'h8000] <= d;
-        else if ( mreq_bram_rd ) begin
-            bram_mem_rd_data <= bram_mem[a-'h8000];
-            //bram_mem_rd_data <= a[7:0];      // XXX test hack
-        end
+        if ( ioreq_wr_f1_tick )
+            gpio_out <= d;
     end
 
-    //////////////////////////
-
-
-    // show some signals from the GPIO ports on the LEDs for reference
-    assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};          // display the current GPIO out port value
+    // It is not really necessary to latch this because the SD signals will be stable during a read:
+    reg [7:0] ioreq_rd_f0_data;     //  = {sd_miso,sd_det,6'bx};  // data value when reading port F0
+    always @(negedge phi) begin
+        if ( ioreq_rd_f0_tick )
+            ioreq_rd_f0_data <= {sd_miso,sd_det,6'bx};
+    end
 
     assign sd_mosi = gpio_out[0];   // connect the GPIO output bits to the SD card pins
     assign sd_clk  = gpio_out[1];
@@ -190,10 +195,13 @@ module top (
     assign wait_n = 1'b1;       // de-assert /WAIT
 
     // Enable the static RAM on memory cycles when the data bus is driven by the FPGA
-    // The address range that is used to enable the SRAM varies depending on if/when 
+    // The address range that is used to enable the SRAM varies depending on if/when
     // the shadow ROM is being enabled.
     assign ce_n = ~(~mreq_n && ~dbus_out );
     assign oe_n = mreq_n | rd_n;
     assign we_n = mreq_n | wr_n;
+
+    // show some signals from the GPIO ports on the LEDs for reference
+    assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};
 
 endmodule

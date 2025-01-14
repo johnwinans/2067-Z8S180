@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 //**************************************************************************
 //
 //    Copyright (C) 2025  John Winans
@@ -23,22 +21,35 @@
 
 // NOTE: This is NOT useful for a general purpose synchronizer because this
 //      expects the input signal to meet the FPGA's setup and hold times with
-//      the S180 configured to operate in IOC=1 mode.
-//      When operating in IOC=1 mode, a read operation will take place during 
-//      Tw and a write will take place during T3.
-module iorq_fsm (
+//      the Z8S180 configured to operate in IOC=1 mode.
+// Want:
+// for read cycle: latch value on first phi falling edge after iorq becomes true:
+// fsm counting falling phi when rd is true & enable when count = 0 && iorq is true
+
+// for a write cycle: latch value on second phi falling edge after iorq becomes true:
+// fsm counting falling phi when wr is true and enable when count = 1
+
+module iorq_rd_fsm (
     input wire          phi,            // the CPU phi clock
-    input wire          iorq,           // assume is (~iorq_n && (~rd_n || !wr_n))
-    output wire         iorq_tick       // true for one phi period during CPU t3 cycle
+    input wire          reset,
+    input wire          iorq,           // positive logic iorq
+    input wire          rd,             // positive logic rd
+    output wire         rd_tick         // true during window to capture first phi falling edge
     );
  
-    reg [1:0]   sync;                   // this is used as a 2-bit shift register
+    reg     state_reg, state_next;
 
-    always @(posedge phi) begin
-        sync <= {sync[0], iorq};        // shift iorq through the shift register
+    always @(negedge phi) begin
+        if ( reset )
+            state_reg <= 0;
+        else
+            state_reg <= state_next;
     end
 
-    // include iorq here so that if it starts late then it will end early
-    assign iorq_tick = (sync == 2'b01) && iorq;   // true only during inital shift into the reg 
+    always @(*) begin
+        state_next = iorq && rd;
+    end
+
+    assign rd_tick = ( state_reg==0 && iorq && rd );
 
 endmodule

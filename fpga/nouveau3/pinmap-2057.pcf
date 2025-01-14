@@ -7,7 +7,7 @@ set_io -pullup yes a[5]     141
 set_io -pullup yes a[6]     138
 set_io -pullup yes a[7]     136
 set_io -pullup yes a[8]     134
-set_io -pullup yes a[9]     129
+set_io -pullup yes a[9]     129		# must be an output from FPGA when using PLL 2
 set_io -pullup yes a[10]    135
 set_io -pullup yes a[11]    137
 set_io -pullup yes a[12]    139
@@ -30,7 +30,7 @@ set_io -pullup yes d[7]     10
 
 set_io 				busack_n 33
 set_io -pullup yes 	busreq_n 31
-set_io -pullup yes	dreq1_n  49
+set_io -pullup yes	dreq1_n  49		# must be an output from FPGA when using PLL 1
 set_io 				e        34
 set_io 				extal    39
 set_io 				halt_n   45
