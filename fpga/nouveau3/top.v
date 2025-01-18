@@ -91,25 +91,16 @@ module top (
             rom_sel <= 0;
 
     // Determine if the FPGA will drive the data bus and with what
+    // the CPU is reading from its data bus.
     always @(*) begin
-/*
-        // A priority encoder (the compiler doesn't know only 1 cond is true)
-        dbus_out = 1;
-        dout = 8'bx;
-        if ( mreq_rom )
-            dout = rom_data;            // CPU is reading the boot ROM
-        else if (ioreq_rd_f0)
-            dout = ioreq_rd_f0_data;    // CPU is reading the gpio input
-        else
-            dbus_out = 0;
-*/
         dbus_out = 1;
         dout = 8'bx;
 
         (* parallel_case *)     // no more than one case can match (one-hot)
         case (1)
-        mreq_rom:       dout = rom_data;            // CPU reading boot ROM memory
-        ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // CPU reading gpio input
+        mreq_rom:       dout = rom_data;            // boot ROM memory
+        ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // gpio input
+        mreq_bram_rd:   dout = bram_mem_rd_data;    // test BRAM
         default:        dbus_out = 0;
         endcase
     end
@@ -183,6 +174,25 @@ module top (
         if ( ioreq_rd_f0_tick )
             ioreq_rd_f0_data <= {sd_miso,sd_det,6'bx};
     end
+
+
+
+    // Some direct-mapped FPGA BRAM memory
+    reg [7:0] bram_mem [0:511];     // this is the actual BRAM memory
+
+    wire mreq_bram_rd = mem_rd && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200;  // BRAM test range
+    wire mreq_bram_wr = mem_wr && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200;  // BRAM test range
+    reg [7:0] bram_mem_rd_data;
+
+    always @(negedge phi) begin
+        if ( mreq_bram_wr )                     // multiple edges per memory transaction is OK here
+            bram_mem[a-'h8000] <= d;
+        else if ( mreq_bram_rd )                // multiple edges per memory transaction is OK here
+            bram_mem_rd_data <= bram_mem[a-'h8000];
+            //bram_mem_rd_data <= a[7:0];           // XXX a test hack
+    end
+
+
 
     assign sd_mosi = gpio_out[0];   // connect the GPIO output bits to the SD card pins
     assign sd_clk  = gpio_out[1];
