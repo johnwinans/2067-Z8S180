@@ -6,6 +6,8 @@ SUBDIRS= \
 	prog \
 	sram \
 	asci \
-	nouveau
+	nouveau \
+	nouveau2 \
+	nouveau3
 
 include $(TOP)/Make.rules
