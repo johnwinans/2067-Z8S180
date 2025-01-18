@@ -4,5 +4,8 @@
 CROSS_AS_FLAGS=
 CROSS_AS=z80asm
 
+# Verilog VDP library
+VDP_LIBV=$(TOP)/vdp
+
 include $(TOP)/Make.2057.rules
 -include $(TOP)/Make.local
