@@ -32,7 +32,7 @@ top.asc: $(PINMAP)
 #DATE := $(shell date --rfc-3339=seconds)
 #GIT_VERSION := $(shell git describe --long --dirty; git show -s --format='%ci')
 #%.bin: %.asm
-#	cat $< | sed -e "s/@@DATE@@/$(DATE)/g" -e "s/@@GIT_VERSION@@/$(GIT_VERSION)/g" | z80asm - -o $@ --list=$(basename $@).lst --label=$(basename $@).sym $(ASM_FLAGS)
+#	cat $< | sed -e "s/@@DATE@@/$(DATE)/g" -e "s/@@GIT_VERSION@@/$(GIT_VERSION)/g" | $(CROSS_AS) - -o $@ --list=$(basename $@).lst --label=$(basename $@).sym $(CROSS_AS_FLAGS)
 #
 
 rom.bin:
