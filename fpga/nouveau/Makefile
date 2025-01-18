@@ -1,6 +1,5 @@
 TOP=..
 
-include $(TOP)/Make.2057.rules
 include $(TOP)/Make.rules
 
 .PHONY: all clean burn world timings

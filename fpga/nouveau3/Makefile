@@ -1,11 +1,8 @@
 TOP=..
 
-include $(TOP)/Make.2057.rules
-
-FREQ		= 110	# test for fun
-
 
 include $(TOP)/Make.rules
+#FREQ		= 110	# test for fun
 
 .PHONY: all clean burn world timings
 

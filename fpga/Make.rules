@@ -19,6 +19,7 @@
 # Make sure the all rule is seen first to make it the default target
 all::
 
+include $(TOP)/Make.default
 
 ###################################################################
 # Rules to walk the filesystem tree
