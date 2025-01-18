@@ -64,6 +64,12 @@ module top (
     input wire          sd_miso,
     input wire          sd_det,
 
+    output  wire        vga_red,
+    output  wire        vga_grn,
+    output  wire        vga_blu,
+    output  wire        vga_hsync,
+    output  wire        vga_vsync,
+
     output wire [15:0]  tp          // handy-dandy test-point outputs
     );
 
@@ -100,7 +106,7 @@ module top (
         case (1)
         mreq_rom:       dout = rom_data;            // boot ROM memory
         ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // gpio input
-        mreq_bram_rd:   dout = bram_mem_rd_data;    // test BRAM
+//        mreq_bram_rd:   dout = bram_mem_rd_data;    // test BRAM
         default:        dbus_out = 0;
         endcase
     end
@@ -176,7 +182,7 @@ module top (
     end
 
 
-
+/*
     // Some direct-mapped FPGA BRAM memory
     reg [7:0] bram_mem [0:511];     // this is the actual BRAM memory
 
@@ -191,7 +197,18 @@ module top (
             bram_mem_rd_data <= bram_mem[a-'h8000];
             //bram_mem_rd_data <= a[7:0];           // XXX a test hack
     end
+*/
 
+    // VDP
+    video vid (
+        .pxclk(hwclk),       // 25 MHZ
+        .reset(~s1_n),
+        .vga_red(vga_red),
+        .vga_grn(vga_grn),
+        .vga_blu(vga_blu),
+        .vga_hsync(vga_hsync),
+        .vga_vsync(vga_vsync)
+    );
 
 
     assign sd_mosi = gpio_out[0];   // connect the GPIO output bits to the SD card pins

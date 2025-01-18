@@ -11,10 +11,12 @@ FILES= \
 	memory.v \
 	iorq_rd_fsm.v \
 	iorq_wr_fsm.v \
+	$(VDP_LIBV)/video.v \
+	$(VDP_LIBV)/vdp_table_test.v \
+	$(VDP_LIBV)/vgasync.v \
 	pll_25_18432.v
 
 all:: top.bin
-
 
 top.json: $(FILES) rom.hex
 	$(COMPILE.v) -p "synth_ice40 -top top -json $@" $(FILES)
