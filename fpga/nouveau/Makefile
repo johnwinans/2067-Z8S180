@@ -1,10 +1,6 @@
 TOP=..
 
 include $(TOP)/Make.2057.rules
-
-# use a locally defined pinmap so the SD card pins don't generate warnings in the other test apps
-PINMAP		= ./pinmap-2057.pcf
-
 include $(TOP)/Make.rules
 
 .PHONY: all clean burn world timings
