@@ -28,7 +28,7 @@ FREQ=$(PX_CLK)
 all:: top.bin
 
 top.json: $(FILES) $(DEPS)
-	$(COMPILE.v) -p "synth_ice40 -top top -json $@" $(FILES)
+	$(COMPILE.v) -p "$(SYNTH) -top top -json $@" $(FILES) $(COMPILE_OPT)
 
 timing: top.asc
 	icetime -tmd $(DEVICE) $^
