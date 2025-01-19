@@ -79,10 +79,13 @@ module top (
     assign tp = { iorq_wr_tick, iorq_rd_tick, phi, e, iorq_n, we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
     //            93            90            87   84 82      80    78    75    73    63    61      56
 
+    // a boot ROM
     wire [7:0]  rom_data;           // ROM output data bus
-    memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data));        // a boot ROM
+    memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data) );
 
-    assign reset_n = s1_n;          // route the reset signal to the CPU (should debounce this)
+    // consider debouncing s1_n using hwclk (no other clock possible)
+    wire reset = ~(s1_n && pll_locked);     // assert reset when PLL is starting up & unstable
+    assign reset_n = reset;                 // CPU reset
 
     // When the CPU is reading from the FPGA drive the bus, else tri-state it.
     reg [7:0] dout;                 // what to write to data bus when requested
@@ -111,21 +114,21 @@ module top (
         endcase
     end
 
-    // Consider integrating the output locked into a future automatic power-up reset timer.
     // 18.432MHZ = 57600 (when running at X/2)
     // 18.432MHZ = 115200 (when running at X/1)
-    pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal) );
+    wire        pll_locked;             // true when the PLL has locked to target freq
+    pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal), .locked(pll_locked) );
 
 
     // for read cycle: latch value on first phi falling edge after iorq becomes true:
     // fsm counting falling phi when rd is true & enable when count = 0 && iorq is true
     wire    iorq_rd_tick;
-    iorq_rd_fsm rd_fsm (.reset(~s1_n), .phi(phi), .iorq(~iorq_n), .rd(~rd_n), .rd_tick(iorq_rd_tick) );
+    iorq_rd_fsm rd_fsm (.reset(reset), .phi(phi), .iorq(~iorq_n), .rd(~rd_n), .rd_tick(iorq_rd_tick) );
 
     // for a write cycle: latch value on second phi falling edge after iorq becomes true:
     // fsm counting falling phi when wr is true and enable when count = 1
     wire    iorq_wr_tick;
-    iorq_wr_fsm wr_fsm (.reset(~s1_n), .phi(phi), .iorq(~iorq_n), .wr(~wr_n), .wr_tick(iorq_wr_tick) );
+    iorq_wr_fsm wr_fsm (.reset(reset), .phi(phi), .iorq(~iorq_n), .wr(~wr_n), .wr_tick(iorq_wr_tick) );
 
 
     // qualified asynchronous bus enable signals
@@ -202,7 +205,7 @@ module top (
     // VDP
     video vid (
         .pxclk(hwclk),       // 25 MHZ
-        .reset(~s1_n),
+        .reset(reset),
         .vga_red(vga_red),
         .vga_grn(vga_grn),
         .vga_blu(vga_blu),
