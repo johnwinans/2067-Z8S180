@@ -61,13 +61,18 @@ $(DOXY_DIRS):
 ###################################################################
 
 COMPILE.v	?= yosys
+COMPILE_OPT	?=
+SYNTH 	 	?= synth_ice40
 NEXTPNR 	?= nextpnr-ice40
+NEXTPNR_OPT	?=
+NEXTPNR_FMT	?= asc
 ARACHNE		?= arachne-pnr
-
+PACK		?= icepack
 
 DEVICE		?= up5k
 PACKAGE		?= sg48
 FLASH_PROG	?= sudo iceprog -d i:0x0403:0x6014
+PIN_FMT		?= pcf
 PINMAP		?= pinmap-upduino.pcf
 FREQ		?= 25
 
@@ -77,16 +82,16 @@ FREQ		?= 25
 
 # useful for single-file builds
 %.blif : %.v
-	$(COMPILE.v) -p "synth_ice40 -top top -blif $@" $<
+	$(COMPILE.v) -p "$(SYNTH) -top top -blif $@" $<
 
 # useful for single-file builds
 %.json : %.v
-	$(COMPILE.v) -p "synth_ice40 -top top -json $@" $<
+	$(COMPILE.v) -p "$(SYNTH) -top top -json $@" $<
 
 
 # Use nextpnr-ice40 to build from a JSON file
 %.asc : %.json
-	$(NEXTPNR) --$(DEVICE) --package $(PACKAGE) --pcf $(PINMAP) --freq $(FREQ) --asc $@ --json $<
+	$(NEXTPNR) --$(DEVICE) --package $(PACKAGE) --$(PIN_FMT) $(PINMAP) --freq $(FREQ) $(NEXTPNR_OPT) --$(NEXTPNR_FMT) $@ --json $<
 
 # Use arachne-pnr to build from a BLIF file 
 %.asc : %.blif
@@ -95,13 +100,13 @@ FREQ		?= 25
 
 # make a binary config file from an ASC file
 %.bin : %.asc
-	icepack $< $@
+	$(PACK) $< $@
 
 # Run Icarus and generate a vcd file (containing waveforms from the simulation)
 %.vcd: %.vvp
 	vvp $<
 
 clean::
-	rm -f *.bin *.vvp *.vcd *.asc *.blif *.json
+	rm -f *.bin *.vvp *.vcd *.asc *.blif *.json *.rpt
 
 world:: clean all
