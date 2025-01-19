@@ -1,18 +1,18 @@
+# Synchronizing the FPGA to the PHI clock
 
-An example of booting the CPU and running code that is in multiple
-RAM4k Blocks in the FPGA.
+The purpose of this version of the Nouveau is to demonstrate
+one way to convert the async CPU bus to a synchronized one
+in the FPGA.
 
-The code in the RAM block is assembled into binary and then loaded into
-an FPGA block RAM by making it part of the initialization logic for an
-array of bytes.
+Both the CPU and FPGA use the PHI clock so we are not crossing a clock
+domain per-se.  This focuses on changing the multi-clock-wide /IORQ, /RD, 
+and /WR bus signals to one-clock-wide enable signals that allow the FPGA
+to transfer data to/from the CPU on a single falling edge of PHI.
 
-On a PI or Ubuntu system, install the Z80 assembler I used like this:
+[A discussion of the changes made to ../nouveau appearing here can be seen on YouTube.](https://youtu.be/dtRGpsSLlBo)
 
-```
-sudo apt install z80asm
-```
 
-This can be used to boot the Z80-Retro! boot/firmware.bin file.
+# CPU Internal I/O map
 
 The default Z8S180 internal I/O device address map is 00-3f:
 
