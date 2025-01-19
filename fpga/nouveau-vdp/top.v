@@ -1,6 +1,6 @@
 //**************************************************************************
 //
-//    Copyright (C) 2024  John Winans
+//    Copyright (C) 2024,2025  John Winans
 //
 //    This library is free software; you can redistribute it and/or
 //    modify it under the terms of the GNU Lesser General Public
@@ -84,8 +84,8 @@ module top (
     memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data) );
 
     // consider debouncing s1_n using hwclk (no other clock possible)
-    wire reset = ~(s1_n && pll_locked);     // assert reset when PLL is starting up & unstable
-    assign reset_n = reset;                 // CPU reset
+    wire reset = ~s1_n || ~pll_locked;      // assert reset when PLL is starting up & unstable
+    assign reset_n = ~reset;                // CPU reset
 
     // When the CPU is reading from the FPGA drive the bus, else tri-state it.
     reg [7:0] dout;                 // what to write to data bus when requested
@@ -94,7 +94,7 @@ module top (
 
     reg rom_sel;                    // true when the boot ROM is enabled
     always @(posedge phi)
-        if ( ~reset_n )
+        if ( reset )
             rom_sel <= 1;           // after a hard reset, the boot ROM is enabled...
         else if ( ioreq_rd_fe )     // until there is a read from IO port 0xfe
             rom_sel <= 0;
