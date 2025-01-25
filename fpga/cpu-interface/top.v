@@ -1,6 +1,6 @@
 //**************************************************************************
 //
-//    Copyright (C) 2024  John Winans
+//    Copyright (C) 2024,2025  John Winans
 //
 //    This library is free software; you can redistribute it and/or
 //    modify it under the terms of the GNU Lesser General Public
@@ -69,14 +69,16 @@ module top (
 
     localparam RAM_START = 20'h1000;
 
-    // note that the test points here are different from the previous test proggies
     assign tp = { iorq_wr_tick, iorq_rd_tick, phi, e, iorq_n, we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
     //            93            90            87   84 82      80    78    75    73    63    61      56
 
+    // a boot ROM
     wire [7:0]  rom_data;           // ROM output data bus
-    memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data));        // a boot ROM
+    memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data) );
 
-    assign reset_n = s1_n;          // route the reset signal to the CPU (should debounce this)
+    // consider debouncing s1_n using hwclk (no other clock possible)
+    wire reset = ~s1_n || ~pll_locked;      // assert reset when PLL is starting up & unstable
+    assign reset_n = ~reset;                // CPU reset
 
     // When the CPU is reading from the FPGA drive the bus, else tri-state it.
     reg [7:0] dout;                 // what to write to data bus when requested
@@ -85,50 +87,40 @@ module top (
 
     reg rom_sel;                    // true when the boot ROM is enabled
     always @(posedge phi)
-        if ( ~reset_n )
+        if ( reset )
             rom_sel <= 1;           // after a hard reset, the boot ROM is enabled...
         else if ( ioreq_rd_fe )     // until there is a read from IO port 0xfe
             rom_sel <= 0;
 
     // Determine if the FPGA will drive the data bus and with what
+    // the CPU is reading from its data bus.
     always @(*) begin
-/*
-        // A priority encoder (the compiler doesn't know only 1 cond is true)
-        dbus_out = 1;
-        dout = 8'bx;
-        if ( mreq_rom )
-            dout = rom_data;            // CPU is reading the boot ROM
-        else if (ioreq_rd_f0)
-            dout = ioreq_rd_f0_data;    // CPU is reading the gpio input
-        else
-            dbus_out = 0;
-*/
         dbus_out = 1;
         dout = 8'bx;
 
         (* parallel_case *)     // no more than one case can match (one-hot)
         case (1)
-        mreq_rom:       dout = rom_data;            // CPU reading boot ROM memory
-        ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // CPU reading gpio input
+        mreq_rom:       dout = rom_data;            // boot ROM memory
+        ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // gpio input
         default:        dbus_out = 0;
         endcase
     end
 
-    // Consider integrating the output locked into a future automatic power-up reset timer.
     // 18.432MHZ = 57600 (when running at X/2)
     // 18.432MHZ = 115200 (when running at X/1)
-    pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal) );
+    wire        pll_locked;             // true when the PLL has locked to target freq
+    pll_25_18432 pll ( .clock_in(hwclk), .clock_out(extal), .locked(pll_locked) );
 
 
     // for read cycle: latch value on first phi falling edge after iorq becomes true:
     // fsm counting falling phi when rd is true & enable when count = 0 && iorq is true
     wire    iorq_rd_tick;
-    iorq_rd_fsm rd_fsm (.reset(~s1_n), .phi(phi), .iorq(~iorq_n), .rd(~rd_n), .rd_tick(iorq_rd_tick) );
+    iorq_rd_fsm rd_fsm (.reset(reset), .phi(phi), .iorq(~iorq_n), .rd(~rd_n), .rd_tick(iorq_rd_tick) );
 
     // for a write cycle: latch value on second phi falling edge after iorq becomes true:
     // fsm counting falling phi when wr is true and enable when count = 1
     wire    iorq_wr_tick;
-    iorq_wr_fsm wr_fsm (.reset(~s1_n), .phi(phi), .iorq(~iorq_n), .wr(~wr_n), .wr_tick(iorq_wr_tick) );
+    iorq_wr_fsm wr_fsm (.reset(reset), .phi(phi), .iorq(~iorq_n), .wr(~wr_n), .wr_tick(iorq_wr_tick) );
 
 
     // qualified asynchronous bus enable signals
@@ -137,7 +129,7 @@ module top (
     wire mem_rd = ~mreq_n && ~rd_n;
     wire mem_wr = ~mreq_n && ~wr_n;
 
-    // IO addres decoders (two variations):
+    // IO address decoders (two variations):
     //  signal       = CPU asynchronous IO cycle
     //  signal_tick  = FPGA ff clock enable synchronized to phi
 
@@ -164,10 +156,6 @@ module top (
     wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);         // joystick J4
 
     // ROM memory address decoder (address bus is 20 bits wide)
-    // All following are suitable for our needs but can have very different number of LUTs!
-    // a good example of optimizing for space/time
-    //wire mreq_rom = rom_sel && mem_rd && a < RAM_START;       // if accessing low RAM during boot
-    //wire mreq_rom = rom_sel && mem_rd && a[15:12] == 0;       // top 4 MSBs of bottom 4K are zero
     wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
 
     // The GPIO output latch
