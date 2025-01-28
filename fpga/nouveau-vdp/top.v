@@ -109,7 +109,6 @@ module top (
         case (1)
         mreq_rom:       dout = rom_data;            // boot ROM memory
         ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // gpio input
-//        mreq_bram_rd:   dout = bram_mem_rd_data;    // test BRAM
         default:        dbus_out = 0;
         endcase
     end
@@ -184,23 +183,6 @@ module top (
             ioreq_rd_f0_data <= {sd_miso,sd_det,6'bx};
     end
 
-
-/*
-    // Some direct-mapped FPGA BRAM memory
-    reg [7:0] bram_mem [0:511];     // this is the actual BRAM memory
-
-    wire mreq_bram_rd = mem_rd && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200;  // BRAM test range
-    wire mreq_bram_wr = mem_wr && a[15:0] >= 16'h8000 && a[15:0] < 16'h8200;  // BRAM test range
-    reg [7:0] bram_mem_rd_data;
-
-    always @(negedge phi) begin
-        if ( mreq_bram_wr )                     // multiple edges per memory transaction is OK here
-            bram_mem[a-'h8000] <= d;
-        else if ( mreq_bram_rd )                // multiple edges per memory transaction is OK here
-            bram_mem_rd_data <= bram_mem[a-'h8000];
-            //bram_mem_rd_data <= a[7:0];           // XXX a test hack
-    end
-*/
 
     // VDP
     video vid (
