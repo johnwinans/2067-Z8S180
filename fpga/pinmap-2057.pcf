@@ -7,7 +7,7 @@ set_io -nowarn -pullup yes  a[5]        141
 set_io -nowarn -pullup yes  a[6]        138
 set_io -nowarn -pullup yes  a[7]        136
 set_io -nowarn -pullup yes  a[8]        134
-set_io -nowarn -pullup yes  a[9]        129     # must be an output from FPGA when using PLL 2
+set_io -nowarn -pullup yes  a[9]        129     # may NOT be used as an input when using PLL 2
 set_io -nowarn -pullup yes  a[10]       135
 set_io -nowarn -pullup yes  a[11]       137
 set_io -nowarn -pullup yes  a[12]       139
@@ -30,7 +30,7 @@ set_io -nowarn -pullup yes  d[7]        10
 
 set_io -nowarn              busack_n    33
 set_io -nowarn -pullup yes  busreq_n    31
-set_io -nowarn -pullup yes  dreq1_n     49      # must be an output from FPGA when using PLL 1
+set_io -nowarn -pullup yes  dreq1_n     49      # may NOT be used as an input when using PLL 1
 set_io -nowarn              e           34
 set_io -nowarn              extal       39
 set_io -nowarn              halt_n      45
