@@ -1,4 +1,6 @@
 *.asc
 *.bin
 *.json
+*.vvp
+*.vcd
 Make.local
