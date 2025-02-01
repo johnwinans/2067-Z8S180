@@ -1,0 +1,13 @@
+# This defines the list of files that are needed to incorporate
+# this library of files into a project.
+#
+# Include this file after first defining LIB_VDP99 to the path of this
+# directory.  For example:
+#
+# LIB_VDP99=$(TOP)/vdp99
+# include $(LIB_VDP99)/Make.include
+
+LIB_VDP99_FILES=\
+    $(LIB_VDP99)/vdp99.v \
+	$(LIB_VDP99)/vdp_irq.v \
+	$(LIB_VDP99)/vdp_reg_ifce.v

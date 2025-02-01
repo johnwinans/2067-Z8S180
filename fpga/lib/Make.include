@@ -1,0 +1,11 @@
+# This defines the list of files that are needed to incorporate
+# this library of files into a project.
+#
+# Include this file after first defining LIB_UTILS to the path of this
+# directory.  For example:
+#
+# LIB_UTILS=$(TOP)/lib
+# include $(LIB_UTILS)/Make.include
+
+LIB_UTILS_FILES=\
+	$(LIB_UTILS)/stretcher/sync_stretch.v
