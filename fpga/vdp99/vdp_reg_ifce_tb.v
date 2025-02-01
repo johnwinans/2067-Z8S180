@@ -38,7 +38,7 @@ module tb();
     );
 
     initial begin
-        $dumpfile("reg_ifce_tb.vcd");
+        $dumpfile("vdp_reg_ifce_tb.vcd");
         $dumpvars;
     end
     
