@@ -25,15 +25,15 @@ module tb();
 
     reg clk;        // pixel clock
     reg reset;
-    reg wm0_tick;
-    reg rm0_tick;
+    reg wr_tick;
+    reg rd_tick;
     reg [7:0] din;
 
-    reg_ifce uut (
+    vdp_reg_ifce uut (
         .clk(clk),
         .reset(reset),
-        .wm0_tick(wm0_tick),
-        .rm0_tick(rm0_tick),
+        .wr_tick(wr_tick),
+        .rd_tick(rd_tick),
         .din(din)
     );
 
@@ -46,8 +46,8 @@ module tb();
 
     initial begin
         clk = 0;
-        wm0_tick = 0;
-        rm0_tick = 0;
+        wr_tick = 0;
+        rd_tick = 0;
         din = 'hz;
         reset = 1;
         #5;
@@ -59,35 +59,35 @@ module tb();
 
         // reg0 = 0xee
         din <= 'hee;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
         din <= 'h80;     // write into reg 0
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
 
         // reg3 = 0x33
         din <= 'h33;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
         din <= 'h83;     // write into reg 3
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
 
         // rapid-fire writes
         din <= 'h44;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
         din <= 'h84;
         #2;
@@ -99,62 +99,62 @@ module tb();
         #2;
         din <= 'h86;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #4;
 
         // test rm0 reset the 2-state write register toggler
         din <= 'h22;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
 
-        rm0_tick <= 1;
+        rd_tick <= 1;
         #2;
-        rm0_tick <= 0;
+        rd_tick <= 0;
         din <= 'hz;
         #2;
 
         // make sure it still works (we didn't get it stuck)
         din <= 'h11;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
         din <= 'h81;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
 
         // make sure we can CHANGE a value that has already been written
         din <= 'hf6;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
         din <= 'h86;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
 
         // make sure that rm0 is OK when not done in state 1
-        rm0_tick <= 1;
+        rd_tick <= 1;
         #2;
-        rm0_tick <= 0;
+        rd_tick <= 0;
         din <= 'hz;
         #2;
 
         // a long wait between successive wm0 writes
         din <= 'h77;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #6;
-        wm0_tick <= 1;
+        wr_tick <= 1;
         din <= 'h87;
         #2;
-        wm0_tick <= 0;
+        wr_tick <= 0;
         din <= 'hz;
         #2;
 

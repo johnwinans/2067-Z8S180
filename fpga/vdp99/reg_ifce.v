@@ -22,16 +22,14 @@
 `default_nettype none
 
 // Process a 2-write data transfer from the CPU to the config regs.
-// Process a read of the VDP status reg.
-// Note that reading the status reg will reset the write transfer state!
-module reg_ifce(
+// Note that the rd_tick is used to reset the write transfer state.
+module vdp_reg_ifce(
     input   wire        clk,
     input   wire        reset,      // active high
 
-    input   wire        wm0_tick,   // mode0 write
-    input   wire        rm0_tick,   // mode0 read
-    input   wire [7:0]  din,        // stable during wm0_tick
-    output  wire [7:0]  dout,       // make stable during rm0_tick
+    input   wire        wr_tick,    // mode1 write
+    input   wire        rd_tick,    // mode1 read
+    input   wire [7:0]  din,        // stable during wr_tick
     output  wire [7:0]  r0,
     output  wire [7:0]  r1,
     output  wire [7:0]  r2,
@@ -68,15 +66,15 @@ module reg_ifce(
 
     // When w0_tick, update the w0/1 registers & toggle the next reg state
     always @(*) begin
-        w0_next = wm0_tick && state_reg==0 ? din : w0_reg;
-        w1_next = wm0_tick && state_reg==1 ? din : w1_reg;
-        state_next = wm0_tick ? ~state_reg : state_reg;     // toggle when written
+        w0_next = wr_tick && state_reg==0 ? din : w0_reg;
+        w1_next = wr_tick && state_reg==1 ? din : w1_reg;
+        state_next = wr_tick ? ~state_reg : state_reg;     // toggle when written
 
         // special reset the w0/1 reg state when read the status register
-        if ( rm0_tick )
+        if ( rd_tick )
             state_next = 0;
 
-        update_vdp_reg_tick = wm0_tick & state_reg & din[7];
+        update_vdp_reg_tick = wr_tick & state_reg & din[7];
     end
 
     assign r0 = vdp_regs[0];
