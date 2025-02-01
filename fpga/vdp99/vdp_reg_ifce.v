@@ -49,7 +49,7 @@ module vdp_reg_ifce(
 
     reg         state_reg, state_next;  // 0 = write to w0_reg next, else w1_reg
 
-	always @(posedge clk) begin
+    always @(posedge clk) begin
         if ( reset ) begin
             w0_reg <= 0;
             w1_reg <= 0;
@@ -62,7 +62,7 @@ module vdp_reg_ifce(
 
         if ( update_vdp_reg_tick )
             vdp_regs[din[2:0]] <= w0_reg;
-	end
+    end
 
     // When w0_tick, update the w0/1 registers & toggle the next reg state
     always @(*) begin

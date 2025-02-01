@@ -32,13 +32,13 @@ module vdp_irq(
 
     reg         irq_reg, irq_next;
 
-	always @(posedge clk) begin
+    always @(posedge clk) begin
         if ( reset ) begin
             irq_reg <= 0;
         end else begin
             irq_reg <= irq_next;
         end
-	end
+    end
 
     always @(*) begin
         case ( { irq_tick, rd_tick } )
