@@ -3,4 +3,5 @@
 *.json
 *.vvp
 *.vcd
+*.swp
 Make.local
