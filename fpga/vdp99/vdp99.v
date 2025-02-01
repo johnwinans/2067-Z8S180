@@ -31,16 +31,17 @@ module vdp99 (
     input   wire        rd1_tick,
     input   wire [7:0]  din,
     output  wire [7:0]  dout,
+    output  wire        irq,
 
     output  wire [3:0]  color,      // 4-bit color output
-    output  wire        vga_hsync,
-    output  wire        vga_vsync
+    output  wire        hsync,
+    output  wire        vsync
     );
 
 
     assign color = 0;
-    assign vga_hsync = 0;
-    assign vga_vsync = 0;
+    assign hsync = 0;
+    assign vsync = 0;
 
     wire [7:0]  regs[0:7];      // the 8 control regs
 
@@ -58,22 +59,29 @@ module vdp99 (
     wire [3:0]  vdp_fg_color        = regs[7][7:4];
     wire [3:0]  vdp_bg_color        = regs[7][3:0];
 
-    vdp_reg_ifce regs (
+    vdp_reg_ifce icfe (
         .clk(pxclk),
         .reset(reset),
         .wr_tick(wr1_tick),
         .rd_tick(rd1_tick),
-        .din(din)
-/*
-        .r0(),
-        .r1(),
-        .r2(),
-        .r3(),
-        .r4(),
-        .r5(),
-        .r6(),
-        .r7()
-*/
+        .din(din),
+        .r0(regs[0]),
+        .r1(regs[1]),
+        .r2(regs[2]),
+        .r3(regs[3]),
+        .r4(regs[4]),
+        .r5(regs[5]),
+        .r6(regs[6]),
+        .r7(regs[7])
+    );
+
+    vdp_irq virq (
+        .clk(pxclk),
+        .reset(reset),
+        //.irq_tick(irq_tick),
+        .irq_tick(0),               // until we have a source for this..
+        .rd_tick(rd1_tick),
+        .irq(irq)
     );
 
 endmodule

@@ -15,3 +15,10 @@ vdp_irq_tb.vvp: vdp_irq.v vdp_irq_tb.v
 
 vdp_irq: vdp_irq_tb.vcd
 	gtkwave $^
+
+vdp99_tb.vvp: vdp99.v vdp99_tb.v vdp_reg_ifce.v vdp_irq.v
+	iverilog -o $@ $^
+
+vdp99: vdp99_tb.vcd
+	gtkwave $^
+
