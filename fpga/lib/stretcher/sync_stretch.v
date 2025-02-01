@@ -24,7 +24,7 @@
 // 2) Sync the stretched signal to clk2 domain using a SYNC_LEN fifo.
 // 3) Generate a one-clk2-period tick on 'out'.
 
-module stretch_sync
+module sync_stretch
     #(
         parameter STRETCH_BITS = 1, // 2^STRETCH_BITS clk1 periods to stretch to
         parameter SYNC_LEN = 2      // num of bits in clk2 sync fifo >= 2

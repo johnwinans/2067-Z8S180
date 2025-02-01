@@ -35,7 +35,7 @@ module tb ( );
         $dumpvars;
     end
 
-    stretch_sync uut
+    sync_stretch uut
     (
         .reset(reset),
         .clk1(clk1),
