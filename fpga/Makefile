@@ -6,6 +6,8 @@ SUBDIRS= \
 	prog \
 	sram \
 	asci \
+	vdp \
+	vdp99 \
 	nouveau \
 	nouveau2 \
 	nouveau3 \
