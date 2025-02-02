@@ -1,16 +1,18 @@
 TOP=..
 
-
 include $(TOP)/Make.rules
 #FREQ		= 110	# test for fun
 
-.PHONY: all clean burn world timings
+LIB_UTILS=$(TOP)/lib
+include $(LIB_UTILS)/Make.include
+
+
+.PHONY: prog
 
 FILES= \
 	top.v \
 	memory.v \
-	iorq_rd_fsm.v \
-	iorq_wr_fsm.v \
+	$(LIB_UTILS_FILES) \
 	$(VDP_LIBV)/video.v \
 	$(VDP_LIBV)/vdp_table_test.v \
 	$(VDP_LIBV)/vgasync.v \

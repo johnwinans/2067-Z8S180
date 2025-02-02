@@ -1,16 +1,17 @@
 TOP=..
 
-
 include $(TOP)/Make.rules
-FREQ		= 110	# test for fun
+#FREQ		= 110	# test for fun
 
-.PHONY: all clean burn world timings
+LIB_UTILS=$(TOP)/lib
+include $(LIB_UTILS)/Make.include
+
+.PHONY: prog
 
 FILES= \
 	top.v \
 	memory.v \
-	iorq_rd_fsm.v \
-	iorq_wr_fsm.v \
+	$(LIB_UTILS_FILES) \
 	pll_25_18432.v
 
 all:: top.bin
@@ -28,13 +29,6 @@ prog: top.bin
 # extra dependancies
 top.asc: $(PINMAP)
 
-#
-#DATE := $(shell date --rfc-3339=seconds)
-#GIT_VERSION := $(shell git describe --long --dirty; git show -s --format='%ci')
-#%.bin: %.asm
-#	cat $< | sed -e "s/@@DATE@@/$(DATE)/g" -e "s/@@GIT_VERSION@@/$(GIT_VERSION)/g" | $(CROSS_AS) - -o $@ --list=$(basename $@).lst --label=$(basename $@).sym $(CROSS_AS_FLAGS)
-#
-
 rom.bin:
 	cp ../../../2063-Z80-cpm/boot/firmware.bin rom.bin
 
@@ -47,17 +41,3 @@ clean::
 
 pll_25_18432.v:
 	icepll -i 25 -o 18.432 -m -n pll_25_18432 > $@
-
-
-
-iorq_rd_fsm_tb.vvp : iorq_rd_fsm_tb.v iorq_rd_fsm.v
-	iverilog -o $@ $^
-
-iorqr: iorq_rd_fsm_tb.vcd
-	gtkwave $^
-
-iorq_wr_fsm_tb.vvp : iorq_wr_fsm_tb.v iorq_wr_fsm.v
-	iverilog -o $@ $^
-
-iorqw: iorq_wr_fsm_tb.vcd
-	gtkwave $^

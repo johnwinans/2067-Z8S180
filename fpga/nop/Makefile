@@ -2,7 +2,7 @@ TOP=..
 
 include $(TOP)/Make.rules
 
-.PHONY: all clean burn world timings
+.PHONY: prog
 
 FILES= \
 	top.v
