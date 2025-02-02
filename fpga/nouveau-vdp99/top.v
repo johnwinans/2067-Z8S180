@@ -88,8 +88,8 @@ module top (
     reg rom_sel;                    // true when the boot ROM is enabled
     always @(posedge phi)
         if ( reset )
-            rom_sel <= 1;           // after a hard reset, the boot ROM is enabled...
-        else if ( ioreq_rd_fe )     // until there is a read from IO port 0xfe
+            rom_sel <= 1;               // after a hard reset, the boot ROM is enabled...
+        else if ( ioreq_rd_fe_tick )    // until there is a read from IO port 0xfe
             rom_sel <= 0;
 
     // Determine if the FPGA will drive the data bus and with what
@@ -102,6 +102,7 @@ module top (
         case (1)
         mreq_rom:       dout = rom_data;            // boot ROM memory
         ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // gpio input
+        //ioreq_rd_vdp:   dout = vdp_dout;            // data from the VDP
         default:        dbus_out = 0;
         endcase
     end
@@ -132,28 +133,17 @@ module top (
     // IO address decoders (two variations):
     //  signal       = CPU asynchronous IO cycle
     //  signal_tick  = FPGA ff clock enable synchronized to phi
+    //  NOTE: The address bus is stable during the iorq_rd/wr_tick periods.
 
     // gpio input
     wire ioreq_rd_f0 = iorq_rd && (a[7:0] == 8'hf0);                // gpio input
     wire ioreq_rd_f0_tick = iorq_rd_tick && (a[7:0] == 8'hf0);
 
-    wire ioreq_wr_f1 = iorq_wr && (a[7:0] == 8'hf1);                // gpio output
+//  wire ioreq_wr_f1 = iorq_wr && (a[7:0] == 8'hf1);                // gpio output
     wire ioreq_wr_f1_tick  = iorq_wr_tick && (a[7:0] == 8'hf1);
 
-    wire ioreq_rd_fe = iorq_rd && (a[7:0] == 8'hfe);                // flash select disable access port
-    wire ioreq_rd_fe_tick = iorq_rd_tick && (a[7:0] == 8'hfe);
-
-    // The VDP regs are at address 0x80-0x81 (note LSB is not decoded)
-    wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);
-    wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);
-    wire ioreq_rd_vdp_tick = iorq_rd_tick && (a[7:1] == 7'b1000000);
-    wire ioreq_wr_vdp_tick = iorq_wr_tick && (a[7:1] == 7'b1000000);
-
-    wire ioreq_rd_j3 = iorq_rd && (a[7:0] == 8'ha8);
-    wire ioreq_rd_j3_tick = iorq_rd_tick && (a[7:0] == 8'ha8);         // joystick J3
-
-    wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
-    wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);         // joystick J4
+//  wire ioreq_rd_fe = iorq_rd && (a[7:0] == 8'hfe);                
+    wire ioreq_rd_fe_tick = iorq_rd_tick && (a[7:0] == 8'hfe);      // flash select disable access port
 
     // ROM memory address decoder (address bus is 20 bits wide)
     wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
@@ -191,5 +181,50 @@ module top (
 
     // show some signals from the GPIO ports on the LEDs for reference
     assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};
+
+/*
+    We need something like this to keep things clean at this top level.
+    We can put everything into one big module except we will need to
+    know at the top level when to turn on the data bus driver when the CPU is
+    reading from the VDP.  
+
+    Might be easiest to let the VDP emit two 7-bit data busses and let the PHI 
+    clock domain mux what it wants with a ioreq_rd_vdp80 and ioreq_rd_vdp81 ??
+
+    nouveau_vdp vdp (
+        .reset(reset),
+        .phi(phi),
+        .pxclk(hwclk),
+        .iorq(iorq),            // is this really waht we want here???
+        .wr(wr),
+        .rd(rd),
+        .ain(),                 // address bus (or just the mode bit?)
+        .din(vdp_din),          // data bus
+        .dout(vdp_dout)         // data from the VDP
+    );
+
+
+    // The VDP interface requires a CDC (Clock Domain Crossing) synchronizer
+
+    wire pxclk = hwclk;         // rename for clarity
+    wire ioreq_rd_vdp;
+    wire ioreq_wr_vdp;
+
+
+    // The VDP regs are at address 0x80-0x81
+    wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
+    wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
+    wire ioreq_rd_vdp80_tick = iorq_rd_tick && (a[7:0] == 8'h80);
+    wire ioreq_wr_vdp80_tick = iorq_wr_tick && (a[7:1] == 8'h80);
+    wire ioreq_rd_vdp81_tick = iorq_rd_tick && (a[7:0] == 8'h81);
+    wire ioreq_wr_vdp81_tick = iorq_wr_tick && (a[7:1] == 8'h81);
+*/
+/*
+    wire ioreq_rd_j3 = iorq_rd && (a[7:0] == 8'ha8);
+    wire ioreq_rd_j3_tick = iorq_rd_tick && (a[7:0] == 8'ha8);      // joystick J3
+
+    wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
+    wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);      // joystick J4
+*/
 
 endmodule
