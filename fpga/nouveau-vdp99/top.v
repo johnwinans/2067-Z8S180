@@ -19,6 +19,8 @@
 //
 //**************************************************************************
 
+`default_nettype none
+
 module top (
     input wire          hwclk,      // 25MHZ oscillator
     input wire          s1_n,
@@ -64,6 +66,12 @@ module top (
     input wire          sd_miso,
     input wire          sd_det,
 
+    output  wire        vga_red,
+    output  wire        vga_grn,
+    output  wire        vga_blu,
+    output  wire        vga_hsync,
+    output  wire        vga_vsync,
+
     output wire [15:0]  tp          // handy-dandy test-point outputs
     );
 
@@ -71,6 +79,8 @@ module top (
 
     assign tp = { iorq_wr_tick, iorq_rd_tick, phi, e, iorq_n, we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
     //            93            90            87   84 82      80    78    75    73    63    61      56
+
+
 
     // a boot ROM
     wire [7:0]  rom_data;           // ROM output data bus
@@ -179,46 +189,42 @@ module top (
     assign oe_n = mreq_n | rd_n;
     assign we_n = mreq_n | wr_n;
 
-    // show some signals from the GPIO ports on the LEDs for reference
-    assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};
-
-/*
-    We need something like this to keep things clean at this top level.
-    We can put everything into one big module except we will need to
-    know at the top level when to turn on the data bus driver when the CPU is
-    reading from the VDP.  
-
-    Might be easiest to let the VDP emit two 7-bit data busses and let the PHI 
-    clock domain mux what it wants with a ioreq_rd_vdp80 and ioreq_rd_vdp81 ??
-
-    nouveau_vdp vdp (
-        .reset(reset),
-        .phi(phi),
-        .pxclk(hwclk),
-        .iorq(iorq),            // is this really waht we want here???
-        .wr(wr),
-        .rd(rd),
-        .ain(),                 // address bus (or just the mode bit?)
-        .din(vdp_din),          // data bus
-        .dout(vdp_dout)         // data from the VDP
-    );
 
 
-    // The VDP interface requires a CDC (Clock Domain Crossing) synchronizer
 
-    wire pxclk = hwclk;         // rename for clarity
-    wire ioreq_rd_vdp;
-    wire ioreq_wr_vdp;
-
-
-    // The VDP regs are at address 0x80-0x81
     wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
     wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
-    wire ioreq_rd_vdp80_tick = iorq_rd_tick && (a[7:0] == 8'h80);
-    wire ioreq_wr_vdp80_tick = iorq_wr_tick && (a[7:1] == 8'h80);
-    wire ioreq_rd_vdp81_tick = iorq_rd_tick && (a[7:0] == 8'h81);
-    wire ioreq_wr_vdp81_tick = iorq_wr_tick && (a[7:1] == 8'h81);
-*/
+    wire ioreq_wr_vdp_tick  = iorq_wr_tick && (a[7:1] == 7'b1000000);
+    wire ioreq_rd_vdp_tick  = iorq_rd_tick && (a[7:1] == 7'b1000000);
+
+    wire [7:0] vdp_dout;
+    wire [3:0] vdp_color;
+    wire vdp_hsync;
+    wire vdp_vsync;
+    wire vdp_irq;       // XXX AND ~vdp_irq into irq_n[x]?
+
+    z80_vdp99 vdp (
+        .reset,
+        .phi(phi),
+        .pxclk(hwclk),
+        .cpu_mode(a[0]),
+        .cpu_din(d),
+        .cpu_dout(vdp_dout),
+        .irq(vdp_irq),
+        .cpu_wr_tick(ioreq_wr_vdp_tick),
+        .cpu_rd_tick(ioreq_rd_vdp_tick),
+        .color(vdp_color),
+        .hsync(vdp_hsync),
+        .vsync(vdp_vsync)
+    );
+
+    // XXX a hack for now.  Need a decoder & 6-bit DAC for TI99 VDP colors 
+    assign vga_red = vdp_color[2];
+    assign vga_grn = vdp_color[1];
+    assign vga_blu = vdp_color[0];
+    assign vga_hsync = ~vdp_hsync;
+    assign vga_vsync = ~vdp_vsync;
+
 /*
     wire ioreq_rd_j3 = iorq_rd && (a[7:0] == 8'ha8);
     wire ioreq_rd_j3_tick = iorq_rd_tick && (a[7:0] == 8'ha8);      // joystick J3
@@ -226,5 +232,11 @@ module top (
     wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
     wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);      // joystick J4
 */
+
+
+    // show some signals from the GPIO ports on the LEDs for reference
+    assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};
+
+
 
 endmodule

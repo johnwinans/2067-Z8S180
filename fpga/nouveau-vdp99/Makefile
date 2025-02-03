@@ -4,18 +4,22 @@ LIB_VDP99=$(TOP)/vdp99
 LIB_UTILS=$(TOP)/lib
 
 include $(TOP)/Make.rules
-FREQ		= 110	# test for fun
+#FREQ		= 110	# test for fun
 
 .PHONY: prog
 
 include $(LIB_VDP99)/Make.include
 include $(LIB_UTILS)/Make.include
 
-FILES= \
-	top.v \
+TBFILES= \
 	memory.v \
 	$(LIB_VDP99_FILES) \
 	$(LIB_UTILS_FILES) \
+	z80_vdp99.v
+
+FILES=\
+	top.v \
+	$(TBFILES) \
 	pll_25_18432.v
 
 all:: top.bin
@@ -44,3 +48,11 @@ clean::
 
 pll_25_18432.v:
 	icepll -i 25 -o 18.432 -m -n pll_25_18432 > $@
+
+
+z80_vdp99_tb.vvp: $(TBFILES) z80_vdp99_tb.v
+	iverilog -o $@ $^
+
+z80_vdp99: z80_vdp99_tb.vcd
+	gtkwave $^
+

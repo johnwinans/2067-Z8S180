@@ -38,11 +38,6 @@ module vdp99 (
     output  wire        vsync
     );
 
-
-    assign color = 0;
-    assign hsync = 0;
-    assign vsync = 0;
-
     wire [7:0]  regs[0:7];      // the 8 control regs
 
     // extract register bits into things with useful names
@@ -79,9 +74,29 @@ module vdp99 (
         .clk(pxclk),
         .reset(reset),
         //.irq_tick(irq_tick),
-        .irq_tick(0),               // until we have a source for this..
+        .irq_tick(1'b0),           // XXX hack for now
         .rd_tick(rd1_tick),
         .irq(irq)
     );
+
+
+
+    wire [9:0] col;
+    wire [9:0] row;
+    wire vid_active;
+
+    // XXX color-bar test stub
+    vgasync v (
+        .reset(reset),
+        .clk(pxclk),
+        .hsync(hsync),
+        .vsync(vsync),
+        .col(col),
+        .row(row),
+        .vid_active(vid_active)
+    );
+
+    // use every control register so that the compiler can not optimize them away
+    assign color = vid_active ? regs[col[6:4]][3:0] : 0;
 
 endmodule
