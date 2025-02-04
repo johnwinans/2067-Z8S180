@@ -40,6 +40,7 @@ module vdp99 (
 
     wire [7:0]  regs[0:7];      // the 8 control regs
 
+`ifdef NOT_YET
     // extract register bits into things with useful names
     wire [2:0]  vdp_mode            = { regs[0][1], regs[1][3], regs[1][4] };
     wire        vdp_ie              = regs[1][5];
@@ -53,6 +54,7 @@ module vdp99 (
     wire [2:0]  vdp_sprite_pat_base = regs[6][2:0];
     wire [3:0]  vdp_fg_color        = regs[7][7:4];
     wire [3:0]  vdp_bg_color        = regs[7][3:0];
+`endif
 
     vdp_reg_ifce icfe (
         .clk(pxclk),
@@ -80,6 +82,9 @@ module vdp99 (
     );
 
 
+`ifdef NOT_YET
+
+`else
 
     wire [9:0] col;
     wire [9:0] row;
@@ -96,7 +101,8 @@ module vdp99 (
         .vid_active(vid_active)
     );
 
-    // use every control register so that the compiler can not optimize them away
+    // XXX use every control register so that the compiler can not optimize them away
     assign color = vid_active ? regs[col[6:4]][3:0] : 0;
+`endif
 
 endmodule
