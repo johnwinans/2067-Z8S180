@@ -79,6 +79,7 @@ module tb ();
     wire ioreq_wr_vdp_tick  = iorq_wr_tick && (a[7:1] == 7'b1000000);
     wire ioreq_rd_vdp_tick  = iorq_rd_tick && (a[7:1] == 7'b1000000);
 
+    integer i;      // for loop iterator
 
     initial begin
         $dumpfile("z80_vdp99_tb.vcd");
@@ -99,15 +100,17 @@ module tb ();
         #(phi_period*4);;
 
         // This allows us to wait until the next clk1 rising edge (simulation only)
-        @(posedge phi);        // this as T1 of an IORQ write cycle
+        @(posedge phi);        // this is T1 of an IORQ write cycle
 
-        // A realistic 4-T Z8S180 IO write transaction
+
+
+        // Use two 4-cycle CPU output bus transactions to set a VDP register
         #5;
         a <= 8'h81;          // address valid by 5ns after T1 rising edge
 
         @(negedge phi);
-        #15;                    // data valid max 25ns after T1 falling and 10ns before T2 rising
-        d <= 8'h23;          // some data value to write to the IO port
+        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
+        d <= 8'hff;          // some data value to write to a VDP register
 
         // iorq = 25ns after T1 falling worst case
         // rd = 25ns after T1 falling worst case
@@ -126,8 +129,8 @@ module tb ();
         iorq <= 0;
         
         @(posedge phi);        // wait for T1 rising of next bus cycle
-        d = 'hz;
-        a = 'hz;
+        d <= 'hz;
+        a <= 'hz;
 
         
         // skip the opcode fetch bus cycle
@@ -141,11 +144,11 @@ module tb ();
 
         // The IORQ WR cycle
         #5;
-        a <= 8'h81;          // address valid by 5ns after T1 rising edge
+        a <= 8'h81;          // port address valid by 5ns after T1 rising edge
 
         @(negedge phi);
-        #15;                    // data valid max 25ns after T1 falling and 10ns before T2 rising
-        d <= 8'h82;          // write to VDP register 2
+        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
+        d <= 8'h80;          // write to VDP register 0
 
         // iorq = 25ns after T1 falling worst case
         // rd = 25ns after T1 falling worst case
@@ -167,7 +170,50 @@ module tb ();
         d = 'hz;
         a = 'hz;
 
-        #(phi_period*100);
+
+        // now write values into the other 7 VDP registers
+        for ( i=1; i<8; ++i ) begin
+	        #5;
+	        a <= 8'h81;          // address valid by 5ns after T1 rising edge
+	        @(negedge phi);
+	        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
+	        d <= i; //8'hff;          // some data value to write to a VDP register
+	        #5;                 // meh 15+5ns after falling T1
+	        iorq <= 1;
+	        @(posedge phi);        // wait for T2 rising edge
+	        #22;                   // 25ns worst case
+	        wr <= 1;
+	        @(posedge phi);        // Wait for Tw rising
+	        @(posedge phi);        // Wait for T3 rising
+	        @(negedge phi);        // Wait for T3 falling
+	        #20;                   // 25ns worst case
+	        wr <= 0;
+	        iorq <= 0;
+	        @(posedge phi);        // wait for T1 rising of next bus cycle
+	        d <= 'hz;
+	        a <= 'hz;
+	        #5;
+	        a <= 8'h81;          // port address valid by 5ns after T1 rising edge
+	        @(negedge phi);
+	        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
+	        d <= 8'h80+i;        // write to VDP register i
+	        #5;
+	        iorq <= 1;
+	        @(posedge phi);        // wait for T2 rising edge
+	        #22;                    // 25ns worst case
+	        wr <= 1;
+	        @(posedge phi);        // Wait for Tw rising
+	        @(posedge phi);        // Wait for T3 rising
+	        @(negedge phi);        // Wait for T3 falling
+	        #20;                    // 25ns worst case
+	        wr <= 0;
+	        iorq <= 0;
+	        @(posedge phi);        // wait for T1 rising of next bus cycle
+	        d = 'hz;
+	        a = 'hz;
+        end
+
+        #(phi_period*2000);
         $finish;
     end
  
