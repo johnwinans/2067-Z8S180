@@ -46,14 +46,25 @@ module z80_wr_cdc #(
     reg [ADDR_WIDTH-1:0] aout_reg = 'hx;           // initial value for simulation
     reg [7:0] dout_reg = 'hx;           // initial value for simulation
 
+`ifdef NOT_YET
     // D (transparent) latches used to ensure that the setup and hold times on 
     // dout and aout are long enough for wr_tick2.
     always @(*) begin
+        // XXX why does this D-latch not work??
         if ( wr_tick1 ) begin
             aout_reg <= ain1;
             dout_reg <= din1;
         end
     end
+`else
+    // wr_tick1 ALWAYS raises with falling edge T2.  CPU A and D busses are stable by then
+    always @(posedge wr_tick1) begin
+        aout_reg <= ain1;
+        dout_reg <= din1;
+    end
+    //assign aout_reg = ain1;
+    //assign dout_reg = din1;
+`endif
 
     // stretcher used to cross the clock domain
     sync_stretch #(
