@@ -80,7 +80,7 @@ module tb ();
         reset <= 1;
         #(phi_period*4);        // XXX probably not the best way to do this!      XXX
         reset <= 0;
-        #(phi_period*2);;
+        #(phi_period*2);
 
 
         // A realistic moderately timed 4-T Z8S180 IO write transaction
@@ -103,7 +103,7 @@ module tb ();
         @(posedge phi);         // T3 rising
         @(negedge phi);         // T3 falling
 
-        iorq <= #14 0;          // iorq <25ns after T3 falling
+        iorq <= #11 0;          // iorq <25ns after T3 falling
         wr <= #12 0;            // wr <25ns after T3 falling
                                 // rd <25ns after T3 falling
 
@@ -169,13 +169,11 @@ module tb ();
 
 /*
         // Lets understand WHEN the RHS is evaluated  
-
         @(posedge phi);         // the next T1 rising edge
         t1_marker <= 1;
-        t1_marker <= #(phi_period*0.75) 0;
-        //t1_marker <= #(phi_period*0.75) phi;     // what gets assigned here???   XXX
+        //t1_marker <= #(phi_period*0.75) 0;
+        t1_marker <= #(phi_period*0.75) phi;     // what gets assigned here???   XXX
 */
-
 
         // waste some time and end it
         #(phi_period*3);
