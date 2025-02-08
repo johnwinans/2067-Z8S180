@@ -70,15 +70,15 @@ module tb ();
     localparam pxclk_period = (1.0/25000000)*1000000000;    // pxclk is running at 25MHZ
 
     // generate free-running clocks
-    always #(phi_period/2) phi = ~phi;
-    always #(pxclk_period/2) pxclk = ~pxclk;
+    always #(phi_period/2) phi <= ~phi;
+    always #(pxclk_period/2) pxclk <= ~pxclk;
 
     initial begin
         $dumpfile("z80_wr_cdc_tb.vcd");
         $dumpvars;
 
         reset <= 1;
-        #(phi_period*4);
+        #(phi_period*4);        // XXX probably not the best way to do this!      XXX
         reset <= 0;
         #(phi_period*2);;
 
@@ -165,6 +165,16 @@ module tb ();
         t1_marker <= #(phi_period) 0;
         @(posedge phi);         // T2 opcode fetch
         @(posedge phi);         // T3 opcode fetch
+
+
+/*
+        // Lets understand WHEN the RHS is evaluated  
+
+        @(posedge phi);         // the next T1 rising edge
+        t1_marker <= 1;
+        t1_marker <= #(phi_period*0.75) 0;
+        //t1_marker <= #(phi_period*0.75) phi;     // what gets assigned here???   XXX
+*/
 
 
         // waste some time and end it
