@@ -46,7 +46,7 @@ module z80_wr_cdc #(
     reg [ADDR_WIDTH-1:0] aout_reg = 'hx;           // initial value for simulation
     reg [7:0] dout_reg = 'hx;           // initial value for simulation
 
-`ifdef SHOULD_NOT_NEED_THIS
+`ifndef SHOULD_NOT_NEED_THIS
     // wr_tick1 ALWAYS raises with falling edge T2.  CPU A and D busses are stable by then
     always @(posedge wr_tick1) begin
         aout_reg <= ain1;
