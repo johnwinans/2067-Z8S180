@@ -21,6 +21,7 @@
 
 `timescale 10ns/1ns
 
+// at this point, this exists only to compile vdp99 with iverilog
 module tb();
 
     reg clk;        // pixel clock
