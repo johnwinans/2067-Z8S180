@@ -39,7 +39,7 @@ module z80_vdp99 (
     output wire         irq             // Note: The IRQ is an async signal in the CPU domain
     );
 
-    localparam SYN_LEN = 3;             // too long for worst case timing
+    localparam SYN_LEN = 3;             // too long for worst case write timing
     //localparam SYN_LEN = 2;           // not safe from metastability
 
     // As long as pxclk is fast enough, we can just sync the CPU rd & wr signals 
@@ -56,7 +56,8 @@ module z80_vdp99 (
     wire    vdp_rd_tick = vdp_rd_sync[1:0] == 2'b10;        // pxclk domain
 
 
-    // stretch the CPU address and data bus values for worst-case timing
+    // stretch the CPU address and data bus values for worst-case write timing.
+    // note that the edge used here is a gated clock to latch one pxclk period before vdp_wr_tick falls
     reg [7:0]   vdp_din;
     always @(posedge vdp_wr_tick)
         vdp_din <= cpu_din;
@@ -66,20 +67,26 @@ module z80_vdp99 (
         vdp_mode <= cpu_mode;
 
 
-    assign cpu_dout = 0;     // XXX for now
+    // stretch the data bus values when reading
+    // note that the cpu asserts RD sooner than WR on IORQ cycles 
+    wire [7:0] vdp_dout;
+    reg [7:0] cpu_dout_reg;
+    //always @(posedge pxclk)
+    always @(negedge pxclk)         // buy us another 25ns setup on dout
+        if ( vdp_rd_tick )
+            cpu_dout_reg <= vdp_dout;
+
+    assign cpu_dout = cpu_dout_reg;
 
     // Connect the pxclk synchronized CPU bus to the VDP
     vdp99 vdp (
         .reset(reset),
         .pxclk(pxclk),
-
-        .wr0_tick(vdp_wr_tick && vdp_mode==0),
-        .wr1_tick(vdp_wr_tick && vdp_mode==1),
-        .rd0_tick(vdp_rd_tick && vdp_mode==0),
-        .rd1_tick(vdp_rd_tick && vdp_mode==1),
-
+        .wr_tick(vdp_wr_tick),
+        .rd_tick(vdp_rd_tick),
+        .mode(vdp_mode),
         .din(vdp_din),
-        //.dout(),
+        .dout(vdp_dout),
         .irq(irq),
         .color(color),
         .hsync(hsync),
