@@ -50,13 +50,8 @@ module tb ();
         .cpu_mode(a[0]),
         .cpu_din(d),
         .cpu_dout(cpu_dout),
-
         .cpu_wr(iorq && wr && (a[7:1] == 7'b1000000)),
         .cpu_rd(iorq && rd && (a[7:1] == 7'b1000000)),
-/*
-        .cpu_wr(ioreq_wr_vdp_tick),
-        .cpu_rd(ioreq_rd_vdp_tick),
-*/
         .color(color),
         .hsync(hsync),
         .vsync(vsync),
@@ -69,24 +64,6 @@ module tb ();
     always #(phi_period/2) phi = ~phi;
     always #(pxclk_period/2) pxclk = ~pxclk;
 
-
-    // generate the ticks & such same as is done in top.v
-
-/*
-    wire    iorq_rd_tick;
-    iorq_rd_fsm rd_fsm (.reset(reset), .phi(phi), .iorq(iorq), .rd(rd), .rd_tick(iorq_rd_tick) );
-
-    wire    iorq_wr_tick;
-    iorq_wr_fsm wr_fsm (.reset(reset), .phi(phi), .iorq(iorq), .wr(wr), .wr_tick(iorq_wr_tick) );
-
-    wire iorq_rd = iorq && rd;
-    wire iorq_wr = iorq && wr;
-
-    wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
-    wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
-    wire ioreq_wr_vdp_tick  = iorq_wr_tick && (a[7:1] == 7'b1000000);
-    wire ioreq_rd_vdp_tick  = iorq_rd_tick && (a[7:1] == 7'b1000000);
-*/
     integer i;      // for loop iterator
 
     initial begin
@@ -183,7 +160,33 @@ module tb ();
 
         end
 
-        #(phi_period*2000);
+        // wait until an entire frame has completed
+        @(negedge vsync);
+
+        // IRQ should have been asserted 
+        // Read from the VDP status register to see the IRQ status flag on data bus & then be reset 
+
+        @(posedge phi);
+
+        @(negedge phi);         // T1 falling
+        a <= #20 8'h81;         // address valid after T1 rising and >5ns before IORQ
+        iorq <= #25 1;          // iorq = <25ns after T1 falling 
+        rd <= #25 1;            // rd = <25ns after T1 falling 
+
+        @(posedge phi);         // T2 rising
+        @(posedge phi);         // Tw rising
+        @(posedge phi);         // T3 rising
+        @(negedge phi);         // T3 falling
+        iorq <= #1 0;           // iorq <25ns after T3 falling
+        rd <= #1 0;             // rd <25ns after T3 falling
+
+        @(negedge iorq);
+        a <= #5 'hz;            //  >5ns after iorq & rd trailing
+
+        @(posedge phi);
+ 
+        // waste some time to make waveform easier to zoom
+        #(phi_period*20);
         $finish;
     end
  
