@@ -25,10 +25,9 @@ module vdp99 (
     input   wire        pxclk,      // 25MHZ
     input   wire        reset,      // active high
 
-    input   wire        wr0_tick,
-    input   wire        wr1_tick,
-    input   wire        rd0_tick,
-    input   wire        rd1_tick,
+    input   wire        wr_tick,
+    input   wire        rd_tick,
+    input   wire        mode,
     input   wire [7:0]  din,
     output  wire [7:0]  dout,
     output  wire        irq,
@@ -59,8 +58,8 @@ module vdp99 (
     vdp_reg_ifce icfe (
         .clk(pxclk),
         .reset(reset),
-        .wr_tick(wr1_tick),
-        .rd_tick(rd1_tick),
+        .wr_tick(wr_tick && mode==1),
+        .rd_tick(rd_tick && mode==1),
         .din(din),
         .r0(regs[0]),
         .r1(regs[1]),
@@ -75,12 +74,12 @@ module vdp99 (
     vdp_irq virq (
         .clk(pxclk),
         .reset(reset),
-        //.irq_tick(irq_tick),
-        .irq_tick(1'b0),           // XXX hack for now
-        .rd_tick(rd1_tick),
+        .irq_tick(irq_tick),
+        .rd_tick(rd_tick && mode==1),
         .irq(irq)
     );
 
+    wire irq_tick = last_pixel;
 
 `ifdef NOT_YET
 
@@ -89,6 +88,7 @@ module vdp99 (
     wire [9:0] col;
     wire [9:0] row;
     wire vid_active;
+    wire last_pixel;
 
     // XXX color-bar test stub
     vgasync v (
@@ -98,11 +98,15 @@ module vdp99 (
         .vsync(vsync),
         .col(col),
         .row(row),
-        .vid_active(vid_active)
+        .vid_active(vid_active),
+        .last_pixel(last_pixel)
     );
 
     // XXX use every control register so that the compiler can not optimize them away
     assign color = vid_active ? regs[col[6:4]][3:0] : 0;
+
+    // XXX this would be muxed with the VRAM read once the VRAM is implemented
+    assign dout = rd_tick ? { irq, 7'b0 } : 'hx;
 `endif
 
 endmodule
