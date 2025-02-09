@@ -194,8 +194,6 @@ module top (
 
     wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
     wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
-    wire ioreq_wr_vdp_tick  = iorq_wr_tick && (a[7:1] == 7'b1000000);
-    wire ioreq_rd_vdp_tick  = iorq_rd_tick && (a[7:1] == 7'b1000000);
 
     wire [7:0] vdp_dout;
     wire [3:0] vdp_color;
@@ -211,8 +209,8 @@ module top (
         .cpu_din(d),
         .cpu_dout(vdp_dout),
         .irq(vdp_irq),
-        .cpu_wr_tick(ioreq_wr_vdp_tick),
-        .cpu_rd_tick(ioreq_rd_vdp_tick),
+        .cpu_wr(ioreq_wr_vdp),
+        .cpu_rd(ioreq_rd_vdp),
         .color(vdp_color),
         .hsync(vdp_hsync),
         .vsync(vdp_vsync)

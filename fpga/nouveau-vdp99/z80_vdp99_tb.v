@@ -50,8 +50,13 @@ module tb ();
         .cpu_mode(a[0]),
         .cpu_din(d),
         .cpu_dout(cpu_dout),
-        .cpu_wr_tick(ioreq_wr_vdp_tick),
-        .cpu_rd_tick(ioreq_rd_vdp_tick),
+
+        .cpu_wr(iorq && wr && (a[7:1] == 7'b1000000)),
+        .cpu_rd(iorq && rd && (a[7:1] == 7'b1000000)),
+/*
+        .cpu_wr(ioreq_wr_vdp_tick),
+        .cpu_rd(ioreq_rd_vdp_tick),
+*/
         .color(color),
         .hsync(hsync),
         .vsync(vsync),
@@ -67,6 +72,7 @@ module tb ();
 
     // generate the ticks & such same as is done in top.v
 
+/*
     wire    iorq_rd_tick;
     iorq_rd_fsm rd_fsm (.reset(reset), .phi(phi), .iorq(iorq), .rd(rd), .rd_tick(iorq_rd_tick) );
 
@@ -80,7 +86,7 @@ module tb ();
     wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
     wire ioreq_wr_vdp_tick  = iorq_wr_tick && (a[7:1] == 7'b1000000);
     wire ioreq_rd_vdp_tick  = iorq_rd_tick && (a[7:1] == 7'b1000000);
-
+*/
     integer i;      // for loop iterator
 
     initial begin
@@ -91,76 +97,6 @@ module tb ();
         #(phi_period*4);
         reset <= 0;
         #(phi_period*4);;
-
-/*
-        @(posedge phi);         // T1 rising
-        t1_marker <= 1;
-        t1_marker <= #(phi_period) 0;
-
-        a <= #12 8'h81;      // address valid after T1 rising and >5ns before IORQ
-
-        @(negedge phi);         // T1 falling
-        d <= #5 8'h23;       // data <25ns after T1 falling and >10ns before WR active
-        iorq <= #15 1;          // iorq = <25ns after T1 falling 
-                                // rd = <25ns after T1 falling 
-        @(posedge phi);         // T2 rising
-        wr <= #12 1;            // <25ns after T2 rising
-
-        @(posedge phi);         // Tw rising
-        @(posedge phi);         // T3 rising
-        @(negedge phi);         // T3 falling
-
-        iorq <= #11 0;          // iorq <25ns after T3 falling
-        wr <= #12 0;            // wr <25ns after T3 falling
-                                // rd <25ns after T3 falling
-
-        @(negedge wr)           // be careful that wr does not happen after posedge phi here!!!
-        a <= #6 'hz;         // >5ns after iorq & wr trailing
-        d <= #12 'hz;        // >10ns after wr trailing
-
-        @(posedge phi);         // wait for T1 rising of next bus cycle (opcode fetch)
-        t1_marker <= 1;
-        t1_marker <= #(phi_period) 0;
-        @(posedge phi);         // T2 opcode fetch
-        @(posedge phi);         // T3 opcode fetch
-
-        // skip the operand fetch as if this were an OUT (nn),A instruction
-        @(posedge phi);         // wait for T1 rising of next bus cycle (operand fetch)
-        t1_marker <= 1;
-        t1_marker <= #(phi_period) 0;
-        @(posedge phi);         // T2 operand fetch
-        @(posedge phi);         // T3 operand fetch
-
-
-        // A worst case timed 4-T Z8S180 IO write transaction
-
-        @(posedge phi);         // T1 IO cycle starts
-        t1_marker <= 1;
-        t1_marker <= #(phi_period) 0;
-
-        @(negedge phi);         // T1 falling
-
-        a <= #20 8'h81;      // address valid >5ns before IORQ
-        d <= #25 8'h80;      // data <25ns after T1 falling and >10ns before WR active
-
-        // rd = <25ns after T1 falling 
-        iorq <= #25 1;          // iorq = <25ns after T1 falling
-
-        @(posedge phi);         // T2 rising
-        wr <= #25 1;            // wr <25ns after T2 raising
-
-        @(posedge phi);         // Tw rising
-        @(posedge phi);         // T3 rising
-        @(negedge phi);         // T3 falling
-
-        iorq <= #1 0;           // iorq <25ns after T3 falling
-        wr <= #1 0;             // wr <25ns after T3 falling
-                                // rd <25ns after T3 falling
-
-        @(negedge wr)           // be careful that wr does not happen after posedge phi here!!!
-        a <= #6 'hz;         // >5ns after iorq & wr trailing
-        d <= #12 'hz;        // >10ns after wr trailing
-*/
 
 
         // now write values into the other 7 VDP registers
@@ -183,26 +119,25 @@ module tb ();
             t1_marker <= 1;
             t1_marker <= #(phi_period) 0;
 
-            a <= #12 8'h81;         // address valid after T1 rising and >5ns before IORQ
-
             @(negedge phi);         // T1 falling
-            d <= #5 i;              // data <25ns after T1 falling and >10ns before WR active
-            iorq <= #15 1;          // iorq = <25ns after T1 falling 
+            a <= #20 8'h81;         // address valid after T1 rising and >5ns before IORQ
+            d <= #25 i;             // data <25ns after T1 falling and >10ns before WR active
+            iorq <= #25 1;          // iorq = <25ns after T1 falling 
                                     // rd = <25ns after T1 falling 
             @(posedge phi);         // T2 rising
-            wr <= #12 1;            // <25ns after T2 rising
+            wr <= #25 1;            // <25ns after T2 rising
 
             @(posedge phi);         // Tw rising
             @(posedge phi);         // T3 rising
             @(negedge phi);         // T3 falling
 
-            iorq <= #11 0;          // iorq <25ns after T3 falling
-            wr <= #12 0;            // wr <25ns after T3 falling
+            iorq <= #1 0;           // iorq <25ns after T3 falling
+            wr <= #1 0;             // wr <25ns after T3 falling
                                     // rd <25ns after T3 falling
 
             @(negedge wr)           // be careful that wr does not happen after posedge phi here!!!
-            a <= #6 'hz;            // >5ns after iorq & wr trailing
-            d <= #12 'hz;           // >10ns after wr trailing
+            a <= #5 'hz;            // >5ns after iorq & wr trailing
+            d <= #10 'hz;           // >10ns after wr trailing
 
 
 
@@ -224,11 +159,11 @@ module tb ();
             t1_marker <= 1;
             t1_marker <= #(phi_period) 0;
 
-            a <= #12 8'h81;         // address valid after T1 rising and >5ns before IORQ
 
             @(negedge phi);         // T1 falling
             // write to VDP register i
-            d <= #15 8'h80+i;       // data <25ns after T1 falling and >10ns before WR active
+            a <= #20 8'h81;         // address valid after T1 rising and >5ns before IORQ
+            d <= #25 8'h80+i;       // data <25ns after T1 falling and >10ns before WR active
             iorq <= #25 1;          // iorq = <25ns after T1 falling 
                                     // rd = <25ns after T1 falling 
             @(posedge phi);         // T2 rising
