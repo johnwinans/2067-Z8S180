@@ -19,20 +19,22 @@
 //
 //**************************************************************************
 
-`timescale 1ns/10ps
+`timescale 1ns/1ns
 `default_nettype none
 
 module tb ();
 
-    reg reset;
-    reg phi;
-    reg pxclk;
+    reg reset       = 1;
+    reg phi         = 0;
+    reg pxclk       = 0;
 
-    reg iorq;
-    reg rd;
-    reg wr;
-    reg [15:0] a;
-    reg [7:0] d;
+    reg iorq        = 0;
+    reg rd          = 0;
+    reg wr          = 0;
+    reg [15:0] a    = 'hz;
+    reg [7:0] d     = 'hz;
+
+    reg t1_marker   = 0;    // used to make obvious which are T1 phi clocks
 
     
     wire [7:0]   cpu_dout;
@@ -59,8 +61,8 @@ module tb ();
     localparam phi_period = (1.0/18432000)*1000000000; // clk1 is running at about 18.432MHZ
     localparam pxclk_period = (1.0/25000000)*1000000000; // clk2 is running at 25MHZ
 
-    always #(phi_period) phi = ~phi;
-    always #(pxclk_period) pxclk = ~pxclk;
+    always #(phi_period/2) phi = ~phi;
+    always #(pxclk_period/2) pxclk = ~pxclk;
 
 
     // generate the ticks & such same as is done in top.v
@@ -85,132 +87,165 @@ module tb ();
         $dumpfile("z80_vdp99_tb.vcd");
         $dumpvars;
 
-        reset = 1;
-        phi = 0;
-        pxclk = 0;
-
-        a = 0;
-        d = 0;
-        iorq = 0;
-        wr = 0;
-        rd = 0;
-
+        reset <= 1;
         #(phi_period*4);
         reset <= 0;
         #(phi_period*4);;
 
-        // This allows us to wait until the next clk1 rising edge (simulation only)
-        @(posedge phi);        // this is T1 of an IORQ write cycle
+/*
+        @(posedge phi);         // T1 rising
+        t1_marker <= 1;
+        t1_marker <= #(phi_period) 0;
 
+        a <= #12 8'h81;      // address valid after T1 rising and >5ns before IORQ
 
+        @(negedge phi);         // T1 falling
+        d <= #5 8'h23;       // data <25ns after T1 falling and >10ns before WR active
+        iorq <= #15 1;          // iorq = <25ns after T1 falling 
+                                // rd = <25ns after T1 falling 
+        @(posedge phi);         // T2 rising
+        wr <= #12 1;            // <25ns after T2 rising
 
-        // Use two 4-cycle CPU output bus transactions to set a VDP register
-        #5;
-        a <= 8'h81;          // address valid by 5ns after T1 rising edge
+        @(posedge phi);         // Tw rising
+        @(posedge phi);         // T3 rising
+        @(negedge phi);         // T3 falling
 
-        @(negedge phi);
-        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
-        d <= 8'hff;          // some data value to write to a VDP register
+        iorq <= #11 0;          // iorq <25ns after T3 falling
+        wr <= #12 0;            // wr <25ns after T3 falling
+                                // rd <25ns after T3 falling
 
-        // iorq = 25ns after T1 falling worst case
-        // rd = 25ns after T1 falling worst case
-        #5; // meh
-        iorq <= 1;
+        @(negedge wr)           // be careful that wr does not happen after posedge phi here!!!
+        a <= #6 'hz;         // >5ns after iorq & wr trailing
+        d <= #12 'hz;        // >10ns after wr trailing
 
-        @(posedge phi);        // wait for T2 rising edge
-        #22;                    // 25ns worst case
-        wr <= 1;
-
-        @(posedge phi);        // Wait for Tw rising
-        @(posedge phi);        // Wait for T3 rising
-        @(negedge phi);        // Wait for T3 falling
-        #20;                    // 25ns worst case
-        wr <= 0;
-        iorq <= 0;
-        
-        @(posedge phi);        // wait for T1 rising of next bus cycle
-        d <= 'hz;
-        a <= 'hz;
-
-        
-        // skip the opcode fetch bus cycle
-        @(posedge phi);        // T2
-        @(posedge phi);        // T3
+        @(posedge phi);         // wait for T1 rising of next bus cycle (opcode fetch)
+        t1_marker <= 1;
+        t1_marker <= #(phi_period) 0;
+        @(posedge phi);         // T2 opcode fetch
+        @(posedge phi);         // T3 opcode fetch
 
         // skip the operand fetch as if this were an OUT (nn),A instruction
-        @(posedge phi);        // T1
-        @(posedge phi);        // T2
-        @(posedge phi);        // T3
+        @(posedge phi);         // wait for T1 rising of next bus cycle (operand fetch)
+        t1_marker <= 1;
+        t1_marker <= #(phi_period) 0;
+        @(posedge phi);         // T2 operand fetch
+        @(posedge phi);         // T3 operand fetch
 
-        // The IORQ WR cycle
-        #5;
-        a <= 8'h81;          // port address valid by 5ns after T1 rising edge
 
-        @(negedge phi);
-        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
-        d <= 8'h80;          // write to VDP register 0
+        // A worst case timed 4-T Z8S180 IO write transaction
 
-        // iorq = 25ns after T1 falling worst case
-        // rd = 25ns after T1 falling worst case
-        #5; // meh
-        iorq <= 1;
+        @(posedge phi);         // T1 IO cycle starts
+        t1_marker <= 1;
+        t1_marker <= #(phi_period) 0;
 
-        @(posedge phi);        // wait for T2 rising edge
-        #22;                    // 25ns worst case
-        wr <= 1;
+        @(negedge phi);         // T1 falling
 
-        @(posedge phi);        // Wait for Tw rising
-        @(posedge phi);        // Wait for T3 rising
-        @(negedge phi);        // Wait for T3 falling
-        #20;                    // 25ns worst case
-        wr <= 0;
-        iorq <= 0;
-        
-        @(posedge phi);        // wait for T1 rising of next bus cycle
-        d = 'hz;
-        a = 'hz;
+        a <= #20 8'h81;      // address valid >5ns before IORQ
+        d <= #25 8'h80;      // data <25ns after T1 falling and >10ns before WR active
+
+        // rd = <25ns after T1 falling 
+        iorq <= #25 1;          // iorq = <25ns after T1 falling
+
+        @(posedge phi);         // T2 rising
+        wr <= #25 1;            // wr <25ns after T2 raising
+
+        @(posedge phi);         // Tw rising
+        @(posedge phi);         // T3 rising
+        @(negedge phi);         // T3 falling
+
+        iorq <= #1 0;           // iorq <25ns after T3 falling
+        wr <= #1 0;             // wr <25ns after T3 falling
+                                // rd <25ns after T3 falling
+
+        @(negedge wr)           // be careful that wr does not happen after posedge phi here!!!
+        a <= #6 'hz;         // >5ns after iorq & wr trailing
+        d <= #12 'hz;        // >10ns after wr trailing
+*/
 
 
         // now write values into the other 7 VDP registers
-        for ( i=1; i<8; ++i ) begin
-	        #5;
-	        a <= 8'h81;          // address valid by 5ns after T1 rising edge
-	        @(negedge phi);
-	        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
-	        d <= i; //8'hff;          // some data value to write to a VDP register
-	        #5;                 // meh 15+5ns after falling T1
-	        iorq <= 1;
-	        @(posedge phi);        // wait for T2 rising edge
-	        #22;                   // 25ns worst case
-	        wr <= 1;
-	        @(posedge phi);        // Wait for Tw rising
-	        @(posedge phi);        // Wait for T3 rising
-	        @(negedge phi);        // Wait for T3 falling
-	        #20;                   // 25ns worst case
-	        wr <= 0;
-	        iorq <= 0;
-	        @(posedge phi);        // wait for T1 rising of next bus cycle
-	        d <= 'hz;
-	        a <= 'hz;
-	        #5;
-	        a <= 8'h81;          // port address valid by 5ns after T1 rising edge
-	        @(negedge phi);
-	        #15;                 // data valid max 25ns after T1 falling and 10ns before T2 rising
-	        d <= 8'h80+i;        // write to VDP register i
-	        #5;
-	        iorq <= 1;
-	        @(posedge phi);        // wait for T2 rising edge
-	        #22;                    // 25ns worst case
-	        wr <= 1;
-	        @(posedge phi);        // Wait for Tw rising
-	        @(posedge phi);        // Wait for T3 rising
-	        @(negedge phi);        // Wait for T3 falling
-	        #20;                    // 25ns worst case
-	        wr <= 0;
-	        iorq <= 0;
-	        @(posedge phi);        // wait for T1 rising of next bus cycle
-	        d = 'hz;
-	        a = 'hz;
+        for ( i=0; i<8; ++i ) begin
+            @(posedge phi);         // wait for T1 rising of next bus cycle (opcode fetch)
+            t1_marker <= 1;
+            t1_marker <= #(phi_period) 0;
+            @(posedge phi);         // T2 opcode fetch
+            @(posedge phi);         // T3 opcode fetch
+
+            // skip the operand fetch as if this were an OUT (nn),A instruction
+            @(posedge phi);         // wait for T1 rising of next bus cycle (operand fetch)
+            t1_marker <= 1;
+            t1_marker <= #(phi_period) 0;
+            @(posedge phi);         // T2 operand fetch
+            @(posedge phi);         // T3 operand fetch
+
+            // IO write cycle
+            @(posedge phi);         // T1 rising
+            t1_marker <= 1;
+            t1_marker <= #(phi_period) 0;
+
+            a <= #12 8'h81;         // address valid after T1 rising and >5ns before IORQ
+
+            @(negedge phi);         // T1 falling
+            d <= #5 i;              // data <25ns after T1 falling and >10ns before WR active
+            iorq <= #15 1;          // iorq = <25ns after T1 falling 
+                                    // rd = <25ns after T1 falling 
+            @(posedge phi);         // T2 rising
+            wr <= #12 1;            // <25ns after T2 rising
+
+            @(posedge phi);         // Tw rising
+            @(posedge phi);         // T3 rising
+            @(negedge phi);         // T3 falling
+
+            iorq <= #11 0;          // iorq <25ns after T3 falling
+            wr <= #12 0;            // wr <25ns after T3 falling
+                                    // rd <25ns after T3 falling
+
+            @(negedge wr)           // be careful that wr does not happen after posedge phi here!!!
+            a <= #6 'hz;            // >5ns after iorq & wr trailing
+            d <= #12 'hz;           // >10ns after wr trailing
+
+
+
+            @(posedge phi);         // wait for T1 rising of next bus cycle (opcode fetch)
+            t1_marker <= 1;
+            t1_marker <= #(phi_period) 0;
+            @(posedge phi);         // T2 opcode fetch
+            @(posedge phi);         // T3 opcode fetch
+
+            // skip the operand fetch as if this were an OUT (nn),A instruction
+            @(posedge phi);         // wait for T1 rising of next bus cycle (operand fetch)
+            t1_marker <= 1;
+            t1_marker <= #(phi_period) 0;
+            @(posedge phi);         // T2 operand fetch
+            @(posedge phi);         // T3 operand fetch
+
+            // IO write cycle
+            @(posedge phi);         // T1 rising
+            t1_marker <= 1;
+            t1_marker <= #(phi_period) 0;
+
+            a <= #12 8'h81;         // address valid after T1 rising and >5ns before IORQ
+
+            @(negedge phi);         // T1 falling
+            // write to VDP register i
+            d <= #15 8'h80+i;       // data <25ns after T1 falling and >10ns before WR active
+            iorq <= #25 1;          // iorq = <25ns after T1 falling 
+                                    // rd = <25ns after T1 falling 
+            @(posedge phi);         // T2 rising
+            wr <= #25 1;            // <25ns after T2 rising
+
+            @(posedge phi);         // Tw rising
+            @(posedge phi);         // T3 rising
+            @(negedge phi);         // T3 falling
+
+            iorq <= #1 0;           // iorq <25ns after T3 falling
+            wr <= #1 0;             // wr <25ns after T3 falling
+                                    // rd <25ns after T3 falling
+
+            @(negedge wr)           // be careful that wr does not happen after posedge phi here!!!
+            a <= #5 'hz;            // >5ns after iorq & wr trailing
+            d <= #10 'hz;           // >10ns after wr trailing
+
         end
 
         #(phi_period*2000);
