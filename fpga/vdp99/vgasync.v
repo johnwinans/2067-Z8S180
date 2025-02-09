@@ -23,7 +23,8 @@ module vgasync #(
     output wire vsync,
     output wire [HC_BITS-1:0]   col,    // current pixel column
     output wire [VC_BITS-1:0]   row,    // current pixel row
-    output wire vid_active              // true when video is active
+    output wire vid_active,             // true when video is active
+    output wire last_pixel
     );
 
     localparam  HSYNC_BEGIN = HVID+HFP;         // first pix clock hsync should go on
@@ -37,6 +38,7 @@ module vgasync #(
     reg                 vid_active_reg, vid_active_next;
     reg                 hsync_reg, hsync_next;
     reg                 vsync_reg, vsync_next;
+    reg                 last_pixel_reg, last_pixel_next;  // true when rendering the last pixel in a frame
 
     always @ (posedge clk) 
     begin
@@ -46,12 +48,14 @@ module vgasync #(
             vid_active_reg <= 0;
             hsync_reg <= 0;
             vsync_reg <= 0;
+            last_pixel_reg <= 0;
         end else begin
             hctr_reg <= hctr_next;
             vctr_reg <= vctr_next;
             vid_active_reg <= vid_active_next;
             hsync_reg <= hsync_next;
             vsync_reg <= vsync_next;
+            last_pixel_reg <= last_pixel_next;
         end
     end
 
@@ -69,6 +73,9 @@ module vgasync #(
 
         hsync_next = ( hctr_next >= HSYNC_BEGIN && hctr_next < HSYNC_END ) ? 1 : 0;
         vsync_next = ( vctr_next >= VSYNC_BEGIN && vctr_next < VSYNC_END ) ? 1 : 0;
+
+        // last pixel of the last row is best time to indicate the frame has copleted
+        last_pixel_next = ( vctr_next == VVID-1 && hctr_next == HVID-1 );
     end
 
     assign vid_active = vid_active_reg;
@@ -76,5 +83,6 @@ module vgasync #(
     assign vsync = vsync_reg;
     assign col = hctr_reg;
     assign row = vctr_reg;
+    assign last_pixel = last_pixel_reg;
 
 endmodule
