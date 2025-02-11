@@ -1,0 +1,106 @@
+\documentclass[10pt,letter]{article}
+\textwidth = 7in
+\textheight = 9in
+\hoffset=-1.5in
+\voffset=-.8in
+
+
+\usepackage{rotating}
+\usepackage[pass]{geometry}
+%\usepackage[hypertex]{hyperref}
+\usepackage{hyperref}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{sectsty}
+\usepackage{amsmath}
+\usepackage{scrextend}
+
+\usepackage{listings}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usepackage{tikz-timing}
+	\usetikzlibrary{arrows.meta}
+	%\usetikztiminglibrary[simple]{advnodes}
+	\usetikztiminglibrary{advnodes}
+\usepackage{enumitem}
+
+
+\sectionfont{\Large\sf\bfseries}
+\subsectionfont{\large\sf\bfseries}
+
+\pagestyle{fancy}
+% supress normal headings and footters
+\fancyhf{}
+% remove the heading rule
+\renewcommand{\headrulewidth}{0pt}
+
+\lfoot{{\sf\scriptsize Copyright \copyright\ 2025 John Winans.  All Rights Reserved}\\
+{\scriptsize\FooterText}}
+%\lfoot{\scriptsize\FooterText}
+
+\rfoot{Page \thepage\ of \pageref*{LastPage}}
+
+% Sub-footer that shows the VCS Header in the lfoot defined above
+\ifdefined\GitFileName
+    \newcommand{\FooterText}{\tt \GitFileName\\
+\GitDescription}
+\else
+    \newcommand{\FooterText}{\emph{--UNKNOWN--}}
+\fi
+
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{.51em}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{c_blue}{HTML}{0000FF}
+\definecolor{c_lightblue}{HTML}{B0E0FF}
+\definecolor{c_lightred}{HTML}{FFE0E0}
+\definecolor{c_lightyellow}{HTML}{FFE060}
+\definecolor{c_lightgreen}{HTML}{80FF80}
+\definecolor{c_lightgray}{HTML}{C0C0C0}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\thispagestyle{fancy}
+
+\begin{sidewaysfigure}[h]
+{
+\centering
+\scalebox {1}{%
+\begin{tikztimingtable} [yscale=1,xscale=4,timing/slope=0.05,timing/coldist=1pt]
+{\tt PxCLK}			& { 0Z.9hlhlhlhlhlhlhlhlhlhlhlhlhlhlhl.1h }\\
+{\tt name\_tick}	& { LHLLLLLLLHLLLLL}\\
+{\tt name\_reg}		& { 2X8D{name$_0$}5D{name$_1$}}\\
+{\tt cpu\_tick}		& { LLHLLLLLLLHLLLL}\\
+{\tt cpu\_reg}		& { 3X8D{CPU}4D{CPU}}\\
+{\tt color\_tick}	& { LLLHLLLLLLLHLLL}\\
+{\tt color\_reg}	& { 4X8D{color$_0$}3D{color$_1$}}\\
+{\tt pattern\_tick}	& { LLLLHLLLLLLLHLL}\\
+{\tt mrd@}			& { 0ZD{name$_0$@}D{CPU@}D{color$_0$@}D{pattern$_0$@}D{}D{}D{}D{}D{name$_1$@}D{CPU@}D{color$_1$@}D{pattern$_1$@}D{}D{}D{}.1D}\\
+{\tt mrd}			& { 0ZD{}D{name$_0$}D{CPU}D{color$_0$}D{pattern$_0$}D{}D{}D{}D{}D{name$_1$}D{CPU}D{color$_1$}D{pattern$_1$}D{}D{}.1D}\\
+{\tt pattern\_reg[7]}	& { 0ZD{}D{}D{}D{}D{}D{pattern$_0$[7]}D{pattern$_0$[6]}D{pattern$_0$[5]}D{pattern$_0$[4]}D{pattern$_0$[3]}D{pattern$_0$[2]}D{pattern$_0$[1]}D{pattern$_0$[0]}D{pattern$_1$[7]}D{pattern$_1$[6]}.1D}\\
+{\tt rgb\_reg}		& { 0ZD{border}D{border}D{border}D{border}D{border}D{border}D{color$_0$[$0_7$]}D{color$_0$[$0_6$]}D{color$_0$[$0_5$]}D{color$_0$[$0_4$]}D{color$_0$[$0_3$]}D{color$_0$[$0_2$]}D{color$_0$[$0_1$]}D{color$_0$[$0_0$]}D{color$_1$[$0_7$]}.1D}\\
+\extracode
+ \makeatletter
+ \begin{pgfonlayer}{background}
+  \begin{scope}[gray,semitransparent,semithick]
+        \vertlines{0,1,...,\twidth}
+  \end{scope}
+        \foreach \n [count=\i from 0] in {0,1,...,\twidth}
+            \draw (\n,-\nrows*2+1.5) -- +(0,-.2)
+                node [below,inner sep=2pt] {\scalebox{.75}{$t_{\i}$}};
+
+\end{pgfonlayer}
+
+\end{tikztimingtable}
+}%
+\caption{Nouveau VDP Timing}
+}\end{sidewaysfigure}
+
+
+
+\end{document}
