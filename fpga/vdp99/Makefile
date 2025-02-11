@@ -22,3 +22,9 @@ vdp99_tb.vvp: vdp99.v vdp99_tb.v vdp_reg_ifce.v vdp_irq.v vgasync.v
 vdp99: vdp99_tb.vcd
 	gtkwave $^
 
+
+vgasync_tb.vvp: vgasync_tb.v vgasync.v
+	iverilog -o $@ $^
+
+vgasync: vgasync_tb.vcd
+	gtkwave $^

@@ -52,8 +52,8 @@ module vdp99 (
     wire [6:0]  vdp_sprite_att_base = regs[5][6:0];
     wire [2:0]  vdp_sprite_pat_base = regs[6][2:0];
     wire [3:0]  vdp_fg_color        = regs[7][7:4];
-    wire [3:0]  vdp_bg_color        = regs[7][3:0];
 `endif
+    wire [3:0]  vdp_bg_color        = regs[7][3:0];
 
     vdp_reg_ifce icfe (
         .clk(pxclk),
@@ -81,16 +81,12 @@ module vdp99 (
 
     wire irq_tick = last_pixel;
 
-`ifdef NOT_YET
-
-`else
-
     wire [9:0] col;
     wire [9:0] row;
     wire vid_active;
     wire last_pixel;
+    wire bdr_active;
 
-    // XXX color-bar test stub
     vgasync v (
         .reset(reset),
         .clk(pxclk),
@@ -99,14 +95,32 @@ module vdp99 (
         .col(col),
         .row(row),
         .vid_active(vid_active),
-        .last_pixel(last_pixel)
+        //.col_last,
+        //.row_last,
+        .bdr_active(bdr_active),
+        .end_of_frame(last_pixel)
     );
 
+    reg [3:0] color_reg;
+    always @(*) begin
+        // until we have the FSM and pipeline working, this will do
+
+        // XXX implement vdp_blank here when the VDP aps are ready to init things properly
+
+        color_reg = 0;      // black
+
+        (* parallel_case *)
+        case ( 1 )
+        bdr_active: color_reg = vdp_bg_color;
+        vid_active: color_reg = regs[col[5:3]][3:0];        // XXX funky 8-px wide color bars
+        endcase
+    end
+
+
     // XXX use every control register so that the compiler can not optimize them away
-    assign color = vid_active ? regs[col[6:4]][3:0] : 0;
+    assign color = color_reg; // vid_active ? regs[col[6:4]][3:0] : 0;
 
     // XXX this would be muxed with the VRAM read once the VRAM is implemented
     assign dout = rd_tick ? { irq, 7'b0 } : 'hx;
-`endif
 
 endmodule
