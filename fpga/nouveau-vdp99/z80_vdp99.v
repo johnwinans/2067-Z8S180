@@ -54,7 +54,7 @@ module z80_vdp99 (
 
     wire    vdp_wr_tick = vdp_wr_sync[1:0] == 2'b10;        // pxclk domain
     wire    vdp_rd_tick = vdp_rd_sync[1:0] == 2'b10;        // pxclk domain
-
+    wire    vdp_mode_tick = vdp_wr_tick|vdp_rd_tick;
 
     // stretch the CPU address and data bus values for worst-case write timing.
     // note that the edge used here is a gated clock to latch one pxclk period before vdp_wr_tick falls
@@ -63,9 +63,8 @@ module z80_vdp99 (
         vdp_din <= cpu_din;
 
     reg         vdp_mode;
-    always @(posedge vdp_wr_tick)
+    always @(posedge vdp_mode_tick)
         vdp_mode <= cpu_mode;
-
 
     // stretch the data bus values when reading
     // note that the cpu asserts RD sooner than WR on IORQ cycles 
