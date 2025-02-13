@@ -77,7 +77,7 @@ module tb ();
 
 
         // now write values into the other 7 VDP registers
-        for ( i=0; i<8; ++i ) begin
+        for ( i=0; i<8; i=i+1 ) begin
             @(posedge phi);         // wait for T1 rising of next bus cycle (opcode fetch)
             t1_marker <= 1;
             t1_marker <= #(phi_period) 0;
