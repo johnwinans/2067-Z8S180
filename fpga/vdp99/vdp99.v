@@ -25,12 +25,11 @@ module vdp99 (
     input   wire        pxclk,      // 25MHZ
     input   wire        reset,      // active high
 
-    input   wire        wr0_tick,
-    input   wire        wr1_tick,
-    input   wire        rd0_tick,
-    input   wire        rd1_tick,
-    input   wire [7:0]  din,
-    output  wire [7:0]  dout,
+    input   wire        wr_tick,    // in pxclk domain
+    input   wire        rd_tick,    // in pxclk domain
+    input   wire        mode,       // valid during wr_tick and rd_tick
+    input   wire [7:0]  din,        // valid during wr_tick and rd_tick
+    output  wire [7:0]  dout,       // valid during wr_tick and rd_tick
     output  wire        irq,
 
     output  wire [3:0]  color,      // 4-bit color output
@@ -53,14 +52,14 @@ module vdp99 (
     wire [6:0]  vdp_sprite_att_base = regs[5][6:0];
     wire [2:0]  vdp_sprite_pat_base = regs[6][2:0];
     wire [3:0]  vdp_fg_color        = regs[7][7:4];
-    wire [3:0]  vdp_bg_color        = regs[7][3:0];
 `endif
+    wire [3:0]  vdp_bg_color        = regs[7][3:0];
 
     vdp_reg_ifce icfe (
         .clk(pxclk),
         .reset(reset),
-        .wr_tick(wr1_tick),
-        .rd_tick(rd1_tick),
+        .wr_tick(wr_tick && mode==1),
+        .rd_tick(rd_tick && mode==1),
         .din(din),
         .r0(regs[0]),
         .r1(regs[1]),
@@ -75,22 +74,34 @@ module vdp99 (
     vdp_irq virq (
         .clk(pxclk),
         .reset(reset),
-        //.irq_tick(irq_tick),
-        .irq_tick(1'b0),           // XXX hack for now
-        .rd_tick(rd1_tick),
+        .irq_tick(irq_tick),
+        .rd_tick(rd_tick && mode==1),
         .irq(irq)
     );
 
+    wire irq_tick = last_pixel;
 
-`ifdef NOT_YET
 
-`else
+    wire [7:0]  vram_dout;
+    vram #( .VRAM_SIZE(8192) ) mem
+    (
+        .reset(reset),
+        .clk(pxclk),
+        .rd_tick(rd_tick),
+        .wr_tick(wr_tick),
+        .mode(mode),
+        .din(din),
+        .dout(vram_dout)
+    );
+
+
 
     wire [9:0] col;
     wire [9:0] row;
     wire vid_active;
+    wire last_pixel;
+    wire bdr_active;
 
-    // XXX color-bar test stub
     vgasync v (
         .reset(reset),
         .clk(pxclk),
@@ -98,11 +109,35 @@ module vdp99 (
         .vsync(vsync),
         .col(col),
         .row(row),
-        .vid_active(vid_active)
+        .vid_active(vid_active),
+        //.col_last,
+        //.row_last,
+        .bdr_active(bdr_active),
+        .end_of_frame(last_pixel)
     );
 
+    reg [3:0] color_reg;
+    always @(*) begin
+        // until we have the FSM and pipeline working, this will do
+
+        // XXX implement vdp_blank here when the VDP aps are ready to init things properly
+
+        color_reg = 0;      // black
+
+        (* parallel_case *)
+        case ( 1 )
+        bdr_active: color_reg = vdp_bg_color;
+        vid_active: color_reg = regs[col[5:3]][3:0];        // XXX funky 8-px wide color bars
+        endcase
+    end
+
+
     // XXX use every control register so that the compiler can not optimize them away
-    assign color = vid_active ? regs[col[6:4]][3:0] : 0;
-`endif
+    assign color = color_reg; // vid_active ? regs[col[6:4]][3:0] : 0;
+
+
+    wire [7:0]  vdp_status = { irq, 7'b0 };
+
+    assign dout = rd_tick ? (mode==0 ? vram_dout : vdp_status ) : 'hx;
 
 endmodule

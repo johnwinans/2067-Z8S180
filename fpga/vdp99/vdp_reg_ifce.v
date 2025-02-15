@@ -40,23 +40,18 @@ module vdp_reg_ifce(
     output  wire [7:0]  r7
     );
 
-    reg [7:0]   vdp_regs[0:7];
-    reg [7:0]   vdp_regs_next;
-    reg         update_vdp_reg_tick;    // true if save din into vdp_regs[w0_reg[2:0]]
+    reg [7:0]   vdp_regs[0:7];          // an array makes register addressing easier
+    reg         update_vdp_reg_tick;    // true if save w0_reg into vdp_regs[din[2:0]]
 
     reg [7:0]   w0_reg, w0_next;
-    reg [7:0]   w1_reg, w1_next;
-
-    reg         state_reg, state_next;  // 0 = write to w0_reg next, else w1_reg
+    reg         state_reg, state_next;  // 0 = write to w0_reg next, else write to reg
 
     always @(posedge clk) begin
         if ( reset ) begin
             w0_reg <= 0;
-            w1_reg <= 0;
             state_reg <= 0;
         end else begin
             w0_reg <= w0_next;
-            w1_reg <= w1_next;
             state_reg <= state_next;
         end
 
@@ -64,17 +59,16 @@ module vdp_reg_ifce(
             vdp_regs[din[2:0]] <= w0_reg;
     end
 
-    // When w0_tick, update the w0/1 registers & toggle the next reg state
+    // Note that we discard write operations that don't match the VDP reg sig in din[7:6]
     always @(*) begin
         w0_next = wr_tick && state_reg==0 ? din : w0_reg;
-        w1_next = wr_tick && state_reg==1 ? din : w1_reg;
-        state_next = wr_tick ? ~state_reg : state_reg;     // toggle when written
+        state_next = wr_tick ? ~state_reg : state_reg;     // toggle state on each write
 
         // special reset the w0/1 reg state when read the status register
         if ( rd_tick )
             state_next = 0;
 
-        update_vdp_reg_tick = wr_tick & state_reg & din[7];
+        update_vdp_reg_tick = wr_tick & state_reg & din[7:6]==2'b10;
     end
 
     assign r0 = vdp_regs[0];

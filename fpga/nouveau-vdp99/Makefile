@@ -8,7 +8,7 @@ include $(TOP)/Make.rules
 
 .PHONY: prog
 
-NEXTPNR_OPT+=--ignore-loops 
+#NEXTPNR_OPT+=--ignore-loops 
 
 include $(LIB_VDP99)/Make.include
 include $(LIB_UTILS)/Make.include

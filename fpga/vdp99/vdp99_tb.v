@@ -19,16 +19,16 @@
 //
 //**************************************************************************
 
-`timescale 10ns/1ns
+`timescale 1ns/1ns
 
+// at this point, this exists only to compile vdp99 with iverilog
 module tb();
 
     reg clk;        // pixel clock
     reg reset;
-    reg wr0_tick;
-    reg wr1_tick;
-    reg rd0_tick;
-    reg rd1_tick;
+    reg wr_tick;
+    reg rd_tick;
+    reg mode;
     reg [7:0] din;
 
     wire [7:0] dout;
@@ -40,10 +40,9 @@ module tb();
     vdp99 uut (
         .pxclk(clk),
         .reset(reset),
-        .wr0_tick(wr0_tick),
-        .wr1_tick(wr1_tick),
-        .rd0_tick(rd0_tick),
-        .rd1_tick(rd1_tick),
+        .wr_tick(wr_tick),
+        .rd_tick(rd_tick),
+        .mode(mode),
         .din(din),
         .irq(irq),
         .dout(dout),
@@ -62,10 +61,9 @@ module tb();
     initial begin
         clk = 0;
         reset = 1;
-        wr0_tick = 0;
-        wr1_tick = 0;
-        rd0_tick = 0;
-        rd1_tick = 0;
+        wr_tick = 0;
+        rd_tick = 0;
+        mode = 0;
         din = 0;
         #5;
 

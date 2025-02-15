@@ -22,8 +22,8 @@
 `default_nettype none
 
 module vdp_irq(
-    input   wire        clk,
     input   wire        reset,      // active high
+    input   wire        clk,
 
     input   wire        irq_tick,   // true = assert irq on next clk rising edge
     input   wire        rd_tick,    // true = clear irq on next clk rising
