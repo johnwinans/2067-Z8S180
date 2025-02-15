@@ -25,11 +25,11 @@ module vdp99 (
     input   wire        pxclk,      // 25MHZ
     input   wire        reset,      // active high
 
-    input   wire        wr_tick,
-    input   wire        rd_tick,
-    input   wire        mode,
-    input   wire [7:0]  din,
-    output  wire [7:0]  dout,
+    input   wire        wr_tick,    // in pxclk domain
+    input   wire        rd_tick,    // in pxclk domain
+    input   wire        mode,       // valid during wr_tick and rd_tick
+    input   wire [7:0]  din,        // valid during wr_tick and rd_tick
+    output  wire [7:0]  dout,       // valid during wr_tick and rd_tick
     output  wire        irq,
 
     output  wire [3:0]  color,      // 4-bit color output
@@ -81,6 +81,21 @@ module vdp99 (
 
     wire irq_tick = last_pixel;
 
+
+    wire [7:0]  vram_dout;
+    vram #( .VRAM_SIZE(8192) ) mem
+    (
+        .reset(reset),
+        .clk(pxclk),
+        .rd_tick(rd_tick),
+        .wr_tick(wr_tick),
+        .mode(mode),
+        .din(din),
+        .dout(vram_dout)
+    );
+
+
+
     wire [9:0] col;
     wire [9:0] row;
     wire vid_active;
@@ -120,7 +135,9 @@ module vdp99 (
     // XXX use every control register so that the compiler can not optimize them away
     assign color = color_reg; // vid_active ? regs[col[6:4]][3:0] : 0;
 
-    // XXX this would be muxed with the VRAM read once the VRAM is implemented
-    assign dout = rd_tick ? { irq, 7'b0 } : 'hx;
+
+    wire [7:0]  vdp_status = { irq, 7'b0 };
+
+    assign dout = rd_tick ? (mode==0 ? vram_dout : vdp_status ) : 'hx;
 
 endmodule

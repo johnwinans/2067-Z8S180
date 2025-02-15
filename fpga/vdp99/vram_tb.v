@@ -73,7 +73,7 @@ module tb();
 
         @(posedge clk);
         mode <= 1;          // mode 1 = address
-        din <= 8'h42;       // address MSB (write mode)
+        din <= 8'h40;       // address MSB (write mode)
         wr_tick <= 1;
 
         @(posedge clk);
@@ -84,7 +84,7 @@ module tb();
 
         // fill the VRAM with some data
         // note that while filling the first time, the read data is 'hx
-        for ( i=0; i<8192; i=i+1 ) begin
+        for ( i=0; i<'h2000; i=i+1 ) begin
             @(posedge clk);
             mode <= 0;      // mode 0 = data
             din <= i&'h0ff;
@@ -100,12 +100,12 @@ module tb();
 
         // read it back
         mode <= 1;          // mode 1 = address
-        din <= 8'h00;       // address LSB (one less than we wrote for fun)
+        din <= 8'h00;       // address LSB
         wr_tick <= 1;
 
         @(posedge clk);
         mode <= 1;          // mode 1 = address
-        din <= 8'h02;       // address MSB (read mode)
+        din <= 8'h10;       // address MSB (read mode)  -- read out of phase for fun
         wr_tick <= 1;
 
         @(posedge clk);
@@ -113,7 +113,7 @@ module tb();
         din <= 'hz;         // address MSB (read mode)
         wr_tick <= 0;
 
-        for ( i=0; i<8192; i=i+1 ) begin
+        for ( i=0; i<'h2000; i=i+1 ) begin
 //$display( "%8t vram[%4x]:%x", $time, i+'h20f, uut.vram[i+'h20f] );
             @(posedge clk);
             mode <= 0;      // mode 0 = data
@@ -129,11 +129,69 @@ module tb();
             @(posedge clk);
         end
 
-
         @(posedge clk);
         mode <= 0;
         din <= 'hz;
         wr_tick <= 0;
+        rd_tick <= 0;
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+
+
+
+
+        // make sure that reading the status register will reset the register fsm
+        
+        // start setting up a new VRAM address
+        mode <= 1;          // mode 1 = address
+        din <= 8'h99;       // address LSB 
+        wr_tick <= 1;
+        rd_tick <= 0;
+
+        @(posedge clk);
+        // now abort the vram address setup by reading the status register
+        mode <= 1;
+        wr_tick <= 0;
+        rd_tick <= 1;
+
+        @(posedge clk);
+        rd_tick <= 0;
+        wr_tick <= 0;
+
+        @(posedge clk);
+        // now restart the vram address setting
+        mode <= 1;          // mode 1 = address
+        din <= 8'h11;       // address LSB 
+        wr_tick <= 1;
+
+        @(posedge clk);
+        mode <= 1;          // mode 1 = address
+        din <= 8'h33;       // address MSB (read mode)
+        wr_tick <= 1;
+
+        @(posedge clk);
+        rd_tick <= 0;
+        wr_tick <= 0;
+        mode <= 0;
+        din <= 'hz;
+        
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 1;       // read 1 vram byte
+
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 0;
+
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 1;       // read a second vram byte
+
+        @(posedge clk);
+        mode <= 0;
         rd_tick <= 0;
 
         @(posedge clk);
