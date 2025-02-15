@@ -76,7 +76,7 @@ module tb ();
         #(phi_period*4);;
 
 
-        // now write values into the other 7 VDP registers
+        // write values into the 8 VDP registers
         for ( i=0; i<8; i=i+1 ) begin
             @(posedge phi);         // wait for T1 rising of next bus cycle (opcode fetch)
             t1_marker <= 1;
@@ -159,6 +159,9 @@ module tb ();
             d <= #10 'hz;           // >10ns after wr trailing
 
         end
+
+//#(phi_period*100000);
+//$finish;
 
         // wait until an entire frame has completed
         @(negedge vsync);
