@@ -28,3 +28,10 @@ vgasync_tb.vvp: vgasync_tb.v vgasync.v
 
 vgasync: vgasync_tb.vcd
 	gtkwave $^
+
+
+vram_tb.vvp: vram_tb.v vram.v
+	iverilog -o $@ $^
+
+vram: vram_tb.vcd
+	gtkwave $^
