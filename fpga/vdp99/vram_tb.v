@@ -23,12 +23,14 @@
 
 module tb();
 
-    reg clk         = 0;        // pixel clock
-    reg reset       = 0;
-    reg wr_tick     = 0;
-    reg rd_tick     = 0;
-    reg mode        = 0;
-    reg [7:0] din   = 'hz;
+    reg clk             = 0;        // pixel clock
+    reg reset           = 0;
+    reg wr_tick         = 0;
+    reg rd_tick         = 0;
+    reg mode            = 0;
+    reg [7:0] din       = 'hz;
+    reg [13:0] dma_addr = 'hx;
+    reg dma_tick        = 0;
 
     wire [7:0] dout;
 
@@ -39,7 +41,9 @@ module tb();
         .wr_tick(wr_tick),
         .mode(mode),
         .din(din),
-        .dout(dout)
+        .dout(dout),
+        .dma_addr(dma_addr),
+        .dma_rd_tick(dma_tick)
     );
 
     initial begin
@@ -194,7 +198,59 @@ module tb();
         mode <= 0;
         rd_tick <= 0;
 
+
+
+
+        // DMA access tests
         @(posedge clk);
+        mode <= 0;
+        rd_tick <= 0;
+        wr_tick <= 0;
+
+
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+        dma_addr <= 'h1100;
+        dma_tick <= 1;
+
+        @(posedge clk);
+        dma_addr <= 'h1101;
+        dma_tick <= 1;
+        @(posedge clk);
+        dma_addr <= 'h1102;
+        dma_tick <= 1;
+
+//        @(posedge clk);
+//        dma_addr <= 0;
+//        dma_tick <= 0;
+
+
+        @(posedge clk);
+        dma_addr <= 'hx;
+        dma_tick <= 0;
+        mode <= 0;
+        rd_tick <= 1;       // read vram using the CPU interface
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 1;       // and another...
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 0;
+        dma_addr <= 'h1103;
+        dma_tick <= 1;
+
+
+
+
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 0;
+        wr_tick <= 0;
+        dma_tick <= 0;
+        dma_addr <= 'hx;
+        din <= 'hz;
+
         #(clk_period*20);
         $finish;
     end

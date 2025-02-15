@@ -40,13 +40,15 @@
 module vram #(
     parameter VRAM_SIZE = 8192
     ) (
-    input wire          reset,
-    input wire          clk,
-    input wire          rd_tick,
-    input wire          wr_tick,
-    input wire          mode,           // 1=addr setup, 0=data xfer
-    input wire [7:0]    din,
-    output wire [7:0]   dout
+    input wire                          reset,
+    input wire                          clk,
+    input wire                          rd_tick,
+    input wire                          wr_tick,
+    input wire                          mode,           // 1=addr setup, 0=data xfer
+    input wire [$clog2(VRAM_SIZE)-1:0]  dma_addr,       // used for direct memory access reads
+    input wire                          dma_rd_tick,    // true when want to read byte from address dma_in
+    input wire [7:0]                    din,
+    output wire [7:0]                   dout
     );
 
     reg [$clog2(VRAM_SIZE)-1:0] addr_reg, addr_next;    // vram address counter for read/write xfers
@@ -71,7 +73,7 @@ module vram #(
     end
 
     always @(posedge clk) begin
-        dout_reg <= vram[addr_reg];
+        dout_reg <= vram[dma_rd_tick ? dma_addr : addr_reg];
         if ( wr_tick & mode==0 )
             vram[addr_reg] <= din;      // only write when requested
     end
