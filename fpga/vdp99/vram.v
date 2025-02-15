@@ -50,6 +50,7 @@ module vram #(
     );
 
     reg [$clog2(VRAM_SIZE)-1:0] addr_reg, addr_next;    // vram address counter for read/write xfers
+    reg [7:0]                   addr_tmp_reg, addr_tmp_next;
     reg                         addr_state_reg, addr_state_next;
     reg [7:0]                   dout_reg;
 
@@ -60,9 +61,11 @@ module vram #(
     always @(posedge clk) begin
         if (reset) begin
             addr_reg <= 0;
+            addr_tmp_reg <= 0;
             addr_state_reg <= 0;
         end else begin
             addr_reg <= addr_next;
+            addr_tmp_reg <= addr_tmp_next;
             addr_state_reg <= addr_state_next;
         end
     end
@@ -73,31 +76,38 @@ module vram #(
             vram[addr_reg] <= din;      // only write when requested
     end
 
+    // If we reset the addr_state_reg when reading the status register, bad things could happen.
+    // But if we don't then it could be impossible to correct a phase error.  :-/
     always @(*) begin
         addr_state_next = addr_state_reg;
         addr_next = addr_reg;
-        addr_state_next = addr_state_reg;
+        addr_tmp_next = addr_tmp_reg;
 
         if ((wr_tick || rd_tick) && mode==0) begin
             addr_next = addr_reg+1;
         end
 
-        case (addr_state_reg)
-        0:
-            begin
-                if (wr_tick && mode==1) begin
-                    addr_next = { addr_reg[$clog2(VRAM_SIZE)-1:8], din };
-                    addr_state_next = 1;
+        if ( rd_tick && mode==1 ) begin
+            addr_state_next = 0;        // reset the address reg state when read the status register
+        end else begin
+            case (addr_state_reg)
+            0:
+                begin
+                    if (wr_tick && mode==1) begin
+                        addr_tmp_next = din;
+                        addr_state_next = 1;
+                    end
                 end
-            end
-        1:
-            begin
-                if (wr_tick && mode==1) begin
-                    addr_next = { din, addr_reg[7:0] }; // the MSBs will be truncated
-                    addr_state_next = 0;
+            1:
+                begin
+                    if (wr_tick && mode==1) begin
+                        addr_state_next = 0;
+                        if ( din[7] == 0 )
+                            addr_next = { din[5:0], addr_tmp_reg };     // MSB will be truncated
+                    end
                 end
-            end
-        endcase
+            endcase
+        end
     end
 
 endmodule
