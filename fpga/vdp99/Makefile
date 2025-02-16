@@ -35,3 +35,10 @@ vram_tb.vvp: vram_tb.v vram.v
 
 vram: vram_tb.vcd
 	gtkwave $^
+
+
+vdp_fsm_tb.vvp: vdp_fsm_tb.v vdp_fsm.v
+	iverilog -o $@ $^
+
+vdp_fsm: vdp_fsm_tb.vcd
+	gtkwave $^
