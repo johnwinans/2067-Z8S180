@@ -176,14 +176,14 @@ module tb ();
         $dumpfile("z80_vdp99_tb.vcd");
         $dumpvars;
 
-        // XXX write some viable test data into the VRAM
-
+        // put some useful test data into the VRAM
+        $readmemh( "z80_vdp99_tb_vram.hex", uut.vdp.mem.vram );
 
 
         reset <= 1;
         #(phi_period*4);
         reset <= 0;
-        #(phi_period*4);;
+        #(phi_period*4);
 
 
         vdp_reg <= 0;

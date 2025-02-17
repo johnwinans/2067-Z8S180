@@ -131,79 +131,92 @@ module vdp_fsm (
 
     // pipeline delay for VGA signals
     always @(*) begin
-        hsync_pipe_next = { hsync, hsync_pipe_reg[PIPE_LEN-1:1] };
-        vsync_pipe_next = { vsync, vsync_pipe_reg[PIPE_LEN-1:1] };
-        vid_active_pipe_next = { vid_active, vid_active_pipe_reg[PIPE_LEN-1:1] };
-        bdr_active_pipe_next = { bdr_active, bdr_active_pipe_next[PIPE_LEN-1:1] };
-        last_pixel_pipe_next = { last_pixel, last_pixel_pipe_reg[PIPE_LEN-1:1] };
-        col_last_pipe_next = { col_last, col_last_pipe_reg[PIPE_LEN-1:1] };
-        row_last_pipe_next = { row_last, row_last_pipe_reg[PIPE_LEN-1:1] };
+        hsync_pipe_next = hsync_pipe_reg;
+        vsync_pipe_next = vsync_pipe_reg;
+        vid_active_pipe_next = vid_active_pipe_reg;
+        bdr_active_pipe_next = bdr_active_pipe_reg;
+        last_pixel_pipe_next = last_pixel_pipe_reg;
+        col_last_pipe_next = col_last_pipe_reg;
+        row_last_pipe_next = row_last_pipe_reg;
+
+        if ( px_col[0] ) begin
+            hsync_pipe_next = { hsync, hsync_pipe_reg[PIPE_LEN-1:1] };
+            vsync_pipe_next = { vsync, vsync_pipe_reg[PIPE_LEN-1:1] };
+            vid_active_pipe_next = { vid_active, vid_active_pipe_reg[PIPE_LEN-1:1] };
+            bdr_active_pipe_next = { bdr_active, bdr_active_pipe_reg[PIPE_LEN-1:1] };
+            last_pixel_pipe_next = { last_pixel, last_pixel_pipe_reg[PIPE_LEN-1:1] };
+            col_last_pipe_next = { col_last, col_last_pipe_reg[PIPE_LEN-1:1] };
+            row_last_pipe_next = { row_last, row_last_pipe_reg[PIPE_LEN-1:1] };
+        end
     end
 
     always @(*) begin
-        ring_ctr_next = { ring_ctr_reg[6:0], ring_ctr_reg[7] };     // rotate left
 
         vdp_dma_rd_tick_next = 0;
         vdp_dma_addr_next = 'hx;
-
         tile_ctr_next = tile_ctr_reg;
         name_next = name_reg;
+        pattern_next = pattern_reg;
         color_next = color_reg;
-        pattern_next = { pattern_reg[6:0], 1'b0 };      // shift left on each pxclk
-        pixel_next = pattern_reg[7];
+        pixel_next = pixel_reg;
+        ring_ctr_next = ring_ctr_reg;
         tile_ctr_row_next = tile_ctr_row_reg;
+        color_out_next = color_out_reg;
 
-        color_out_next = pixel_reg ? color_reg[7:4] : color_reg[3:0];
+	    if (vsync) begin
+	        tile_ctr_next = 0;          // reset on every vsync
+	        tile_ctr_row_next = 0;      // reset on every vsync
+	    end
 
-        if (vsync) begin
-            tile_ctr_next = 0;          // reset on every vsync
-            tile_ctr_row_next = 0;      // reset on every vsync
-        end
+        // only on every other clock cycle to divide the pxclock by 2
+        if ( px_col[0] ) begin
 
-
-        if (vid_active) begin
-	        (* parallel_case, full_case *)
-	        case (1)
-	        ring_ctr_reg[0]: begin
-	            vdp_dma_addr_next = { vdp_name_base, tile_ctr_reg };
-	            vdp_dma_rd_tick_next = 1;
-	        end
-	        ring_ctr_reg[1]: begin
-	            name_next = vram_dout;
-	            // The CPU can use this slot
-	        end
-	        ring_ctr_reg[2]: begin
-	            vdp_dma_addr_next = { vdp_pattern_base, name_reg, 3'b0 };    // name*8 + collumn row number
-	            vdp_dma_rd_tick_next = 1;
-	        end
-	        ring_ctr_reg[3]: begin
-	            pattern_next = vram_dout;
-	            vdp_dma_addr_next = { vdp_color_base, name_reg[7:3] };
-	            vdp_dma_rd_tick_next = 1;
-	        end
-	        ring_ctr_reg[4]: begin
-	            color_next = vram_dout;
-	        end
-	        ring_ctr_reg[5]: begin
-	            // The CPU can use this slot
-	        end
-	        ring_ctr_reg[6]: begin
-	            // The CPU can use this slot
-	        end
-	        ring_ctr_reg[7]: begin
-	            // The CPU can use this slot
-	            tile_ctr_next = tile_ctr_reg + 1;
-	        end
-	        endcase
-        end else begin
-
-            // do this ONLY when about to start rendering a new row
-            if ( vid_active_pipe_reg[2:1]==2'b10 ) begin
-                if (px_row[2:0]!=0)                     // XXX this will only work of the top border is %8 rows high
-                    tile_ctr_next = tile_ctr_row_reg;   // reload the tile_counter for the current row 
-                else
-                    tile_ctr_row_next = tile_ctr_reg;   // save current tile counter for the next 7 rows
-            end
+	        ring_ctr_next = { ring_ctr_reg[6:0], ring_ctr_reg[7] }; // rotate left
+	        pattern_next = { pattern_reg[6:0], 1'b0 };              // shift left on each pxclk
+            pixel_next = pattern_reg[7];
+            color_out_next = pixel_reg ? color_reg[7:4] : color_reg[3:0];
+	
+	        if (vid_active) begin
+		        (* parallel_case, full_case *)
+		        case (1)
+		        ring_ctr_reg[0]: begin
+		            vdp_dma_addr_next = { vdp_name_base, tile_ctr_reg };
+		            vdp_dma_rd_tick_next = 1;
+                    if ( vid_active_pipe_reg[PIPE_LEN-1] == 0 )
+	                    if (px_row[3:0]!='b0000)                // XXX will only work if top border is %8 rows high
+	                        tile_ctr_next = tile_ctr_row_reg;   // reload the tile_counter for the current row 
+	                    else
+	                        tile_ctr_row_next = tile_ctr_reg;   // save current tile counter for the next 7 rows
+		        end
+		        ring_ctr_reg[1]: begin
+		            name_next = vram_dout;
+		            // The CPU can use this slot
+		        end
+		        ring_ctr_reg[2]: begin
+                    // use 3:1 here because we are doubling the rows
+		            vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[3:1] };    // name*8 + collumn row number
+		            vdp_dma_rd_tick_next = 1;
+		        end
+		        ring_ctr_reg[3]: begin
+		            pattern_next = vram_dout;
+		            vdp_dma_addr_next = { vdp_color_base, name_reg[7:3] };
+		            vdp_dma_rd_tick_next = 1;
+		        end
+		        ring_ctr_reg[4]: begin
+		            color_next = vram_dout;
+		        end
+		        ring_ctr_reg[5]: begin
+		            // The CPU can use this slot
+		        end
+		        ring_ctr_reg[6]: begin
+		            // The CPU can use this slot
+		        end
+		        ring_ctr_reg[7]: begin
+		            // The CPU can use this slot
+		            tile_ctr_next = tile_ctr_reg + 1;
+		        end
+		        endcase
+	        end 
         end
     end
 
@@ -214,7 +227,7 @@ module vdp_fsm (
     assign hsync_out = hsync_pipe_reg[0];
     assign vsync_out = vsync_pipe_reg[0];
     assign vid_active_out = vid_active_pipe_reg[0];
-    assign bdr_active_out = bdr_active_pipe_next[0];
+    assign bdr_active_out = bdr_active_pipe_reg[0];
     assign last_pixel_out = last_pixel_pipe_reg[0];
     assign col_last_out = col_last_pipe_reg[0];
     assign row_last_out = row_last_pipe_reg[0];
