@@ -178,15 +178,17 @@ module vdp99 #(
 
     reg [3:0] color_reg;
     always @(*) begin
-        // XXX implement vdp_blank here when the VDP aps are ready to init things properly
 
         color_reg = 0;      // by default, color=black
 
-        (* parallel_case *)
-        case ( 1 )
-        bdr_active_out: color_reg = vdp_bg_color;
-        vid_active_out: color_reg = color_out;
-        endcase
+        // vdp_blank is an oxymoronic name...  Thanks for that and your bass-ackwards bit numbering TI!
+        if ( vdp_blank ) begin
+            (* parallel_case *)
+            case ( 1 )
+            bdr_active_out: color_reg = vdp_bg_color;
+            vid_active_out: color_reg = color_out;
+            endcase
+        end
     end
 
     assign color = color_reg;
