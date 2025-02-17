@@ -78,7 +78,7 @@ module z80_vdp99 (
     assign cpu_dout = cpu_dout_reg;
 
     // Connect the pxclk synchronized CPU bus to the VDP
-    vdp99 vdp (
+    vdp99 #( .VRAM_SIZE(12*1024) ) vdp (
         .reset(reset),
         .pxclk(pxclk),
         .wr_tick(vdp_wr_tick),

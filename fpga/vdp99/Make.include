@@ -12,4 +12,5 @@ LIB_VDP99_FILES=\
 	$(LIB_VDP99)/vdp_irq.v \
 	$(LIB_VDP99)/vdp_reg_ifce.v \
 	$(LIB_VDP99)/vgasync.v \
+	$(LIB_VDP99)/vdp_fsm.v \
 	$(LIB_VDP99)/vram.v

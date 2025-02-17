@@ -19,9 +19,12 @@
 //
 //**************************************************************************
 
-`timescale 10ns/1ns
+`timescale 1ns/1ns
 
 module tb();
+
+    localparam  VRAM_SIZE = 8192;
+    localparam  VRAM_ADDR_WIDTH = $clog2(VRAM_SIZE);
 
     reg clk             = 0;        // pixel clock
     reg reset           = 0;
@@ -29,12 +32,12 @@ module tb();
     reg rd_tick         = 0;
     reg mode            = 0;
     reg [7:0] din       = 'hz;
-    reg [13:0] dma_addr = 'hx;
+    reg [VRAM_ADDR_WIDTH-1:0] dma_addr = 'hx;
     reg dma_tick        = 0;
 
     wire [7:0] dout;
 
-    vram uut (
+    vram #( .VRAM_SIZE(VRAM_SIZE) ) uut (
         .reset(reset),
         .clk(clk),
         .rd_tick(rd_tick),
