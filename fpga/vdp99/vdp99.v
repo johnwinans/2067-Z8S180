@@ -21,7 +21,9 @@
 
 `default_nettype none
 
-module vdp99 (
+module vdp99 #(
+    parameter   VRAM_SIZE = 8*1024 // 12*1024 // 8*1024
+    ) (
     input   wire        pxclk,      // 25MHZ
     input   wire        reset,      // active high
 
@@ -36,6 +38,8 @@ module vdp99 (
     output  wire        hsync,
     output  wire        vsync
     );
+
+    localparam VRAM_ADDR_WIDTH = $clog2(VRAM_SIZE);
 
     wire [7:0]  regs[0:7];      // the 8 control regs
 
@@ -82,11 +86,11 @@ module vdp99 (
 
     // XXX the rd_tick has to be buffered to fit into the FSM timing
 
-    wire [13:0] dma_addr;
+    wire [VRAM_ADDR_WIDTH-1:0] dma_addr;
     wire dma_rd_tick;
 
     wire [7:0]  vram_dout;
-    vram #( .VRAM_SIZE(8192) ) mem
+    vram #( .VRAM_SIZE(VRAM_SIZE) ) mem
     (
         .reset(reset),
         .clk(pxclk),
@@ -132,7 +136,8 @@ module vdp99 (
     wire row_last_out;
     wire [3:0]  color_out;
 
-    vdp_fsm fsm (
+    vdp_fsm #( .VRAM_SIZE(VRAM_SIZE) ) fsm 
+    (
         .reset(reset),
         .pxclk(pxclk),
         .px_col(col),
@@ -190,7 +195,7 @@ module vdp99 (
 
     wire [7:0]  vdp_status = { irq, 7'b0 };
 
-    // XX fix this so don't send vram_dout from the last fsm DMA access! 
+    // XXX fix this so don't send vram_dout from the last fsm DMA access! 
     assign dout = rd_tick ? (mode==0 ? vram_dout : vdp_status ) : 'hx;
 
 endmodule

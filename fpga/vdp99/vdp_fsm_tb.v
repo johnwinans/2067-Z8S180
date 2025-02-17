@@ -23,6 +23,9 @@
 
 module tb();
 
+    localparam  VRAM_SIZE = 8192;
+    localparam  VRAM_ADDR_WIDTH = $clog2(VRAM_SIZE);
+
     reg reset                       = 0;
     reg clk                         = 0;    // pixel clock
     reg [2:0] vdp_mode              = 1;
@@ -39,7 +42,7 @@ module tb();
     reg [3:0] vdp_bg_color          = 2;
     reg [7:0] vram_dout             = 'hx;
 
-    wire [13:0] vdp_dma_addr;
+    wire [VRAM_ADDR_WIDTH-1:0] vdp_dma_addr;
     wire vdp_dma_rd_tick;
     wire [3:0] color;
 
@@ -59,7 +62,8 @@ module tb();
     wire col_last_out;
     wire row_last_out;
 
-    vdp_fsm uut (
+    vdp_fsm #( .VRAM_SIZE(VRAM_SIZE) ) uut
+    (
         .reset(reset),
         .pxclk(clk),
 //.px_col,
@@ -111,6 +115,9 @@ module tb();
     integer j;
 
     initial begin
+
+`ASSERT( 0 === 1 );  // XXX this is stale and no longer works
+$finish;
 
         #(clk_period*4);
         @(posedge clk);

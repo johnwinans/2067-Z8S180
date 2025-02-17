@@ -21,7 +21,10 @@
 
 `default_nettype none
 
-module vdp_fsm (
+module vdp_fsm #(
+    parameter VRAM_SIZE = 8*1024,
+    parameter VRAM_ADDR_WIDTH = $clog2(VRAM_SIZE)   // annoying this must be here to use in a port
+    ) (
     input   wire        reset,      // active high
     input   wire        pxclk,      // 25MHZ
 
@@ -40,7 +43,7 @@ module vdp_fsm (
     input   wire [3:0]  vdp_fg_color,           // text foreground
     input   wire [3:0]  vdp_bg_color,           // text and border background
     
-    output  wire [13:0] vdp_dma_addr,           // VRAM DMA access address
+    output  wire [VRAM_ADDR_WIDTH-1:0] vdp_dma_addr,  // VRAM DMA access address
     output  wire        vdp_dma_rd_tick,        // read vdp_dma_addr
     input   wire [7:0]  vram_dout,              // data from the VRAM
 
@@ -76,7 +79,7 @@ module vdp_fsm (
     reg         pixel_reg, pixel_next;          // used to delay the pixel by 1 clock
 
     reg         vdp_dma_rd_tick_reg, vdp_dma_rd_tick_next;
-    reg [13:0]  vdp_dma_addr_reg, vdp_dma_addr_next;
+    reg [VRAM_ADDR_WIDTH-1:0]  vdp_dma_addr_reg, vdp_dma_addr_next;
     reg [9:0]   tile_ctr_reg, tile_ctr_next;
     reg [9:0]   tile_ctr_row_reg, tile_ctr_row_next;
 
