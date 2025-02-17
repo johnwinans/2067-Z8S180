@@ -80,7 +80,7 @@ module vdp_fsm (
     reg [9:0]   tile_ctr_reg, tile_ctr_next;
     reg [9:0]   tile_ctr_row_reg, tile_ctr_row_next;
 
-    localparam  PIPE_LEN = 6;
+    localparam  PIPE_LEN = 6*2; // double due to clock doubling
     reg [PIPE_LEN-1:0]  hsync_pipe_reg, hsync_pipe_next;
     reg [PIPE_LEN-1:0]  vsync_pipe_reg, vsync_pipe_next;
     reg [PIPE_LEN-1:0]  vid_active_pipe_reg, vid_active_pipe_next;
@@ -131,29 +131,19 @@ module vdp_fsm (
 
     // pipeline delay for VGA signals
     always @(*) begin
-        hsync_pipe_next = hsync_pipe_reg;
-        vsync_pipe_next = vsync_pipe_reg;
-        vid_active_pipe_next = vid_active_pipe_reg;
-        bdr_active_pipe_next = bdr_active_pipe_reg;
-        last_pixel_pipe_next = last_pixel_pipe_reg;
-        col_last_pipe_next = col_last_pipe_reg;
-        row_last_pipe_next = row_last_pipe_reg;
-
-        if ( px_col[0] ) begin
-            hsync_pipe_next = { hsync, hsync_pipe_reg[PIPE_LEN-1:1] };
-            vsync_pipe_next = { vsync, vsync_pipe_reg[PIPE_LEN-1:1] };
-            vid_active_pipe_next = { vid_active, vid_active_pipe_reg[PIPE_LEN-1:1] };
-            bdr_active_pipe_next = { bdr_active, bdr_active_pipe_reg[PIPE_LEN-1:1] };
-            last_pixel_pipe_next = { last_pixel, last_pixel_pipe_reg[PIPE_LEN-1:1] };
-            col_last_pipe_next = { col_last, col_last_pipe_reg[PIPE_LEN-1:1] };
-            row_last_pipe_next = { row_last, row_last_pipe_reg[PIPE_LEN-1:1] };
-        end
+        hsync_pipe_next = { hsync, hsync_pipe_reg[PIPE_LEN-1:1] };
+        vsync_pipe_next = { vsync, vsync_pipe_reg[PIPE_LEN-1:1] };
+        vid_active_pipe_next = { vid_active, vid_active_pipe_reg[PIPE_LEN-1:1] };
+        bdr_active_pipe_next = { bdr_active, bdr_active_pipe_reg[PIPE_LEN-1:1] };
+        last_pixel_pipe_next = { last_pixel, last_pixel_pipe_reg[PIPE_LEN-1:1] };
+        col_last_pipe_next = { col_last, col_last_pipe_reg[PIPE_LEN-1:1] };
+        row_last_pipe_next = { row_last, row_last_pipe_reg[PIPE_LEN-1:1] };
     end
 
     always @(*) begin
 
-        vdp_dma_rd_tick_next = 0;
-        vdp_dma_addr_next = 'hx;
+        vdp_dma_rd_tick_next = vdp_dma_rd_tick_reg;
+        vdp_dma_addr_next = vdp_dma_addr_reg;
         tile_ctr_next = tile_ctr_reg;
         name_next = name_reg;
         pattern_next = pattern_reg;
@@ -170,6 +160,8 @@ module vdp_fsm (
 
         // only on every other clock cycle to divide the pxclock by 2
         if ( px_col[0] ) begin
+            vdp_dma_rd_tick_next = 0;
+            vdp_dma_addr_next = 'hx;
 
 	        ring_ctr_next = { ring_ctr_reg[6:0], ring_ctr_reg[7] }; // rotate left
 	        pattern_next = { pattern_reg[6:0], 1'b0 };              // shift left on each pxclk
