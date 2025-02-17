@@ -23,13 +23,15 @@
 // after the chip boots before it can be reliably read.  The accepted solution
 // is to include a counter to wait as the chip comes out of reset.
 
-module memory (
-    input               rd_clk,
-    input wire [11:0]   addr,
-    output reg [7:0]    data
+module memory #(
+    parameter VRAM_SIZE = 4096
+    ) (
+    input                               rd_clk,
+    input wire [$clog2(VRAM_SIZE)-1:0]  addr,
+    output reg [7:0]                    data
     );
 
-    reg [7:0] mem [0:4095];
+    reg [7:0] mem [0:VRAM_SIZE-1];
 
     initial begin
         $readmemh("rom.hex", mem);

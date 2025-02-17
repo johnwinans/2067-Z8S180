@@ -21,7 +21,9 @@
 
 `default_nettype none
 
-module z80_vdp99 (
+module z80_vdp99 #(
+    parameter VRAM_SIZE = 8*1024
+    ) (
     input wire          reset,
     input wire          phi,            // the z80 PHI clock
     input wire          pxclk,          // the pixel clock
@@ -78,7 +80,7 @@ module z80_vdp99 (
     assign cpu_dout = cpu_dout_reg;
 
     // Connect the pxclk synchronized CPU bus to the VDP
-    vdp99 #( .VRAM_SIZE(12*1024) ) vdp (
+    vdp99 #( .VRAM_SIZE(VRAM_SIZE) ) vdp (
         .reset(reset),
         .pxclk(pxclk),
         .wr_tick(vdp_wr_tick),
