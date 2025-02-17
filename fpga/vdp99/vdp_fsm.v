@@ -174,7 +174,7 @@ module vdp_fsm (
 		        ring_ctr_reg[0]: begin
 		            vdp_dma_addr_next = { vdp_name_base, tile_ctr_reg };
 		            vdp_dma_rd_tick_next = 1;
-                    if ( vid_active_pipe_reg[PIPE_LEN-1] == 0 )
+                    if ( vid_active_pipe_reg[PIPE_LEN-2] == 0 ) // -2 here due to clk doubling
 	                    if (px_row[3:0]!='b0000)                // XXX will only work if top border is %8 rows high
 	                        tile_ctr_next = tile_ctr_row_reg;   // reload the tile_counter for the current row 
 	                    else
