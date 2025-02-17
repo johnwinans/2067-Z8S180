@@ -193,7 +193,7 @@ module vdp_fsm (
 		        end
 		        ring_ctr_reg[3]: begin
 		            pattern_next = vram_dout;
-		            vdp_dma_addr_next = { vdp_color_base, name_reg[7:3] };
+		            vdp_dma_addr_next = { vdp_color_base, 1'b0, name_reg[7:3] };
 		            vdp_dma_rd_tick_next = 1;
 		        end
 		        ring_ctr_reg[4]: begin
