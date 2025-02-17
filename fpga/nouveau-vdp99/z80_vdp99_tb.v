@@ -187,7 +187,7 @@ module tb ();
 
 
         vdp_reg <= 0;
-        vdp_reg_value <= 'h02;      // graphics mode 1
+        vdp_reg_value <= 'h00;      // graphics mode 1
         do_reg_write <= 1;
         @(negedge do_reg_write);
 
