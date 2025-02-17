@@ -177,7 +177,7 @@ module tb ();
         $dumpvars;
 
         // put some useful test data into the VRAM
-        $readmemh( "z80_vdp99_tb_vram.hex", uut.vdp.mem.vram );
+        $readmemh( "z80_vdp99_tb.ram", uut.vdp.mem.vram );
 
 
         reset <= 1;
