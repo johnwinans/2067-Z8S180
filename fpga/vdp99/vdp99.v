@@ -44,7 +44,7 @@ module vdp99 #(
     wire [7:0]  regs[0:7];      // the 8 control regs
 
     // extract register bits into things with useful names
-    wire [2:0]  vdp_mode            = { regs[0][1], regs[1][3], regs[1][4] };
+    wire [2:0]  vdp_mode            = { regs[1][4], regs[1][3], regs[0][1] };
     wire        vdp_ie              = regs[1][5];
     wire        vdp_blank           = regs[1][6];
     wire        vdp_smag            = regs[1][0];

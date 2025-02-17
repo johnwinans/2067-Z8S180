@@ -188,11 +188,14 @@ module tb ();
 
         vdp_reg <= 0;
         vdp_reg_value <= 'h00;      // graphics mode 1
+        //vdp_reg_value <= 'h02;      // graphics mode 2
         do_reg_write <= 1;
         @(negedge do_reg_write);
 
         vdp_reg <= 1;
         vdp_reg_value <= 'h40;      // graphics mode 1, enable screen
+        //vdp_reg_value <= 'h50;      // text mode, enable screen
+        //vdp_reg_value <= 'h40;      // graphics mode 2, enable screen
         do_reg_write <= 1;
         @(negedge do_reg_write);
 
@@ -203,6 +206,7 @@ module tb ();
 
         vdp_reg <= 3;
         vdp_reg_value <= 'h30;      // color table 0x0c00 - 0x0c20
+        //vdp_reg_value <= 'h80;      // color table 0x2000 - 0x3800 (for mode 2 gfx)
         do_reg_write <= 1;
         @(negedge do_reg_write);
 

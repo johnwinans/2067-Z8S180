@@ -190,20 +190,56 @@ module vdp_fsm #(
 		            // The CPU can use this slot
 		        end
 		        ring_ctr_reg[2]: begin
-                    // use 3:1 here because we are doubling the rows
-		            vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[3:1] };    // name*8 + collumn row number
-		            vdp_dma_rd_tick_next = 1;
+                    vdp_dma_rd_tick_next = 1;
+                    case ( vdp_mode ) 
+                    3'b000:     // graphics mode 1
+                        // name*8 + character row number ( use 3:1 because we are doubling the rows )
+		                vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[3:1] };
+                    3'b001:     // graphics mode 2
+                        // tile_ctr_reg % 256 gives us the screen partition
+		                vdp_dma_addr_next = { vdp_pattern_base[2], tile_ctr_reg[9:8], name_reg, px_row[3:1] };
+                    //3'b010:     // multicolor mode
+                    3'b100:     // text mode
+                        // name*8 + character row number ( use 3:1 because we are doubling the rows )
+		                vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[3:1] };
+                    default:
+                        vdp_dma_rd_tick_next = 0;
+                    endcase
 		        end
 		        ring_ctr_reg[3]: begin
 		            pattern_next = vram_dout;
-		            vdp_dma_addr_next = { vdp_color_base, 1'b0, name_reg[7:3] };
 		            vdp_dma_rd_tick_next = 1;
+                    case ( vdp_mode )
+                    3'b000:     // graphics mode 1
+                        vdp_dma_addr_next = { vdp_color_base, 1'b0, name_reg[7:3] };
+                    3'b001:     // graphics mode 2
+                        vdp_dma_addr_next = { vdp_color_base[7], tile_ctr_reg[9:8], name_reg, px_row[3:1] };
+                    //3'b010:     // multicolor mode
+                    //3'b100:     // text mode
+		            default: begin
+                        // multicolor & text have no color table
+                        vdp_dma_rd_tick_next = 0;
+                    end
+                    endcase
 		        end
 		        ring_ctr_reg[4]: begin
-		            color_next = vram_dout;
+                    case ( vdp_mode )
+                    3'b100:        // text mode
+                        color_next = { vdp_fg_color, vdp_bg_color };
+                    //3'b010:     // multicolor mode (get color from pattern table & render differently)
+                    //3'b000:     // graphics mode 1
+                    //3'b001:     // graphics mode 2
+                    default:
+		                color_next = vram_dout;
+                    endcase
 		        end
 		        ring_ctr_reg[5]: begin
 		            // The CPU can use this slot
+                    if ( vdp_mode == 3'b100 ) begin
+                        // text mode
+                        ring_ctr_next = 1;                  // jam-sync to 1 for text mode (6-bit wide tiles)
+                        tile_ctr_next = tile_ctr_reg + 1;   // move on to next tile early
+                    end
 		        end
 		        ring_ctr_reg[6]: begin
 		            // The CPU can use this slot
