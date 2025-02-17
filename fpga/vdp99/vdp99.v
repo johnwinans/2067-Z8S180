@@ -39,7 +39,6 @@ module vdp99 (
 
     wire [7:0]  regs[0:7];      // the 8 control regs
 
-`ifdef NOT_YET
     // extract register bits into things with useful names
     wire [2:0]  vdp_mode            = { regs[0][1], regs[1][3], regs[1][4] };
     wire        vdp_ie              = regs[1][5];
@@ -52,7 +51,6 @@ module vdp99 (
     wire [6:0]  vdp_sprite_att_base = regs[5][6:0];
     wire [2:0]  vdp_sprite_pat_base = regs[6][2:0];
     wire [3:0]  vdp_fg_color        = regs[7][7:4];
-`endif
     wire [3:0]  vdp_bg_color        = regs[7][3:0];
 
     vdp_reg_ifce icfe (
@@ -82,62 +80,117 @@ module vdp99 (
     wire irq_tick = last_pixel;
 
 
+    // XXX the rd_tick has to be buffered to fit into the FSM timing
+
+    wire [13:0] dma_addr;
+    wire dma_rd_tick;
+
     wire [7:0]  vram_dout;
     vram #( .VRAM_SIZE(8192) ) mem
     (
         .reset(reset),
         .clk(pxclk),
-        .rd_tick(rd_tick),
+        .dma_addr(dma_addr),
+        .dma_rd_tick(dma_rd_tick),
+        .rd_tick(rd_tick),              // shouldn't use the CPU rd_tick, prefer a FSM sync'd signal here
         .wr_tick(wr_tick),
         .mode(mode),
         .din(din),
         .dout(vram_dout)
     );
 
-
-
     wire [9:0] col;
     wire [9:0] row;
     wire vid_active;
+    wire col_last;
+    wire row_last;
     wire last_pixel;
     wire bdr_active;
+    wire hsync_in;
+    wire vsync_in;
 
     vgasync v (
         .reset(reset),
         .clk(pxclk),
-        .hsync(hsync),
-        .vsync(vsync),
+        .hsync(hsync_in),
+        .vsync(vsync_in),
         .col(col),
         .row(row),
         .vid_active(vid_active),
-        //.col_last,
-        //.row_last,
+        .col_last(col_last),
+        .row_last(row_last),
         .bdr_active(bdr_active),
         .end_of_frame(last_pixel)
     );
 
+    wire hsync_out;
+    wire vsync_out;
+    wire vid_active_out;
+    wire bdr_active_out;
+    wire last_pixel_out;
+    wire col_last_out;
+    wire row_last_out;
+    wire [3:0]  color_out;
+
+    vdp_fsm fsm (
+        .reset(reset),
+        .pxclk(pxclk),
+        .px_col(col),
+        .px_row(row),
+        .vdp_mode(vdp_mode),
+        .vdp_blank(vdp_blank),
+        .vdp_smag(vdp_smag),
+        .vdp_ssiz(vdp_ssiz),
+        .vdp_name_base(vdp_name_base),
+        .vdp_color_base(vdp_color_base),
+        .vdp_pattern_base(vdp_pattern_base),
+        .vdp_sprite_att_base(vdp_sprite_att_base),
+        .vdp_sprite_pat_base(vdp_sprite_pat_base),
+        .vdp_fg_color(vdp_fg_color),
+        .vdp_bg_color(vdp_fg_color),
+
+        .vdp_dma_addr(dma_addr),
+        .vdp_dma_rd_tick(dma_rd_tick),
+        .vram_dout(vram_dout),
+
+        .hsync(hsync_in),
+        .vsync(vsync_in),
+        .vid_active(vid_active),
+        .bdr_active(bdr_active),
+        .last_pixel(last_pixel),
+        .col_last(col_last),
+        .row_last(row_last),
+
+        .hsync_out(hsync_out),
+        .vsync_out(vsync_out),
+        .vid_active_out(vid_active_out),
+        .bdr_active_out(bdr_active_out),
+        .last_pixel_out(last_pixel_out),
+        .col_last_out(col_last_out),
+        .row_last_out(row_last_out),
+        .color_out(color_out)
+    );
+
     reg [3:0] color_reg;
     always @(*) begin
-        // until we have the FSM and pipeline working, this will do
-
         // XXX implement vdp_blank here when the VDP aps are ready to init things properly
 
-        color_reg = 0;      // black
+        color_reg = 0;      // by default, color=black
 
         (* parallel_case *)
         case ( 1 )
-        bdr_active: color_reg = vdp_bg_color;
-        vid_active: color_reg = regs[col[5:3]][3:0];        // XXX funky 8-px wide color bars
+        bdr_active_out: color_reg = vdp_bg_color;
+        vid_active_out: color_reg = color_out;
         endcase
     end
 
-
-    // XXX use every control register so that the compiler can not optimize them away
-    assign color = color_reg; // vid_active ? regs[col[6:4]][3:0] : 0;
-
+    assign color = color_reg;
+    assign hsync = hsync_out;
+    assign vsync = vsync_out;
 
     wire [7:0]  vdp_status = { irq, 7'b0 };
 
+    // XX fix this so don't send vram_dout from the last fsm DMA access! 
     assign dout = rd_tick ? (mode==0 ? vram_dout : vdp_status ) : 'hx;
 
 endmodule
