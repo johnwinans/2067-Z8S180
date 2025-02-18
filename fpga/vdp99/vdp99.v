@@ -152,7 +152,7 @@ module vdp99 #(
         .vdp_sprite_att_base(vdp_sprite_att_base),
         .vdp_sprite_pat_base(vdp_sprite_pat_base),
         .vdp_fg_color(vdp_fg_color),
-        .vdp_bg_color(vdp_fg_color),
+        .vdp_bg_color(vdp_bg_color),
 
         .vdp_dma_addr(dma_addr),
         .vdp_dma_rd_tick(dma_rd_tick),
