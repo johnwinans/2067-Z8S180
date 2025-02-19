@@ -73,16 +73,17 @@ module vdp99 #(
         .r7(regs[7])
     );
 
+    wire irq_status;
+    wire irq_tick = last_pixel;
+    assign irq = vdp_ie ? irq_status : 0;
+
     vdp_irq virq (
         .clk(pxclk),
         .reset(reset),
         .irq_tick(irq_tick),
         .rd_tick(rd_tick && mode==1),
-        .irq(irq)
+        .irq(irq_status)
     );
-
-    wire irq_tick = last_pixel;
-
 
     // XXX the CPU's rd_tick probably has to be buffered to fit into the FSM timing
 
