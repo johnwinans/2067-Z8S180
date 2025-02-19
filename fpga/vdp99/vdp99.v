@@ -84,7 +84,7 @@ module vdp99 #(
     wire irq_tick = last_pixel;
 
 
-    // XXX the rd_tick has to be buffered to fit into the FSM timing
+    // XXX the CPU's rd_tick probably has to be buffered to fit into the FSM timing
 
     wire [VRAM_ADDR_WIDTH-1:0] dma_addr;
     wire dma_rd_tick;
@@ -106,6 +106,7 @@ module vdp99 #(
     wire [9:0] col;
     wire [9:0] row;
     wire vid_active;
+    wire vid_active0;
     wire col_last;
     wire row_last;
     wire last_pixel;
@@ -116,11 +117,13 @@ module vdp99 #(
     vgasync v (
         .reset(reset),
         .clk(pxclk),
+        .text_mode(vdp_mode==3'b100),
         .hsync(hsync_in),
         .vsync(vsync_in),
         .col(col),
         .row(row),
         .vid_active(vid_active),
+        .vid_active0(vid_active0),
         .col_last(col_last),
         .row_last(row_last),
         .bdr_active(bdr_active),
@@ -161,6 +164,7 @@ module vdp99 #(
         .hsync(hsync_in),
         .vsync(vsync_in),
         .vid_active(vid_active),
+        .vid_active0(vid_active0),
         .bdr_active(bdr_active),
         .last_pixel(last_pixel),
         .col_last(col_last),

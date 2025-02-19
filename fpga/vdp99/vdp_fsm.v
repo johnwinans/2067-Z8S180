@@ -51,6 +51,7 @@ module vdp_fsm #(
     input   wire        hsync,
     input   wire        vsync,
     input   wire        vid_active,
+    input   wire        vid_active0,            // 1 px_clk early view of vid_active
     input   wire        bdr_active,
     input   wire        last_pixel,
     input   wire        col_last,
@@ -169,12 +170,13 @@ module vdp_fsm #(
 	    end
 
         // only on every other clock cycle to divide the pxclock by 2
+        // XXX This will fail by 1/2 VDP pixel if the border does not end when px_col is odd
         if ( px_col[0] ) begin
             vdp_dma_rd_tick_next = 0;
             vdp_dma_addr_next = 'hx;
 
             if ( col_last )
-                // XXX this is sloppy because it depends on the col_last tick occurring on an odd pixel column
+                // XXX this is sloppy because it depends on the col_last tick occurring on an odd pixel collumn
                 ring_ctr_next = 1;                      // this is needed to keep text mode in phase
             else
 	            ring_ctr_next = { ring_ctr_reg[6:0], ring_ctr_reg[7] }; // rotate left
