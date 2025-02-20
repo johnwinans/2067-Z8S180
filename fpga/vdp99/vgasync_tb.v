@@ -2,8 +2,9 @@
 
 module tb();
 
-    reg clk;        // pixel clock
-    reg reset;
+    reg clk         = 0;        // pixel clock
+    reg reset       = 0;
+    reg text_mode   = 0;
 
     vgasync
     #(
@@ -22,21 +23,31 @@ module tb();
         .VTB(2)
     ) uut (
         .clk(clk),
-        .reset(reset)
+        .reset(reset),
+        .text_mode(text_mode)
     );
+
+`define ASSERT(cond) if ( !(cond) ) $display("%s:%0d %m time:%3t ASSERTION (cond) FAILED!", `__FILE__, `__LINE__, $time );
+
+    localparam clk_period = (1.0/25000000)*1000000000; // clk is running at 25MHZ
+    always #(clk_period/2) clk = ~clk;
 
     initial begin
         $dumpfile("vgasync_tb.vcd");
         $dumpvars;
-        clk = 0;
-    end
     
-    always #1 clk = ~clk;
+        #(clk_period*4);
+        @(posedge clk);
+        reset <= 1;
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+        reset <= 0;
 
-    initial begin
-        reset = 1;
-        #4;
-        reset = 0;
+        @(posedge clk);
+
+
         #100000;
         $finish;
     end
