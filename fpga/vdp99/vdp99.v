@@ -75,7 +75,6 @@ module vdp99 #(
 
     wire irq_status;
     wire irq_tick = last_pixel;
-    assign irq = vdp_ie ? irq_status : 0;
 
     vdp_irq virq (
         .clk(pxclk),
@@ -200,7 +199,8 @@ module vdp99 #(
     assign hsync = hsync_out;
     assign vsync = vsync_out;
 
-    wire [7:0]  vdp_status = { irq, 7'b0 };
+    assign irq = vdp_ie ? irq_status : 0;
+    wire [7:0]  vdp_status = { irq_status, 7'b0 };
 
     // XXX fix this so don't send vram_dout from the last fsm DMA access! 
     assign dout = rd_tick ? (mode==0 ? vram_dout : vdp_status ) : 'hx;
