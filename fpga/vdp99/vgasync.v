@@ -22,16 +22,18 @@ module vgasync #(
     parameter  HC_BITS = $clog2(HC_MAX),            // how many bits do we need to count this high?
     parameter  VC_BITS = $clog2(VC_MAX)             // how many bits do we need to count this high?
     ) (
-    input wire                  clk,       // px clock
+    input wire                  clk,            // px clock
     input wire                  reset,
+    input wire                  text_mode,      // true when running in text mode (wider borders)
     output wire                 hsync,
     output wire                 vsync,
-    output wire [HC_BITS-1:0]   col,        // current px column
-    output wire                 col_last,   // col == max value 
-    output wire [VC_BITS-1:0]   row,        // current pixel row
-    output wire                 row_last,   // col == max value 
-    output wire                 vid_active, // true when video is active (not including borders)
-    output wire                 bdr_active, // true when border video is active 
+    output wire [HC_BITS-1:0]   col,            // current px column
+    output wire                 col_last,       // col == max value 
+    output wire [VC_BITS-1:0]   row,            // current pixel row
+    output wire                 row_last,       // col == max value 
+    output wire                 vid_active,     // true when video is active (not including borders)
+    output wire                 vid_active0,    // t-1 async 'next' signal value of vid_active
+    output wire                 bdr_active,     // true when border video is active 
     output wire                 end_of_frame    // true for one tick at the end of a frame
     );
 
@@ -64,6 +66,8 @@ module vgasync #(
     localparam  VVIS_BEGIN  = VTB_BEGIN;        // first row of the vertical visible video
     localparam  VVIS_END    = VBB_END;          // first row past end of the vertical visible video
 
+    localparam  TEXT_MODE_PADDING = 16;         // make the left & right borders 8px wider when in text mode
+
     reg [HC_BITS-1:0]   hctr_reg, hctr_next;    // pixel counter
     reg [VC_BITS-1:0]   vctr_reg, vctr_next;    // line counter
     reg                 vid_active_reg, vid_active_next;
@@ -71,6 +75,7 @@ module vgasync #(
     reg                 vsync_reg, vsync_next;
     reg                 border_reg, border_next;
     reg                 visible_next;
+
 
     always @ (posedge clk) 
     begin
@@ -101,7 +106,11 @@ module vgasync #(
         if ( hctr_next == 0 )
             vctr_next = ( vctr_reg >= VC_MAX-1 ) ? 0 : vctr_reg + 1;
 
-        vid_active_next = hctr_next >= HVID_BEGIN && hctr_next < HVID_END && vctr_next >= VVID_BEGIN && vctr_next < VVID_END;
+        vid_active_next = hctr_next >= ( text_mode ? HVID_BEGIN+TEXT_MODE_PADDING : HVID_BEGIN )
+                            && hctr_next < ( text_mode ? HVID_END-TEXT_MODE_PADDING : HVID_END )
+                            && vctr_next >= VVID_BEGIN
+                            && vctr_next < VVID_END;
+
         visible_next = hctr_next >= HVIS_BEGIN && hctr_next < HVIS_END && vctr_next >= VVIS_BEGIN && vctr_next < VVIS_END;
 
         border_next = visible_next && !vid_active_next;
@@ -112,6 +121,7 @@ module vgasync #(
     end
 
     assign vid_active = vid_active_reg;
+    assign vid_active0 = vid_active_next;               // let the FSM have a preview
     assign hsync = hsync_reg;
     assign vsync = vsync_reg;
     assign col = hctr_reg;

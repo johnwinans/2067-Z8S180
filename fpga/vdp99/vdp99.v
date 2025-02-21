@@ -73,18 +73,18 @@ module vdp99 #(
         .r7(regs[7])
     );
 
+    wire irq_status;
+    wire irq_tick = last_pixel;
+
     vdp_irq virq (
         .clk(pxclk),
         .reset(reset),
         .irq_tick(irq_tick),
         .rd_tick(rd_tick && mode==1),
-        .irq(irq)
+        .irq(irq_status)
     );
 
-    wire irq_tick = last_pixel;
-
-
-    // XXX the rd_tick has to be buffered to fit into the FSM timing
+    // XXX the CPU's rd_tick probably has to be buffered to fit into the FSM timing
 
     wire [VRAM_ADDR_WIDTH-1:0] dma_addr;
     wire dma_rd_tick;
@@ -106,6 +106,7 @@ module vdp99 #(
     wire [9:0] col;
     wire [9:0] row;
     wire vid_active;
+    wire vid_active0;
     wire col_last;
     wire row_last;
     wire last_pixel;
@@ -116,11 +117,13 @@ module vdp99 #(
     vgasync v (
         .reset(reset),
         .clk(pxclk),
+        .text_mode(vdp_mode==3'b100),
         .hsync(hsync_in),
         .vsync(vsync_in),
         .col(col),
         .row(row),
         .vid_active(vid_active),
+        .vid_active0(vid_active0),
         .col_last(col_last),
         .row_last(row_last),
         .bdr_active(bdr_active),
@@ -152,7 +155,7 @@ module vdp99 #(
         .vdp_sprite_att_base(vdp_sprite_att_base),
         .vdp_sprite_pat_base(vdp_sprite_pat_base),
         .vdp_fg_color(vdp_fg_color),
-        .vdp_bg_color(vdp_fg_color),
+        .vdp_bg_color(vdp_bg_color),
 
         .vdp_dma_addr(dma_addr),
         .vdp_dma_rd_tick(dma_rd_tick),
@@ -161,6 +164,7 @@ module vdp99 #(
         .hsync(hsync_in),
         .vsync(vsync_in),
         .vid_active(vid_active),
+        .vid_active0(vid_active0),
         .bdr_active(bdr_active),
         .last_pixel(last_pixel),
         .col_last(col_last),
@@ -195,7 +199,8 @@ module vdp99 #(
     assign hsync = hsync_out;
     assign vsync = vsync_out;
 
-    wire [7:0]  vdp_status = { irq, 7'b0 };
+    assign irq = vdp_ie ? irq_status : 0;
+    wire [7:0]  vdp_status = { irq_status, 7'b0 };
 
     // XXX fix this so don't send vram_dout from the last fsm DMA access! 
     assign dout = rd_tick ? (mode==0 ? vram_dout : vdp_status ) : 'hx;

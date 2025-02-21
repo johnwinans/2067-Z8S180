@@ -193,9 +193,10 @@ module tb ();
         @(negedge do_reg_write);
 
         vdp_reg <= 1;
-        vdp_reg_value <= 'h40;      // graphics mode 1, enable screen
-        //vdp_reg_value <= 'h50;      // text mode, enable screen
-        //vdp_reg_value <= 'h40;      // graphics mode 2, enable screen
+        //vdp_reg_value <= 'h60;      // graphics mode 1, enable screen, IE
+        vdp_reg_value <= 'h70;      // text mode, enable screen, IE
+        //vdp_reg_value <= 'h50;      // text mode, enable screen, IE=0
+        //vdp_reg_value <= 'h60;      // graphics mode 2, enable screen, IE
         do_reg_write <= 1;
         @(negedge do_reg_write);
 

@@ -46,10 +46,14 @@ module vdp_reg_ifce(
     reg [7:0]   w0_reg, w0_next;
     reg         state_reg, state_next;  // 0 = write to w0_reg next, else write to reg
 
+    integer i;
+
     always @(posedge clk) begin
         if ( reset ) begin
             w0_reg <= 0;
             state_reg <= 0;
+            for (i=0; i<8; i=i+1)
+                vdp_regs[i] <= 0;       // blank screen, disable IRQs, ...
         end else begin
             w0_reg <= w0_next;
             state_reg <= state_next;

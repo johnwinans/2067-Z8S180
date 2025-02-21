@@ -84,7 +84,7 @@ module top (
 
     // a boot ROM
     wire [7:0]  rom_data;           // ROM output data bus
-    memory rom ( .rd_clk(phi), .addr(a[11:0]), .data(rom_data) );
+    memory #( .VRAM_SIZE(5*512) ) rom ( .rd_clk(phi), .addr(a), .data(rom_data) );
 
     // consider debouncing s1_n using hwclk (no other clock possible)
     wire reset = ~s1_n || ~pll_locked;      // assert reset when PLL is starting up & unstable
@@ -202,7 +202,7 @@ module top (
     wire vdp_vsync;
     wire vdp_irq;
 
-    z80_vdp99 vdp (
+    z80_vdp99 #( .VRAM_SIZE(12*1024+3*512) ) vdp (
         .reset,
         .phi(phi),
         .pxclk(hwclk),
