@@ -25,9 +25,9 @@
 
 module color_palette (
     input wire [3:0]    color,
-    output wire [1:0]   red,
-    output wire [1:0]   grn,
-    output wire [1:0]   blu
+    output reg [1:0]   red,         // these are reg because I am lazy
+    output reg [1:0]   grn,
+    output reg [1:0]   blu
     );
 
     always @(*) begin
