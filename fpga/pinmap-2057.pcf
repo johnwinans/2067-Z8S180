@@ -100,9 +100,12 @@ set_io -nowarn -pullup yes  sd_miso     121
 set_io -nowarn -pullup yes  sd_det      125
 
 # VGA interface pins
-set_io -nowarn              vga_red     120
-set_io -nowarn              vga_grn     122
-set_io -nowarn              vga_blu     128
+set_io -nowarn              vga_red[0]     120
+set_io -nowarn              vga_red[1]     98
+set_io -nowarn              vga_grn[0]     122
+set_io -nowarn              vga_grn[1]     96
+set_io -nowarn              vga_blu[0]     128
+set_io -nowarn              vga_blu[1]     94
 
 set_io -nowarn              vga_hsync   104
 set_io -nowarn              vga_vsync   106

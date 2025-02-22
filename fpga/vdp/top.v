@@ -25,21 +25,27 @@ module top (
     input   wire        hwclk,
     input   wire        s1_n,
     input   wire        s2_n,
-    output  wire        vga_red,
-    output  wire        vga_grn,
-    output  wire        vga_blu,
+    output  wire [1:0]  vga_red,
+    output  wire [1:0]  vga_grn,
+    output  wire [1:0]  vga_blu,
     output  wire        vga_hsync,
     output  wire        vga_vsync,
     output  wire [7:0]  led
     );
 
+    wire vid_red;
+    wire vid_grn;
+    wire vid_blu;
+    assign vga_red = { vid_red, vid_red };
+    assign vga_grn = { vid_grn, vid_grn };
+    assign vga_blu = { vid_blu, vid_blu };
 
     video vdp ( 
         .pxclk(hwclk),
         .reset(~s1_n),      // active high
-        .vga_red(vga_red),
-        .vga_grn(vga_grn),
-        .vga_blu(vga_blu),
+        .vga_red(vid_red),
+        .vga_grn(vid_grn),
+        .vga_blu(vid_blu),
         .vga_hsync(vga_hsync),
         .vga_vsync(vga_vsync)
         );
