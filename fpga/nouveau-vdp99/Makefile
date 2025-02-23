@@ -17,6 +17,7 @@ TBFILES= \
 	memory.v \
 	$(LIB_VDP99_FILES) \
 	$(LIB_UTILS_FILES) \
+	color_palette.v\
 	z80_vdp99.v
 
 FILES=\

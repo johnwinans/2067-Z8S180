@@ -24,9 +24,9 @@
 module video (
     input   wire        pxclk,      // 25MHZ
     input   wire        reset,      // active high
-    output  wire        vga_red,
-    output  wire        vga_grn,
-    output  wire        vga_blu,
+    output  wire [1:0]  vga_red,
+    output  wire [1:0]  vga_grn,
+    output  wire [1:0]  vga_blu,
     output  wire        vga_hsync,
     output  wire        vga_vsync
     );
@@ -78,6 +78,13 @@ module video (
 		color_rdata     <= color_mem[color_raddr];
 	end
 
+    wire vid_red;
+    wire vid_grn;
+    wire vid_blu;
+    assign vga_red = { vid_red, vid_red };
+    assign vga_grn = { vid_grn, vid_grn };
+    assign vga_blu = { vid_blu, vid_blu };
+
     vdp_table_test vdp (
         .pxclk(pxclk),
         .reset(reset),
@@ -89,9 +96,9 @@ module video (
         .border_in(vs_bdr),
         .hsync_out(vdp_hsync),
         .vsync_out(vdp_vsync),
-        .red(vga_red),
-        .grn(vga_grn),
-        .blu(vga_blu),
+        .red(vid_red),
+        .grn(vid_grn),
+        .blu(vid_blu),
         .name_raddr(name_raddr),
         .name_rdata(name_rdata),
         .pattern_raddr(pattern_raddr),

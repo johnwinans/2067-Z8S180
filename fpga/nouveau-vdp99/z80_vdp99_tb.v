@@ -72,7 +72,6 @@ module tb ();
     //      vdp_reg <= 3;
     //      vdp_reg_value <= 12;
     //      do_reg_write <= 1;
-    //      @(posedge phi);
     //      @(negedge do_reg_write);        // wait for this to set it back to 0
 
     reg [2:0]   vdp_reg         = 0;

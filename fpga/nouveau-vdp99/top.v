@@ -66,9 +66,9 @@ module top (
     input wire          sd_miso,
     input wire          sd_det,
 
-    output  wire        vga_red,
-    output  wire        vga_grn,
-    output  wire        vga_blu,
+    output  wire [1:0]  vga_red,
+    output  wire [1:0]  vga_grn,
+    output  wire [1:0]  vga_blu,
     output  wire        vga_hsync,
     output  wire        vga_vsync,
 
@@ -217,10 +217,19 @@ module top (
         .vsync(vdp_vsync)
     );
 
+
+    color_palette palette (
+        .color(vdp_color),
+        .red(vga_red),
+        .grn(vga_grn),
+        .blu(vga_blu)
+    );
+/*
     // XXX a hack for now.  Need a decoder & 6-bit DAC for TI99 VDP colors 
-    assign vga_red = vdp_color[2];
-    assign vga_grn = vdp_color[1];
-    assign vga_blu = vdp_color[0];
+    assign vga_red = { vdp_color[2], vdp_color[2] };
+    assign vga_grn = { vdp_color[1], vdp_color[1] };
+    assign vga_blu = { vdp_color[0], vdp_color[0] };
+*/
     assign vga_hsync = ~vdp_hsync;
     assign vga_vsync = ~vdp_vsync;
 
