@@ -183,8 +183,11 @@ module vdp_fsm #(
 
 	        pattern_next = { pattern_reg[6:0], 1'b0 };              // shift left on each pxclk
             pixel_next = pattern_reg[7];
+
             color_out_next = pixel_reg ? color_reg[7:4] : color_reg[3:0];
-	
+            if ( color_out_next == 0 )
+                color_out_next = vdp_bg_color;      // transparent, show bgcolor from vdp reg 7  
+
 	        if (vid_active) begin
 		        (* parallel_case, full_case *)
 		        case (1)
