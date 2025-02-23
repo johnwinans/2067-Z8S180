@@ -107,6 +107,6 @@ set_io -nowarn              vga_grn[1]     96   # 470
 set_io -nowarn              vga_blu[0]     128  # 1K
 set_io -nowarn              vga_blu[1]     94   # 470
 
-set_io -nowarn              vga_hsync   104
-set_io -nowarn              vga_vsync   106
+set_io -nowarn              vga_hsync   104     # 100
+set_io -nowarn              vga_vsync   106     # 100
 
