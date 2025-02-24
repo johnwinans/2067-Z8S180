@@ -24,14 +24,14 @@
 // is to include a counter to wait as the chip comes out of reset.
 
 module memory #(
-    parameter VRAM_SIZE = 4096
+    parameter RAM_SIZE = 4096
     ) (
     input                               rd_clk,
-    input wire [$clog2(VRAM_SIZE)-1:0]  addr,
+    input wire [$clog2(RAM_SIZE)-1:0]   addr,
     output reg [7:0]                    data
     );
 
-    reg [7:0] mem [0:VRAM_SIZE-1];
+    reg [7:0] mem [0:RAM_SIZE-1];
 
     initial begin
         $readmemh("rom.hex", mem);
