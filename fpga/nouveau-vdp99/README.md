@@ -4,8 +4,7 @@ Note that the IO interface of the VDP is running in the
 pixel clock domain and the CPU is running in the PHI clock
 domain.
 
-[Related video discussion on YouTube.]()
-
+[Related video discussion on YouTube.](https://youtu.be/vwotP50WOko)
 
 The following program can be used to set the VDP regs with values
 for a suitable test pattern for commit: e3811cc2d82fea9283de4cb5aa280cf6de1f5f84 
