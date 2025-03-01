@@ -202,7 +202,14 @@ module vdp99 #(
     assign irq = vdp_ie ? irq_status : 0;
     wire [7:0]  vdp_status = { irq_status, 7'b0 };
 
-    // XXX fix this so don't send vram_dout from the last fsm DMA access! 
-    assign dout = rd_tick ? (mode==0 ? vram_dout : vdp_status ) : 'hx;
+    wire [7:0] vram_dmux;
+    vram_rd_demux vdmux (
+        .reset(reset),
+        .clk(pxclk),
+        .rd_tick(~dma_rd_tick),
+        .din(vram_dout),
+        .dout(vram_dmux)
+    );
+    assign dout = rd_tick ? (mode==0 ? vram_dmux : vdp_status ) : 'hx;
 
 endmodule
