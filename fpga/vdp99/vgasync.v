@@ -1,6 +1,12 @@
 // Generate VGA sync signals
 // Default parameters = 512x384, centered, with borders, on 640x480@60 VGA w/25MHZ px clock
 //
+// On the Origin of Pixels...
+//
+// row == 0 on the first visible row of pixels (the first row of the vertical top border)
+// col == 0 on the first pixel of the visible pixel colum (the first col of the border)
+// The last row is the final row of the back porch.
+// The last col is the final pixel of the back porch.
 
 module vgasync #(
     parameter   HLB  = 64,      // horizontal left border width px clocks
