@@ -146,8 +146,11 @@ module vdp_fsm #(
 
     always @(*) begin
 
-        vdp_dma_rd_tick_next = vdp_dma_rd_tick_reg;
-        vdp_dma_addr_next = vdp_dma_addr_reg;
+        //vdp_dma_rd_tick_next = vdp_dma_rd_tick_reg;
+        //vdp_dma_addr_next = vdp_dma_addr_reg;
+        vdp_dma_rd_tick_next = 0;       // default to zero makes the ticks 1 vga pxclk wide (be careful of the phase!) 
+        vdp_dma_addr_next = 'hx;
+
         tile_ctr_next = tile_ctr_reg;
         name_next = name_reg;
         pattern_next = pattern_reg;
@@ -172,11 +175,11 @@ module vdp_fsm #(
         // only on every other clock cycle to divide the pxclock by 2
         // XXX This will fail by 1/2 VDP pixel if the border does not end when px_col is odd
         if ( px_col[0] ) begin
-            vdp_dma_rd_tick_next = 0;
-            vdp_dma_addr_next = 'hx;
+//            vdp_dma_rd_tick_next = 0;
+//            vdp_dma_addr_next = 'hx;
 
             if ( col_last )
-                // XXX this is sloppy because it depends on the col_last tick occurring on an odd pixel collumn
+                // XXX this is sloppy because it depends on the col_last tick occurring on an odd pixel column
                 ring_ctr_next = 1;                      // this is needed to keep text mode in phase
             else
 	            ring_ctr_next = { ring_ctr_reg[6:0], ring_ctr_reg[7] }; // rotate left
