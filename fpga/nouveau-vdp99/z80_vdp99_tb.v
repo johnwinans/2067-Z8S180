@@ -262,8 +262,10 @@ module tb ();
 
         @(posedge phi);
 
-        // waste some time to make waveform easier to zoom
-        #(phi_period*20);
+        @(posedge uut.vdp.fsm.row_last);
+
+        // waste time so we can see the second frame begin
+        #(pxclk_period*1000);
         $finish;
     end
 
