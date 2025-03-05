@@ -39,6 +39,7 @@ module vgasync #(
     output wire                 row_last,       // col == max value 
     output wire                 vid_active,     // true when video is active (not including borders)
     output wire                 vid_active0,    // t-1 async 'next' signal value of vid_active
+    output wire                 sprite_tick,    // next pxclk is optimal to start sprite fetching
     output wire                 bdr_active,     // true when border video is active 
     output wire                 end_of_frame    // true for one tick at the end of a frame
     );
@@ -81,7 +82,7 @@ module vgasync #(
     reg                 vsync_reg, vsync_next;
     reg                 border_reg, border_next;
     reg                 visible_next;
-
+    reg                 sprite_tick_next;
 
     always @ (posedge clk) 
     begin
@@ -124,10 +125,13 @@ module vgasync #(
         hsync_next = hctr_next >= HS_BEGIN && hctr_next < HS_END;
         vsync_next = vctr_next >= VS_BEGIN && vctr_next < VS_END;
 
+        sprite_tick_next = vctr_next >= VVID_BEGIN-1 && vctr_next < VVID_END-1 && hctr_next == HRB_BEGIN;
+
     end
 
     assign vid_active = vid_active_reg;
     assign vid_active0 = vid_active_next;               // let the FSM have a preview
+    assign sprite_tick = sprite_tick_next;              // the next pxclk is optimal to start sprite data loading
     assign hsync = hsync_reg;
     assign vsync = vsync_reg;
     assign col = hctr_reg;
