@@ -84,8 +84,6 @@ module vdp99 #(
         .irq(irq_status)
     );
 
-    // XXX the CPU's rd_tick probably has to be buffered to fit into the FSM timing
-
     wire [VRAM_ADDR_WIDTH-1:0] dma_addr;
     wire dma_rd_tick;
 
