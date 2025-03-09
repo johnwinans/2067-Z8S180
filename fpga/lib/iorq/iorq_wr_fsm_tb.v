@@ -19,7 +19,8 @@
 //
 //**************************************************************************
 
-`timescale 1ns/1ps  // time units & precision 
+`timescale 1ns/1ps
+`default_nettype none
 
 module tb ();
 

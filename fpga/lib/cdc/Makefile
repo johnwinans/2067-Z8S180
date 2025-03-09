@@ -11,8 +11,8 @@ FILES= \
 
 all:: 
 
-z80_wr_cdc_tb.vvp: $(FILES) z80_wr_cdc_tb.v
-	iverilog -o $@ $^
+z80_wr_cdc_tb.vvp: z80_wr_cdc_tb.v $(FILES)
+	$(VERILOG_SIM) -s tb -o $@ $^
 
 plot: z80_wr_cdc_tb.vcd
 	gtkwave $^

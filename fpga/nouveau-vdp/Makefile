@@ -51,17 +51,3 @@ clean::
 
 pll_25_18432.v:
 	icepll -i 25 -o 18.432 -m -n pll_25_18432 > $@
-
-
-
-iorq_rd_fsm_tb.vvp : iorq_rd_fsm_tb.v iorq_rd_fsm.v
-	iverilog -o $@ $^
-
-iorqr: iorq_rd_fsm_tb.vcd
-	gtkwave $^
-
-iorq_wr_fsm_tb.vvp : iorq_wr_fsm_tb.v iorq_wr_fsm.v
-	iverilog -o $@ $^
-
-iorqw: iorq_wr_fsm_tb.vcd
-	gtkwave $^

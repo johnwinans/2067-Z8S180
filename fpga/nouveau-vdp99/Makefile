@@ -53,8 +53,8 @@ pll_25_18432.v:
 	icepll -i 25 -o 18.432 -m -n pll_25_18432 > $@
 
 
-z80_vdp99_tb.vvp: $(TBFILES) z80_vdp99_tb.v
-	iverilog -Wall -DSIMULATION -o $@ $^
+z80_vdp99_tb.vvp: z80_vdp99_tb.v $(TBFILES) 
+	$(VERILOG_SIM) -s tb -o $@ $^
 
 z80_vdp99: z80_vdp99_tb.vcd
 	gtkwave $^

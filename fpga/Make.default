@@ -9,3 +9,9 @@ VDP_LIBV=$(TOP)/vdp
 
 include $(TOP)/Make.2057.rules
 -include $(TOP)/Make.local
+
+
+
+IVERILOG_FLAGS=-Wall -DSIMULATION
+
+VERILOG_SIM=iverilog $(IVERILOG_FLAGS)

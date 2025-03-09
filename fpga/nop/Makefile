@@ -15,13 +15,6 @@ top.json: $(FILES)
 timing: top.asc
 	icetime -tmd $(DEVICE) $^
 
-
-counter_tb.vvp: counter_tb.v counter.v
-	iverilog -o $@ $^
-
-plot: counter_tb.vcd
-	gtkwave $^
-
 prog: top.bin
 	$(FLASH_PROG) $^
 

@@ -11,7 +11,7 @@ FILES= \
 all:: 
 
 sync_stretch_tb.vvp: sync_stretch_tb.v sync_stretch.v
-	iverilog -o $@ $^
+	$(VERILOG_SIM) -s tb -o $@ $^
 
 plot: sync_stretch_tb.vcd
 	gtkwave $^
