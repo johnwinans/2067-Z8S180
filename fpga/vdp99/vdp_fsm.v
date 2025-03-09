@@ -21,6 +21,10 @@
 
 `default_nettype none
 
+/**
+* Control the video pipeline of the VDP.
+***************************************************************************/
+
 module vdp_fsm #(
     parameter VRAM_SIZE = 8*1024,
     parameter VRAM_ADDR_WIDTH = $clog2(VRAM_SIZE)   // annoying this must be here to use in a port

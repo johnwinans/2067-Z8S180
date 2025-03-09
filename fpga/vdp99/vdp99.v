@@ -21,6 +21,10 @@
 
 `default_nettype none
 
+/**
+* Instantiate and connect together the parts of the VDP
+***************************************************************************/
+
 module vdp99 #(
     parameter   VRAM_SIZE = 8*1024 // 12*1024 // 8*1024
     ) (
