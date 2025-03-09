@@ -54,7 +54,7 @@ pll_25_18432.v:
 
 
 z80_vdp99_tb.vvp: $(TBFILES) z80_vdp99_tb.v
-	iverilog -o $@ $^
+	iverilog -Wall -DSIMULATION -o $@ $^
 
 z80_vdp99: z80_vdp99_tb.vcd
 	gtkwave $^

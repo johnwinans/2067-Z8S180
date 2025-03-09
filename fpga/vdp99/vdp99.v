@@ -107,6 +107,7 @@ module vdp99 #(
     wire [9:0] row;
     wire vid_active;
     wire vid_active0;
+    wire sprite_tick;
     wire col_last;
     wire row_last;
     wire last_pixel;
@@ -124,6 +125,7 @@ module vdp99 #(
         .row(row),
         .vid_active(vid_active),
         .vid_active0(vid_active0),
+        .sprite_tick(sprite_tick),
         .col_last(col_last),
         .row_last(row_last),
         .bdr_active(bdr_active),
@@ -165,6 +167,7 @@ module vdp99 #(
         .vsync(vsync_in),
         .vid_active(vid_active),
         .vid_active0(vid_active0),
+        .sprite_tick(sprite_tick),
         .bdr_active(bdr_active),
         .last_pixel(last_pixel),
         .col_last(col_last),

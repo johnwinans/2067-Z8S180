@@ -217,12 +217,12 @@ module tb ();
 
 
         vdp_reg <= 5;
-        vdp_reg_value <= 'h1a;      // sprint attribute table 0x0d00 - 0x0d7f
+        vdp_reg_value <= 'h1a;      // sprite attribute table 0x0d00 - 0x0d7f
         do_reg_write <= 1;
         @(negedge do_reg_write);
 
         vdp_reg <= 6;
-        vdp_reg_value <= 'h02;      // sprint pattern table 0x1000 - 0x17ff
+        vdp_reg_value <= 'h02;      // sprite pattern table 0x1000 - 0x17ff
         do_reg_write <= 1;
         @(negedge do_reg_write);
 
