@@ -73,7 +73,7 @@ module vgasync #(
     localparam  VVIS_BEGIN  = VTB_BEGIN;        // first row of the vertical visible video
     localparam  VVIS_END    = VBB_END;          // first row past end of the vertical visible video
 
-    localparam  TEXT_MODE_PADDING = 16;         // make the left & right borders 8px wider when in text mode
+    localparam  TEXT_MODE_PADDING = 16;         // make the left & right borders are wider in text mode
 
     reg [HC_BITS-1:0]   hctr_reg, hctr_next;    // pixel counter
     reg [VC_BITS-1:0]   vctr_reg, vctr_next;    // line counter
