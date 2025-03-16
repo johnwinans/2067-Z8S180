@@ -105,6 +105,11 @@ module tb();
             @(posedge clk);
         end
 
+        // wait to see the read-ahead getting valid data from address 0
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+
         // read it back
         mode <= 1;          // mode 1 = address
         din <= 8'h00;       // address LSB
@@ -236,7 +241,7 @@ module tb();
         rd_tick <= 1;       // read vram using the CPU interface
         @(posedge clk);
         mode <= 0;
-        rd_tick <= 1;       // and another...
+        rd_tick <= 1;       // and another...  (this is illegally fast)
         @(posedge clk);
         mode <= 0;
         rd_tick <= 0;

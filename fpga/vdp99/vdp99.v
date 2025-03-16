@@ -88,6 +88,11 @@ module vdp99 #(
         .irq(irq_status)
     );
 
+    // Note that dma_rd_tick and rd_tick can coinside.
+    // It is assumed that dma_rd_tick will pause often enough for the 
+    // vram to emit the read-ahead data from the current mem.addr_reg 
+    // address before it is advanced by a subsequent rd_tick.
+
     wire [VRAM_ADDR_WIDTH-1:0] dma_addr;
     wire dma_rd_tick;
 
@@ -98,7 +103,7 @@ module vdp99 #(
         .clk(pxclk),
         .dma_addr(dma_addr),
         .dma_rd_tick(dma_rd_tick),
-        .rd_tick(rd_tick),              // shouldn't use the CPU rd_tick, prefer a FSM sync'd signal here
+        .rd_tick(rd_tick),
         .wr_tick(wr_tick),
         .mode(mode),
         .din(din),
@@ -211,8 +216,8 @@ module vdp99 #(
     vram_rd_demux vdmux (
         .reset(reset),
         .clk(pxclk),
-        .rd_tick(~dma_rd_tick),
-        .din(vram_dout),
+        .rd_tick(~dma_rd_tick),         // grab value from VRAM when FSM is not using it
+        .din(vram_dout),                // this will be the next VRAM value to send on next rd_tick
         .dout(vram_dmux)
     );
     assign dout = rd_tick ? (mode==0 ? vram_dmux : vdp_status ) : 'hx;

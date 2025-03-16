@@ -20,7 +20,7 @@
 //**************************************************************************
 
 /*
-* Due to limited resources on the ICE40HX, the VRAM size is limited to 8K.
+* Due to limited resources on the ICE40HX, the VRAM size may be limited to 8K.
 *
 * To write into the VRAM:
 * 1) write address LSB with mode=1 
@@ -32,6 +32,8 @@
 * 2) write address MSB as 0x00xxxxxx with mode=1
 * 3) read N data bytes with mode=0
 *
+* Note: dma_rd_tick takes precedence over rd_tick.  It is assumed that
+*       coordinating these signals is a task for a higher level. 
 ***************************************************************************/
 
 `default_nettype none
