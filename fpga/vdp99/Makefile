@@ -42,3 +42,12 @@ vdp_fsm_tb.vvp: vdp_fsm_tb.v vdp_fsm.v
 
 vdp_fsm: vdp_fsm_tb.vcd
 	gtkwave $^
+
+
+
+sprite_tb.vvp: sprite_tb.v sprite.v
+	$(VERILOG_SIM) -s tb -o $@ $^
+
+sprite: sprite_tb.vcd
+	gtkwave $^
+
