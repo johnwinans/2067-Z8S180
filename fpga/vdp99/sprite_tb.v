@@ -34,7 +34,6 @@ module tb ();
     reg         reset = 0;
     reg         pxclk = 0;
     reg         col_last_tick = 0;
-    reg         big = 0;
     reg         mag = 0;
     reg         early = 0;
     reg [8:0]   hpos = 0;
@@ -47,7 +46,6 @@ module tb ();
         .reset(reset),
         .pxclk(pxclk),
         .col_last_tick(col_last_tick),
-        .big(big),
         .mag(mag),
         .early(early),
         .hpos(hpos),
@@ -76,7 +74,6 @@ module tb ();
         #(clk_period*4);
 
         @(posedge pxclk);
-        big <= 0;
         mag <= 0;
         early <= 0;
         hpos <= 1;

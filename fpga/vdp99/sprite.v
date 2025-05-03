@@ -35,7 +35,6 @@ module sprite
     input   wire        pxclk,          // 25MHZ VGA clock (2X the VDP clock)
 
     input   wire        col_last_tick,  // when true, the next col will represent hpos_reg zero
-    input   wire        big,            // 0=8x8, 1=16x16 (in VDP pixel units)
     input   wire        mag,            // true when magnified mode (2X size VDP pixels)
     input   wire        early,          // 1=shift left 32 VDP pixel units
     input   wire [8:0]  hpos,           // 0=left edge, 0xff=off right edge (in VDP pixel units)
@@ -48,7 +47,6 @@ module sprite
 
     reg         active_reg, active_next;        // sprite rendering is active
     reg [1:0]   pxvdp_reg, pxvdp_next;          // counts at pxclk rate
-    reg         big_reg, big_next;              // false = 8x8, true = 16x16
     reg         mag_reg, mag_next;              // false = 1:1, true = 2:1 (magnify VDP pixels)
     reg [8:0]   hpos_reg, hpos_next;            // 0 = 32 VDP px to left of border
     reg [15:0]  pattern_reg, pattern_next;      // 16-bit row value that will shift out at hpos_reg
@@ -58,7 +56,6 @@ module sprite
         if (reset) begin
             active_reg <= 0;
             pxvdp_reg <= 0;
-            big_reg <= 0;
             mag_reg <= 0;
             hpos_reg <= 0;
             pattern_reg <= 0;
@@ -66,7 +63,6 @@ module sprite
         end else begin
             active_reg <= active_next;
             pxvdp_reg <= pxvdp_next;
-            big_reg <= big_next;
             mag_reg <= mag_next;
             hpos_reg <= hpos_next;
             pattern_reg <= pattern_next;
@@ -76,7 +72,6 @@ module sprite
 
     always @(*) begin
         active_next = active_reg;
-        big_next = big_reg;
         mag_next = mag_reg;
         hpos_next = hpos_reg;
         pattern_next = pattern_reg;
@@ -86,7 +81,6 @@ module sprite
 
         if (load_tick) begin
             active_next = 0;
-            big_next = big;
             mag_next = mag;
             hpos_next = early ? hpos : hpos+32;
             pattern_next = pattern;
