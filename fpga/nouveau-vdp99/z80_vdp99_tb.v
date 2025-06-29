@@ -260,7 +260,7 @@ module tb ();
         @(negedge iorq);
         a <= #5 'hz;            //  >5ns after iorq & rd trailing
 
-        // wait untill we can see the second frame begin
+        // wait until we can see the second frame begin
         //@(posedge uut.vdp.fsm.row_last);
         @(posedge uut.vdp.vid_active);
         @(posedge uut.vdp.vid_active);
