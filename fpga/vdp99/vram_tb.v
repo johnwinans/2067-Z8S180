@@ -131,6 +131,10 @@ module tb();
         din <= 'hz;         // address MSB (read mode)
         wr_tick <= 0;
 
+        // exagerated delay here to illustrate when dout is valid when idle
+        @(posedge clk);
+        @(posedge clk);
+
         for ( i=0; i<'h2000; i=i+1 ) begin
             val8 <= i;
 
@@ -257,7 +261,25 @@ module tb();
         dma_addr <= 'h1103;
         dma_tick <= 1;
 
+        // idle for a moment
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 0;
+        wr_tick <= 0;
+        dma_tick <= 0;
+        dma_addr <= 'hx;
+        din <= 'hz;
+        @(posedge clk);
+        @(posedge clk);
 
+
+        @(posedge clk);     // another DMA read to show the address counter NOT advancing
+        mode <= 0;
+        rd_tick <= 0;
+        wr_tick <= 0;
+        dma_tick <= 1;
+        dma_addr <= 'h1107;
+        din <= 'hz;
 
 
         @(posedge clk);
