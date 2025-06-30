@@ -57,8 +57,9 @@ module tb();
     localparam clk_period = (1.0/25000000)*1000000000; // clk is running at 25MHZ
     always #(clk_period/2) clk = ~clk;
 
-    integer i;
-    integer j;
+    integer     i;
+    integer     j;
+    reg [7:0]   val8;       // a way to truncate the value of i
 
     initial begin
 
@@ -91,7 +92,8 @@ module tb();
 
         // fill the VRAM with some data
         // note that while filling the first time, the read data is 'hx
-        for ( i=0; i<'h2000; i=i+1 ) begin
+//       for ( i=0; i<'h2000; i=i+1 ) begin
+        for ( i=0; i<'h1fff; i=i+1 ) begin      // leave the last vram byte unset
             @(posedge clk);
             mode <= 0;      // mode 0 = data
             din <= i&'h0ff;
@@ -105,7 +107,11 @@ module tb();
             @(posedge clk);
         end
 
-        // wait to see the read-ahead getting valid data from address 0
+        // Wait to see the read-ahead getting data from the next address.
+        // NOTE: This data may be X if the counter is not allowed to wrap around above.
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);     // extra long time here to find easy in the waveform output
         @(posedge clk);
         @(posedge clk);
         @(posedge clk);
@@ -117,7 +123,7 @@ module tb();
 
         @(posedge clk);
         mode <= 1;          // mode 1 = address
-        din <= 8'h10;       // address MSB (read mode)  -- read out of phase for fun
+        din <= 8'h00;       // address MSB (read mode)
         wr_tick <= 1;
 
         @(posedge clk);
@@ -126,6 +132,8 @@ module tb();
         wr_tick <= 0;
 
         for ( i=0; i<'h2000; i=i+1 ) begin
+            val8 <= i;
+
 //$display( "%8t vram[%4x]:%x", $time, i+'h20f, uut.vram[i+'h20f] );
             @(posedge clk);
             mode <= 0;      // mode 0 = data
@@ -135,8 +143,9 @@ module tb();
             mode <= 0;
             rd_tick <= 0;
 
-            if ( dout != (i&'h0ff) )
-                $display( "memory readback failed: %8t vram[%4x]:%x", $time, i, uut.vram[i] );
+//$display( "%8t vram[%4x]:%x dout=%x i=%x", $time, i, uut.vram[i], dout, val8 );
+            if ( dout !== val8 )
+                $display( "memory readback failed: %8t vram[%4x]:%x dout:%x !== i:%x", $time, i, uut.vram[i], dout, val8 );
 
             @(posedge clk);
         end
