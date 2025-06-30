@@ -26,9 +26,6 @@
 *
 * This is intended to be used to perform a delayed data capture of the 
 * vram read-ahead after the address is auto-incremented.
-*
-* Observation:  rd_tick is expected to be derived from the CPU read operation.
-*               As such, it can only happen once every 8-10 clk periods.
 ***************************************************************************/
 module vram_rd_demux (
     input wire                          reset,
