@@ -89,8 +89,8 @@ module vdp99 #(
     );
 
     // Note that dma_rd_tick and rd_tick can coinside.
-    // It is assumed that dma_rd_tick will pause often enough for the 
-    // vram to emit the read-ahead data from the current mem.addr_reg 
+    // It is assumed that dma_rd_tick will pause often enough for the
+    // vram to emit the read-ahead data from the current mem.addr_reg
     // address before it is advanced by a subsequent rd_tick.
 
     wire [VRAM_ADDR_WIDTH-1:0] dma_addr;
@@ -148,7 +148,7 @@ module vdp99 #(
     wire row_last_out;
     wire [3:0]  color_out;
 
-    vdp_fsm #( .VRAM_SIZE(VRAM_SIZE) ) fsm 
+    vdp_fsm #( .VRAM_SIZE(VRAM_SIZE) ) fsm
     (
         .reset(reset),
         .pxclk(pxclk),
@@ -212,6 +212,16 @@ module vdp99 #(
     assign irq = vdp_ie ? irq_status : 0;
     wire [7:0]  vdp_status = { irq_status, 7'b0 };
 
+    // vdmux consumes and caches the vram read data on behalf of the CPU.
+    // It exists to pre-fetch vram data on behalf of the CPU so that the CPU
+    // may subsequently read the value without being forced to wait if a DMA
+    // read is in progress when the CPU wants to read.
+
+    // NOTE: Using ~dma_rd_tick for the .rd_tick() here will defer the latching of the
+    // vram data until the value from the address counter is valid in the vram module.
+    // This is OK as long as dma_rd_tick is never asserted longer than the shortest period
+    // between two successive CPU read ticks.
+
     wire [7:0] vram_dmux;
     vram_rd_demux vdmux (
         .reset(reset),
@@ -220,6 +230,7 @@ module vdp99 #(
         .din(vram_dout),                // this will be the next VRAM value to send on next rd_tick
         .dout(vram_dmux)
     );
+
     assign dout = rd_tick ? (mode==0 ? vram_dmux : vdp_status ) : 'hx;
 
 endmodule
