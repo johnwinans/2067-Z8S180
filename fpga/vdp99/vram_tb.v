@@ -272,7 +272,6 @@ module tb();
         @(posedge clk);
         @(posedge clk);
 
-
         @(posedge clk);     // another DMA read to show the address counter NOT advancing
         mode <= 0;
         rd_tick <= 0;
@@ -281,6 +280,57 @@ module tb();
         dma_addr <= 'h1107;
         din <= 'hz;
 
+        @(posedge clk);
+
+
+        // what happens when BOTH dma_tick and rd_tick are true at the same time?
+        mode <= 0;
+        rd_tick <= 0;
+        wr_tick <= 0;
+        dma_tick <= 0;
+        dma_addr <= 'hx;
+        din <= 'hz;
+        @(posedge clk);
+
+        @(posedge clk);
+        dma_addr <= 'h1108;
+        dma_tick <= 1;
+        rd_tick <= 1;
+
+        @(posedge clk);
+        mode <= 0;
+        rd_tick <= 0;
+        wr_tick <= 0;
+        dma_tick <= 0;
+        dma_addr <= 'hx;
+        din <= 'hz;
+
+        // waste time to make waveform easier to read
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+
+
+        // What happens If we assert dma_tick multiple periods with a rd_tick before the last dma_tick?
+        // Observation: This is understandable but undesirable to do IRL.
+        @(posedge clk);
+        dma_addr <= 'h1109;
+        dma_tick <= 1;
+        rd_tick <= 0;
+
+        @(posedge clk);
+        dma_addr <= 'h110a;
+        dma_tick <= 1;
+        rd_tick <= 1;
+
+        @(posedge clk);
+        dma_addr <= 'h110b;
+        dma_tick <= 1;
+        rd_tick <= 0;
+
+
+
+        // idle a while so can see the end of the waveform
 
         @(posedge clk);
         mode <= 0;
