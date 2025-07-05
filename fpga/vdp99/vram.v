@@ -94,14 +94,14 @@ module vram #(
             addr_state_next = 0;        // reset the address reg state when read the status register
         end else begin
             case (addr_state_reg)
-            0:
+            0:  // we are waiting to receive a mode 1 write with the Setup Address LSB
                 begin
                     if (wr_tick && mode==1) begin
                         addr_tmp_next = din;
                         addr_state_next = 1;
                     end
                 end
-            1:
+            1:  // we are waiting to receive a mode 1 write with the Setup Address MSB
                 begin
                     if (wr_tick && mode==1) begin
                         addr_state_next = 0;
