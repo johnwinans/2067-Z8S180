@@ -42,14 +42,14 @@ module vram #(
     parameter VRAM_SIZE = 8192
     ) (
     input wire                          reset,
-    input wire                          clk,
-    input wire                          rd_tick,
-    input wire                          wr_tick,
+    input wire                          clk,            // VDP clock (25MHZ)
+    input wire                          rd_tick,        // CPU read in VDP clock domain 
+    input wire                          wr_tick,        // CPU write in VDP clock domain 
     input wire                          mode,           // 1=addr setup, 0=data xfer
-    input wire [$clog2(VRAM_SIZE)-1:0]  dma_addr,       // used for direct memory access reads
-    input wire                          dma_rd_tick,    // true when want to read byte from address dma_in
-    input wire [7:0]                    din,
-    output wire [7:0]                   dout
+    input wire [$clog2(VRAM_SIZE)-1:0]  dma_addr,       // used to indicate a direct memory access read
+    input wire                          dma_rd_tick,    // true when want to read from address dma_addr
+    input wire [7:0]                    din,            // data from CPU or FSM
+    output wire [7:0]                   dout            // data from the VRAM
     );
 
     reg [$clog2(VRAM_SIZE)-1:0] addr_reg, addr_next;    // vram address counter for read/write xfers
@@ -57,13 +57,14 @@ module vram #(
     reg                         addr_state_reg, addr_state_next;
     reg [7:0]                   dout_reg;
 
-    reg [7:0]                   vram[0:VRAM_SIZE-1];
+    reg [7:0]                   vram[0:VRAM_SIZE-1];    // this is the actual VRAM memory
 
     assign dout = dout_reg;
 
     always @(posedge clk) begin
         if (reset) begin
             addr_reg <= 0;
+//            addr_reg <= 'hxx;     // test hack (as seen on YouTube)
             addr_tmp_reg <= 0;
             addr_state_reg <= 0;
         end else begin
