@@ -1,12 +1,15 @@
 // Generate VGA sync signals
 // Default parameters = 512x384, centered, with borders, on 640x480@60 VGA w/25MHZ px clock
 //
+// Note: The TMS9918A/28A/29A & TMS9118/28/29 VDPs have a 256x192 active display region
+//       512/2=256, 384/2=192 (therefore, a 2x2 VGA pixel = 1 VDP pixel.
+//
 // On the Origin of Pixels...
 //
-// row == 0 on the first visible row of pixels (the first row of the vertical top border)
-// col == 0 on the first pixel of the visible pixel colum (the first col of the border)
+// row == 0 on the first (top-most) visible pixel (the first row of the vertical top border)
+// col == 0 on the first (left-most) visible pixel (the first col of the horizontal left border)
 // The last row is the final row of the back porch.
-// The last col is the final pixel of the back porch.
+// The last col is the final col of the back porch.
 
 module vgasync #(
     parameter   HLB  = 64,      // horizontal left border width px clocks
