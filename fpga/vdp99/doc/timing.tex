@@ -71,22 +71,19 @@
 {
 \centering
 \scalebox {1}{%
-\begin{tikztimingtable} [yscale=1,xscale=4,timing/slope=0.05,timing/coldist=1pt]
-{\tt PxCLK}				& { 0Z.9hlhlhlhlhlhlhlhlhlhlhlhlhlhlhl.1H }\\
-{\tt ring\_ctr}			& { 0ZD{01}D{02}D{04}D{08}D{10}D{20}D{40}D{80}D{01}D{02}D{04}D{08}D{10}D{20}D{40}.1D }\\
+\begin{tikztimingtable} [yscale=1,xscale=2,timing/slope=0.05,timing/coldist=1pt]
+{\tt (vga)PxCLK}		& { 0Z.9hlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhlhl.1H }\\
+{\tt ring\_ctr}			& { 0Z2D{01}2D{02}2D{04}2D{08}2D{10}2D{20}2D{40}2D{80}2D{01}2D{02}2D{04}2D{08}2D{10}2D{20}2D{40}.1D }\\
 %{\tt cpu\_tick}		& { LLHLLLLLLLHLLLL}\\
 %{\tt cpu\_reg}			& { 3X8D{CPU}4D{CPU}}\\
-{\tt vdp\_dma\_tick}	& { LHLHHLLLLHLHHLL.1L }\\
-{\tt vdp\_dma\_addr}	& { 0ZU{}D{name$_0$@}U{}D{pattern$_0$@}D{color$_0$@}U{}U{}U{}U{}D{name$_1$@}U{}D{pattern$_1$@}D{color$_1$@}U{}U{}.1D}\\
-%{\tt vdp\_dma\_addr}	& { 0ZD{}D{81}D{}D{85}D{34}D{}D{}D{}D{}D{name$_1$@}D{}D{pattern$_1$@}D{color$_1$@}D{}D{}.1D}\\
-%{\tt vram\_dout}		& { 0ZD{}D{name$_0$}D{}D{pattern$_0$}D{color$_0$}D{}D{}D{}D{}D{name$_1$}D{}D{pattern$_1$}D{color$_1$}D{}D{}.1D}\\
-{\tt vram\_dout}		& { 0ZU{}D{81}U{}D{85}D{34}U{}U{}U{}U{}D{name$_1$}U{}D{pattern$_1$}D{color$_1$}U{}U{}.1D}\\
-{\tt name\_reg}			& { 2U8D{name$_0$}5.1D{name$_1$}}\\
-%{\tt pattern\_reg}	& { 0ZD{}D{}D{}D{}D{pattern$_0$[7]}D{pattern$_0$[6]}D{pattern$_0$[5]}D{pattern$_0$[4]}D{pattern$_0$[3]}D{pattern$_0$[2]}D{pattern$_0$[1]}D{pattern$_0$[0]}D{pattern$_1$[7]}D{pattern$_1$[6]}.1D}\\
-{\tt pattern\_reg}	& { 0ZU{}U{}U{}U{}D{85}D{0a}D{14}D{28}D{50}D{a0}D{40}D{80}D{pattern$_1$[7]}D{pattern$_1$[6]}D{pattern$_1$[5]}.1D}\\
-{\tt color\_reg}		& { 5U8D{color$_0$}2.1D{color$_1$}}\\
-{\tt pixel\_reg}		& { XXXXXHLLLLHLHXX.1X }\\
-{\tt rgb\_reg}			& { 0ZU{}U{}U{}U{}U{}U{}D{color$_0$[$0_7$]}D{color$_0$[$0_6$]}D{color$_0$[$0_5$]}D{color$_0$[$0_4$]}D{color$_0$[$0_3$]}D{color$_0$[$0_2$]}D{color$_0$[$0_1$]}D{color$_0$[$0_0$]}U{}.1D}\\
+{\tt vdp\_dma\_tick}	& { LLHLLLHLHLLLLLLLLLHLLLHLHLLLLL.1L }\\
+{\tt vdp\_dma\_addr}	& { 0Z2U{}D{nm$_0$@}U{}2U{}D{pt$_0$@}U{}D{cl$_0$@}U{}2U{}2U{}2U{}2U{}D{nm$_1$@}U{}2U{}D{pt$_1$@}U{}D{cl$_1$@}U{}2U{}2U{}.1D}\\
+{\tt vram\_dout}		& { 0Z2U{}U{}D{81}3U{}D{85}U{}D{34}9U{}D{nm$_1$}3U{}D{pt$_1$}U{}D{cl$_1$}4U{}.1D}\\
+{\tt name\_reg}			& { 4U16D{name$_0$}10.1D{name$_1$}}\\
+{\tt pattern\_reg}	& { 0Z8U{}2D{85}2D{0a}2D{14}2D{28}2D{50}2D{a0}2D{40}2D{80}2D{pattern$_1$}2D{pattern$_1$}2D{pattern$_1$}.1D}\\
+{\tt color\_reg}		& { 10U16D{color$_0$}4.1D{color$_1$}}\\
+{\tt pixel\_reg}		& { 10X2H8L2H2L2H2D{pattern$_1$[7]}2D{pattern$_1$[6]}.1X }\\
+{\tt color\_out\_reg}	& { 0Z12U{}2D{color$_0$[1]}2D{color$_0$[0]}2D{color$_0$[0]}2D{color$_0$[0]}2D{color$_0$[0]}2D{color$_0$[1]}2D{color$_0$[0]}2D{color$_0$[1]}2U{}.1D}\\
 \extracode
  \makeatletter
  \begin{pgfonlayer}{background}
@@ -101,7 +98,7 @@
 
 \end{tikztimingtable}
 }%
-\caption{Nouveau VDP Timing}
+\caption{Nouveau vdp\_fsm.v Timing}
 }\end{sidewaysfigure}
 
 
