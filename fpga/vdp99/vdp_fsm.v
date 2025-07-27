@@ -204,6 +204,7 @@ module vdp_fsm #(
             tile_ctr_next = 0;          // reset on every vsync
             tile_ctr_row_next = 0;      // reset on every vsync
         end else begin
+            // NOTE: col_last_out will never happen when vid_active is true (no conflict with phase 6)
             if ( col_last_out ) begin                   // just after the input row counter advances
                 if (px_row[3:0]!='b0000)                // XXX will only work if top border is %8 rows high
                     tile_ctr_next = tile_ctr_row_reg;   // reload the tile_counter for the current row
@@ -232,15 +233,15 @@ module vdp_fsm #(
             if (vid_active) begin
                 (* parallel_case, full_case *)
                 case (1)
-                ring_ctr_reg[0]: begin
+                ring_ctr_reg[0]: begin      // prep DMA addr to fetch a tile name from pattern table
                     vdp_dma_addr_next = { vdp_name_base, tile_ctr_reg };
                     vdp_dma_rd_tick_next = 1;
                 end
-                ring_ctr_reg[1]: begin
+                ring_ctr_reg[1]: begin      // capture the tile name from the pattern table
                     name_next = vram_dout;
                     // The CPU can use this slot
                 end
-                ring_ctr_reg[2]: begin
+                ring_ctr_reg[2]: begin      // prep DMA addr to fetch a tile pattern
                     vdp_dma_rd_tick_next = 1;
                     case ( vdp_mode )
                     3'b000:     // graphics mode 1
@@ -257,7 +258,7 @@ module vdp_fsm #(
                         vdp_dma_rd_tick_next = 0;
                     endcase
                 end
-                ring_ctr_reg[3]: begin
+                ring_ctr_reg[3]: begin      // capture tile pattern & prep DMA addr to fetch color
                     pattern_next = vram_dout;
                     vdp_dma_rd_tick_next = 1;
                     case ( vdp_mode )
@@ -273,7 +274,7 @@ module vdp_fsm #(
                     end
                     endcase
                 end
-                ring_ctr_reg[4]: begin
+                ring_ctr_reg[4]: begin      // capture color
                     case ( vdp_mode )
                     3'b100:        // text mode
                         color_next = { vdp_fg_color, vdp_bg_color };
@@ -284,7 +285,7 @@ module vdp_fsm #(
                         color_next = vram_dout;
                     endcase
                 end
-                ring_ctr_reg[5]: begin
+                ring_ctr_reg[5]: begin      // if in text mode, advance to next tile early
                     // The CPU can use this slot
                     if ( vdp_mode == 3'b100 ) begin
                         // text mode
@@ -292,10 +293,10 @@ module vdp_fsm #(
                         tile_ctr_next = tile_ctr_reg + 1;   // move on to next tile early
                     end
                 end
-                ring_ctr_reg[6]: begin
+                ring_ctr_reg[6]: begin      // idle slot
                     // The CPU can use this slot
                 end
-                ring_ctr_reg[7]: begin
+                ring_ctr_reg[7]: begin      // advance to next tile
                     // The CPU can use this slot
                     tile_ctr_next = tile_ctr_reg + 1;
                 end
