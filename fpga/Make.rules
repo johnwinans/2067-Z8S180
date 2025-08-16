@@ -39,8 +39,6 @@ clean:: $(CLEAN_DIRS)
 doc:: $(DOXY_DIRS)
 	if [ -f Doxyfile ]; then doxygen Doxyfile; fi
 
-world:: clean all
-
 
 # for each dir, do a make all
 $(ALL_DIRS):
