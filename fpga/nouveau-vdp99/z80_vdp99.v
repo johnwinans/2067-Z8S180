@@ -19,9 +19,9 @@
 //
 //**************************************************************************
 
-
 // The purpose of this module is to connect the CPU clock domain to the VDP clock domain.
 
+`timescale 1ns/1ns
 `default_nettype none
 
 module z80_vdp99 #(
