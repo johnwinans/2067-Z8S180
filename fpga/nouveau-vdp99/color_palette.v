@@ -19,6 +19,7 @@
 //
 //**************************************************************************
 
+`timescale 1ns/1ns
 `default_nettype none
 
 // a color palette for mapping the TI99 colors to a 6-bit RGB dac

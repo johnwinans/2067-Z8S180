@@ -19,6 +19,9 @@
 //
 //**************************************************************************
 
+`timescale 1ns/1ns
+`default_nettype none
+
 // NOTE: This is NOT useful for a general purpose synchronizer because this
 //      expects the input signal to meet the FPGA's setup and hold times with
 //      the Z8S180 configured to operate in IOC=1 mode.

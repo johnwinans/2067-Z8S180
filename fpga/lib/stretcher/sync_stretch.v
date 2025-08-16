@@ -19,6 +19,9 @@
 //
 //**************************************************************************
 
+`timescale 1ns/1ns
+`default_nettype none
+
 // It is assumed that 'in' is a clean one-clk1-period tick signal.
 // 1) Stretch in to 2^STRETCH_BITS clk1 periods.
 // 2) Sync the stretched signal to clk2 domain using a SYNC_LEN fifo.

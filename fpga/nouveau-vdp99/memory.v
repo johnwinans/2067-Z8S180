@@ -19,6 +19,9 @@
 //
 //**************************************************************************
 
+`timescale 1ns/1ns
+`default_nettype none
+
 // There is some talk about initialized sysMEM blocks on the ICE40 taking time 
 // after the chip boots before it can be reliably read.  The accepted solution
 // is to include a counter to wait as the chip comes out of reset.
