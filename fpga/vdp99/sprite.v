@@ -19,7 +19,9 @@
 //
 //**************************************************************************
 
+`timescale 1ns/1ns
 `default_nettype none
+
 
 /**
 * Implement one TI99-style sprite.
@@ -82,7 +84,7 @@ module sprite
         if (load_tick) begin
             active_next = 0;
             mag_next = mag;
-            hpos_next = early ? hpos : hpos+32;
+            hpos_next = early ? hpos : hpos+32;     // move it to the right if NOT starting early
             pattern_next = pattern;
             color_next = fg_color;
         end

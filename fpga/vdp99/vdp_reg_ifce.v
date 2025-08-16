@@ -19,6 +19,7 @@
 //
 //**************************************************************************
 
+`timescale 1ns/1ns
 `default_nettype none
 
 // Process a 2-write data transfer from the CPU to the config regs.

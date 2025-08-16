@@ -36,6 +36,7 @@
 *       coordinating these signals is a task for a higher level. 
 ***************************************************************************/
 
+`timescale 1ns/1ns
 `default_nettype none
 
 module vram #(

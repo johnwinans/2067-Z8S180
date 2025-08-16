@@ -11,6 +11,9 @@
 // The last row is the final row of the back porch.
 // The last col is the final col of the back porch.
 
+`timescale 1ns/1ns
+`default_nettype none
+
 module vgasync #(
     parameter   HLB  = 64,      // horizontal left border width px clocks
     parameter   HVID = 512,     // horizontal video width px clocks
