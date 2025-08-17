@@ -94,7 +94,6 @@ module vdp_fsm_gfx #(
     reg [9:0]   tile_ctr_reg, tile_ctr_next;
     reg [9:0]   tile_ctr_row_reg, tile_ctr_row_next;
 
-
     always @(posedge pxclk) begin
         if ( reset ) begin
             ring_ctr_reg <= 1;
