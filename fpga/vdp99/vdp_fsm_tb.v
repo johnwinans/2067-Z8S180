@@ -128,106 +128,106 @@ $finish;
         reset <= 0;
 
         // wait until we know we are ready to start a new tile cycle (this will skip tile #1)
-        while ( uut.ring_ctr_reg !== 'h80 ) 
+        while ( uut.gfx.ring_ctr_reg !== 'h80 ) 
             @(posedge clk); 
 
-        while ( uut.ring_ctr_reg !== 'h01 )
+        while ( uut.gfx.ring_ctr_reg !== 'h01 )
             @(posedge clk);
 
         vram_dout <= 'h81;          // the value from the name table for tile #2
 
-        @(posedge clk); // uut.ring_ctr_reg 0x02
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x02
         
-       `ASSERT( uut.ring_ctr_reg === 'h02 );
+       `ASSERT( uut.gfx.ring_ctr_reg === 'h02 );
        `ASSERT( vdp_dma_addr === 'h0801 );
        `ASSERT( vdp_dma_rd_tick === 1 );
 
         vram_dout <= 'hz;
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x04
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x04
 
         // CPU cycle
-        `ASSERT( uut.ring_ctr_reg === 'h04 );
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h04 );
         `ASSERT( vdp_dma_rd_tick === 0 );
-        `ASSERT( uut.name_reg === 'h81 );
+        `ASSERT( uut.gfx.name_reg === 'h81 );
 
         vram_dout <= 'h85;                  // pattern value
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x08
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x08
 
 
-        `ASSERT( uut.ring_ctr_reg === 'h08 );
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h08 );
         vram_dout <= 'h34;                  // the value from the color table
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x10
-        `ASSERT( uut.ring_ctr_reg === 'h10 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x10
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h10 );
 
         vram_dout <= 'hz;
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x20
-        `ASSERT( uut.ring_ctr_reg === 'h20 );
-        @(posedge clk); // uut.ring_ctr_reg 0x40
-        `ASSERT( uut.ring_ctr_reg === 'h40 );
-        @(posedge clk); // uut.ring_ctr_reg 0x80
-        `ASSERT( uut.ring_ctr_reg === 'h80 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x20
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h20 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x40
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h40 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x80
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h80 );
 
 
 
 
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x80
-        `ASSERT( uut.ring_ctr_reg === 'h1 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x80
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h1 );
 
         vram_dout <= 'h18;          // the value from the name table for tile #3
 
-        @(posedge clk); // uut.ring_ctr_reg 0x02
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x02
         
-       `ASSERT( uut.ring_ctr_reg === 'h02 );
+       `ASSERT( uut.gfx.ring_ctr_reg === 'h02 );
        `ASSERT( vdp_dma_addr === 'h0802 );
        `ASSERT( vdp_dma_rd_tick === 1 );
 
         vram_dout <= 'hz;
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x04
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x04
 
         // CPU cycle
-        `ASSERT( uut.ring_ctr_reg === 'h04 );
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h04 );
         `ASSERT( vdp_dma_rd_tick === 0 );
-        `ASSERT( uut.name_reg === 'h18 );
+        `ASSERT( uut.gfx.name_reg === 'h18 );
 
         vram_dout <= 'haa;                  // pattern value
 
-        @(posedge clk); // uut.ring_ctr_reg 0x08
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x08
 
 
-        `ASSERT( uut.ring_ctr_reg === 'h08 );
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h08 );
         vram_dout <= 'hf0;                  // the value from the color table
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x10
-        `ASSERT( uut.ring_ctr_reg === 'h10 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x10
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h10 );
 
         vram_dout <= 'hz;
 
 
-        @(posedge clk); // uut.ring_ctr_reg 0x20
-        `ASSERT( uut.ring_ctr_reg === 'h20 );
-        @(posedge clk); // uut.ring_ctr_reg 0x40
-        `ASSERT( uut.ring_ctr_reg === 'h40 );
-        @(posedge clk); // uut.ring_ctr_reg 0x80
-        `ASSERT( uut.ring_ctr_reg === 'h80 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x20
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h20 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x40
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h40 );
+        @(posedge clk); // uut.gfx.ring_ctr_reg 0x80
+        `ASSERT( uut.gfx.ring_ctr_reg === 'h80 );
 
 
 
 
 
-        while ( uut.ring_ctr_reg != 'h01 )
+        while ( uut.gfx.ring_ctr_reg != 'h01 )
             @(posedge clk);
 
         #(clk_period*40);

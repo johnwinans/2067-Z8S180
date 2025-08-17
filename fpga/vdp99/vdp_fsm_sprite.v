@@ -74,112 +74,6 @@ module vdp_fsm #(
     output  wire [3:0]  color_out
     );
 
-    wire [3:0]                  color_out_gfx;
-    wire [VRAM_ADDR_WIDTH-1:0]  vdp_dma_addr_gfx;
-    wire                        vdp_dma_rd_tick_gfx;
-
-    wire [3:0]                  color_out_sprite;
-    wire [VRAM_ADDR_WIDTH-1:0]  vdp_dma_addr_sprite;
-    wire                        vdp_dma_rd_tick_sprite;
-
-    vdp_fsm_gfx #(
-            .VRAM_SIZE(VRAM_SIZE)
-        ) gfx (
-            .reset(reset),
-            .pxclk(pxclk),
-            .px_col(px_col),
-            .px_row(px_row),
-            .vdp_mode(vdp_mode),
-            .vdp_blank(vdp_blank),
-            .vdp_smag(vdp_smag),
-            .vdp_ssiz(vdp_ssiz),
-            .vdp_name_base(vdp_name_base),
-            .vdp_color_base(vdp_color_base),
-            .vdp_pattern_base(vdp_pattern_base),
-            .vdp_sprite_att_base(vdp_sprite_att_base),
-            .vdp_sprite_pat_base(vdp_sprite_pat_base),
-            .vdp_fg_color(vdp_fg_color),
-            .vdp_bg_color(vdp_bg_color),
-            .hsync(hsync),
-            .vsync(vsync),
-            .vid_active(vid_active),
-            .vid_active0(vid_active0),
-            .sprite_tick(sprite_tick),
-            .bdr_active(bdr_active),
-            .last_pixel(last_pixel),
-            .col_last(col_last),
-            .row_last(row_last),
-            .hsync_out(hsync_out),
-            .vsync_out(vsync_out),
-            .vid_active_out(vid_active_out),
-            .bdr_active_out(bdr_active_out),
-            .last_pixel_out(last_pixel_out),
-            .col_last_out(col_last_out),
-            .row_last_out(row_last_out),
-
-            .vram_dout(vram_dout),
-
-            .vdp_dma_addr(vdp_dma_addr_gfx),
-            .vdp_dma_rd_tick(vdp_dma_rd_tick_gfx),
-            .color_out(color_out_gfx)
-        );
-
-
-    localparam  PIPE_LEN = 6*2; // double due to clock doubling
-    reg [PIPE_LEN-1:0]  hsync_pipe_reg, hsync_pipe_next;
-    reg [PIPE_LEN-1:0]  vsync_pipe_reg, vsync_pipe_next;
-    reg [PIPE_LEN-1:0]  vid_active_pipe_reg, vid_active_pipe_next;
-    reg [PIPE_LEN-1:0]  bdr_active_pipe_reg, bdr_active_pipe_next;
-    reg [PIPE_LEN-1:0]  last_pixel_pipe_reg, last_pixel_pipe_next;
-    reg [PIPE_LEN-1:0]  col_last_pipe_reg, col_last_pipe_next;
-    reg [PIPE_LEN-1:0]  row_last_pipe_reg, row_last_pipe_next;
-
-    // pipeline delay for VGA signals
-    always @(*) begin
-        hsync_pipe_next = { hsync, hsync_pipe_reg[PIPE_LEN-1:1] };
-        vsync_pipe_next = { vsync, vsync_pipe_reg[PIPE_LEN-1:1] };
-        vid_active_pipe_next = { vid_active, vid_active_pipe_reg[PIPE_LEN-1:1] };
-        bdr_active_pipe_next = { bdr_active, bdr_active_pipe_reg[PIPE_LEN-1:1] };
-        last_pixel_pipe_next = { last_pixel, last_pixel_pipe_reg[PIPE_LEN-1:1] };
-        col_last_pipe_next = { col_last, col_last_pipe_reg[PIPE_LEN-1:1] };
-        row_last_pipe_next = { row_last, row_last_pipe_reg[PIPE_LEN-1:1] };
-    end
-
-    always @(posedge pxclk) begin
-        if ( reset ) begin
-            hsync_pipe_reg <= 0;
-            vsync_pipe_reg <= 0;
-            vid_active_pipe_reg <= 0;
-            bdr_active_pipe_reg <= 0;
-            last_pixel_pipe_reg <= 0;
-            col_last_pipe_reg <= 0;
-            row_last_pipe_reg <= 0;
-        end else begin
-            hsync_pipe_reg <= hsync_pipe_next;
-            vsync_pipe_reg <= vsync_pipe_next;
-            vid_active_pipe_reg <= vid_active_pipe_next;
-            bdr_active_pipe_reg <= bdr_active_pipe_next;
-            last_pixel_pipe_reg <= last_pixel_pipe_next;
-            col_last_pipe_reg <= col_last_pipe_next;
-            row_last_pipe_reg <= row_last_pipe_next;
-        end
-    end
-
-    assign hsync_out = hsync_pipe_reg[0];
-    assign vsync_out = vsync_pipe_reg[0];
-    assign vid_active_out = vid_active_pipe_reg[0];
-    assign bdr_active_out = bdr_active_pipe_reg[0];
-    assign last_pixel_out = last_pixel_pipe_reg[0];
-    assign col_last_out = col_last_pipe_reg[0];
-    assign row_last_out = row_last_pipe_reg[0];
-
-    // XXX mux in the sprite signals here
-    assign vdp_dma_addr = vdp_dma_addr_gfx;
-    assign vdp_dma_rd_tick = vdp_dma_rd_tick_gfx;
-    assign color_out = color_out_gfx;
-
-
-/*
     integer i;
 
     // use a ring counter to generate an 8-clock cycle for mode1 and mode2 graphics.
@@ -197,6 +91,16 @@ module vdp_fsm #(
     reg [VRAM_ADDR_WIDTH-1:0]  vdp_dma_addr_reg, vdp_dma_addr_next;
     reg [9:0]   tile_ctr_reg, tile_ctr_next;
     reg [9:0]   tile_ctr_row_reg, tile_ctr_row_next;
+
+    localparam  PIPE_LEN = 6*2; // double due to clock doubling
+    reg [PIPE_LEN-1:0]  hsync_pipe_reg, hsync_pipe_next;
+    reg [PIPE_LEN-1:0]  vsync_pipe_reg, vsync_pipe_next;
+    reg [PIPE_LEN-1:0]  vid_active_pipe_reg, vid_active_pipe_next;
+    reg [PIPE_LEN-1:0]  bdr_active_pipe_reg, bdr_active_pipe_next;
+    reg [PIPE_LEN-1:0]  last_pixel_pipe_reg, last_pixel_pipe_next;
+    reg [PIPE_LEN-1:0]  col_last_pipe_reg, col_last_pipe_next;
+    reg [PIPE_LEN-1:0]  row_last_pipe_reg, row_last_pipe_next;
+
 
     localparam SAT_VERT_SENTINEL = 'hd0;    // VDP vertical position representing the end of the SAT
     reg [VRAM_ADDR_WIDTH-1:0] sat_ptr_reg, sat_ptr_next;
@@ -527,6 +431,16 @@ module vdp_fsm #(
 
     end
 
-*/
+    assign vdp_dma_addr = vdp_dma_addr_reg;
+    assign vdp_dma_rd_tick = vdp_dma_rd_tick_reg;
+
+    assign color_out = color_out_reg;
+    assign hsync_out = hsync_pipe_reg[0];
+    assign vsync_out = vsync_pipe_reg[0];
+    assign vid_active_out = vid_active_pipe_reg[0];
+    assign bdr_active_out = bdr_active_pipe_reg[0];
+    assign last_pixel_out = last_pixel_pipe_reg[0];
+    assign col_last_out = col_last_pipe_reg[0];
+    assign row_last_out = row_last_pipe_reg[0];
 
 endmodule

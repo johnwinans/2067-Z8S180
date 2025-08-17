@@ -16,7 +16,7 @@ vdp_irq_tb.vvp: vdp_irq_tb.v vdp_irq.v
 vdp_irq: vdp_irq_tb.vcd
 	gtkwave $^
 
-vdp99_tb.vvp: vdp99_tb.v vdp99.v vram_rd_demux.v vdp_reg_ifce.v vdp_irq.v vgasync.v vram.v vdp_fsm.v
+vdp99_tb.vvp: vdp99_tb.v vdp99.v vram_rd_demux.v vdp_reg_ifce.v vdp_irq.v vgasync.v vram.v vdp_fsm.v vdp_fsm_gfx.v
 	$(VERILOG_SIM) -s tb -o $@ $^
 
 vdp99: vdp99_tb.vcd
@@ -37,7 +37,7 @@ vram: vram_tb.vcd
 	gtkwave $^
 
 
-vdp_fsm_tb.vvp: vdp_fsm_tb.v vdp_fsm.v
+vdp_fsm_tb.vvp: vdp_fsm_tb.v vdp_fsm.v vdp_fsm_gfx.v
 	$(VERILOG_SIM) -s tb -o $@ $^
 
 vdp_fsm: vdp_fsm_tb.vcd
