@@ -46,7 +46,7 @@ rom.bin:
 	hexdump -v -e '/1 "%02x\n"' < $< > $@
 
 clean::
-	rm -f *.lst *.bin *.sym pll_25_18432.v
+	rm -f *.lst *.bin *.sym pll_25_18432.v rom.hex
 
 
 pll_25_18432.v:
