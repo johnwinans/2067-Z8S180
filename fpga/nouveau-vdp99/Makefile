@@ -46,16 +46,18 @@ rom.bin:
 	hexdump -v -e '/1 "%02x\n"' < $< > $@
 
 clean::
-	rm -f *.lst *.bin *.sym pll_25_18432.v rom.hex
+	rm -f *.lst *.bin *.sym pll_25_18432.v rom.hex z80_vdp99_tb.ram
 
 
 pll_25_18432.v:
 	icepll -i 25 -o 18.432 -m -n pll_25_18432 > $@
 
 
-z80_vdp99_tb.vvp: z80_vdp99_tb.v $(TBFILES) 
-	$(VERILOG_SIM) -s tb -o $@ $^
+z80_vdp99_tb.vvp: z80_vdp99_tb.v $(TBFILES) z80_vdp99_tb.ram
+	$(VERILOG_SIM) -s tb -o $@ z80_vdp99_tb.v $(TBFILES)
 
 z80_vdp99: z80_vdp99_tb.vcd
 	gtkwave $^
 
+z80_vdp99_tb.ram: z80_vdp99_tb.ram.in
+	sed -e 's/#.*$$//' z80_vdp99_tb.ram.in > z80_vdp99_tb.ram
