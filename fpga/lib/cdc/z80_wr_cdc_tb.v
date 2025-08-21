@@ -74,7 +74,7 @@ module tb ();
     always #(pxclk_period/2) pxclk <= ~pxclk;
 
     initial begin
-        $dumpfile("z80_wr_cdc_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
 
         reset <= 1;

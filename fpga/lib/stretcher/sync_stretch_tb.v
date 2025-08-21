@@ -31,7 +31,7 @@ module tb ( );
     wire    dout;
 
     initial begin
-        $dumpfile("sync_stretch_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
     end
 

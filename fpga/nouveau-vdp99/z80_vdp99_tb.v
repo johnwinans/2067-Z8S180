@@ -172,7 +172,7 @@ module tb ();
 
 
     initial begin
-        $dumpfile("z80_vdp99_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
 
         // put some useful test data into the VRAM

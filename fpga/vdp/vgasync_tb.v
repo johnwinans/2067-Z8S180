@@ -47,7 +47,7 @@ module tb();
     );
 
     initial begin
-        $dumpfile("vgasync_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
         clk = 0;
     end

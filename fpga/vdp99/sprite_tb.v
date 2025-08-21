@@ -56,7 +56,7 @@ module tb ();
     );
 
     initial begin
-        $dumpfile("sprite_tb.vcd");
+        $dumpfile( {`__FILE__, "cd"} );
         $dumpvars;
     end
 

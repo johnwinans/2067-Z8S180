@@ -25,7 +25,7 @@
 module tb();
 
     initial begin
-        $dumpfile("vdp_table_test_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
         pxclk = 0;
     end

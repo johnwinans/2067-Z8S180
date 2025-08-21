@@ -54,7 +54,7 @@ module tb();
     );
 
     initial begin
-        $dumpfile("vdp99_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
     end
     

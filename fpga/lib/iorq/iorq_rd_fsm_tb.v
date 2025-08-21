@@ -37,7 +37,7 @@ module tb ();
     reg t1 = 0;     // use for refernce when viewing waveform
 
     initial begin
-        $dumpfile("iorq_rd_fsm_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
         
         reset = 1;

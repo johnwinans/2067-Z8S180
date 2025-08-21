@@ -105,7 +105,7 @@ module tb();
 
 
     initial begin
-        $dumpfile("vdp_fsm_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
     end
     

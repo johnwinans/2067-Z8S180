@@ -42,7 +42,7 @@ module tb();
     );
 
     initial begin
-        $dumpfile("vdp_irq_tb.vcd");
+        $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
     end
     
