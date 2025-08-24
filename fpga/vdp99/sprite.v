@@ -22,12 +22,11 @@
 `timescale 1ns/1ns
 `default_nettype none
 
-
 /**
 * Implement one TI99-style sprite.
 *
-* pattern will have 16 bits loaded.  When rendering 8 bits, the LSB will be zero.
-* When early is 1 the hpos value starts from 32px to the left of the acvive region.
+* Pattern will have 16 bits loaded.  When rendering 8 bits, the LSB will be zero.
+* (The TI99 size parameter is not handled here.)
 * 1 VDP pixel = 2 pxclk periods.
 * Note that mag can double the size to 32x32 max.
 ***************************************************************************/
@@ -36,13 +35,12 @@ module sprite
     input   wire        reset,          // active high
     input   wire        pxclk,          // 25MHZ VGA clock (2X the VDP clock)
 
-    input   wire        col_last_tick,  // when true, the next col will represent hpos_reg zero
+    input   wire        vdp_col0_tick,  // when true, the next col will represent hpos_reg zero
     input   wire        mag,            // true when magnified mode (2X size VDP pixels)
-    input   wire        early,          // 1=shift left 32 VDP pixel units
     input   wire [8:0]  hpos,           // 0=left edge, 0xff=off right edge (in VDP pixel units)
     input   wire [15:0] pattern,        // pattern of the current row to render
-    input   wire [3:0]  fg_color,       // foreground color (stable between load_ticks)
-    input   wire        load_tick,      // true when time to load the pattern, hpos, & color
+    input   wire [3:0]  fg_color,       // foreground color
+    input   wire        load_tick,      // true when time to load the pattern, hpos, fg_color,...
 
     output  wire [3:0]  color_out       // set to either fg_color or zero
     );
@@ -52,7 +50,7 @@ module sprite
     reg         mag_reg, mag_next;              // false = 1:1, true = 2:1 (magnify VDP pixels)
     reg [8:0]   hpos_reg, hpos_next;            // 0 = 32 VDP px to left of border
     reg [15:0]  pattern_reg, pattern_next;      // 16-bit row value that will shift out at hpos_reg
-    reg [5:0]   color_reg, color_next;
+    reg [3:0]   fg_color_reg, fg_color_next;    // the sprite foreground color
 
     always @(posedge pxclk) begin
         if (reset) begin
@@ -61,14 +59,14 @@ module sprite
             mag_reg <= 0;
             hpos_reg <= 0;
             pattern_reg <= 0;
-            color_reg <= 0;
+            fg_color_reg <= 0;
         end else begin
             active_reg <= active_next;
             pxvdp_reg <= pxvdp_next;
             mag_reg <= mag_next;
             hpos_reg <= hpos_next;
             pattern_reg <= pattern_next;
-            color_reg <= color_next;
+            fg_color_reg <= fg_color_next;
         end
     end
 
@@ -77,19 +75,19 @@ module sprite
         mag_next = mag_reg;
         hpos_next = hpos_reg;
         pattern_next = pattern_reg;
-        color_next = color_reg;
+        fg_color_next = fg_color_reg;
 
         pxvdp_next = pxvdp_reg+1;
 
         if (load_tick) begin
             active_next = 0;
             mag_next = mag;
-            hpos_next = early ? hpos : hpos+32;     // move it to the right if NOT starting early
+            hpos_next = hpos;
             pattern_next = pattern;
-            color_next = fg_color;
+            fg_color_next = fg_color;
         end
 
-        if (col_last_tick) begin
+        if (vdp_col0_tick) begin
             active_next = 1;                // start counting/rendering the sprite
             pxvdp_next = 0;                 // jam sync the phase so start at zero
         end 
@@ -106,7 +104,8 @@ module sprite
             end
     end
 
-    // sprite is showing when active_reg & the pattern_reg MSb is 1
-    assign color_out = (active_reg && hpos_reg==0 && pattern_reg[15]) ? color_reg : 0;
+    // Sprite is showing when active_reg & the pattern_reg MSb is 1.
+    // Note: after the sprite is done, pattern_reg will be 0. So no need to 'stop' it.
+    assign color_out = (active_reg && hpos_reg==0 && pattern_reg[15]) ? fg_color_reg : 0;
 
 endmodule

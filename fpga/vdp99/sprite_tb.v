@@ -25,8 +25,7 @@
 /**
 * Implement one TI99-style sprite.
 *
-* pattern will have 16 bits loaded.  When rendering 8 bits, the LSB will be zero.
-* When early is 1 the hpos value starts from 32px to the left of the acvive region.
+* Pattern will have 16 bits loaded.  When rendering 8 bits, the LSB will be zero.
 * 1 VDP pixel = 2 pxclk periods.
 * Note that mag can double the size to 32x32 max.
 ***************************************************************************/
@@ -34,9 +33,8 @@ module tb ();
  
     reg         reset = 0;
     reg         pxclk = 0;
-    reg         col_last_tick = 0;
+    reg         vdp_col0_tick = 0;
     reg         mag = 0;
-    reg         early = 0;
     reg [8:0]   hpos = 0;
     reg [15:0]  pattern = 0;
     reg [3:0]   fg_color = 0;
@@ -46,9 +44,8 @@ module tb ();
     (
         .reset(reset),
         .pxclk(pxclk),
-        .col_last_tick(col_last_tick),
+        .vdp_col0_tick(vdp_col0_tick),
         .mag(mag),
-        .early(early),
         .hpos(hpos),
         .pattern(pattern),
         .fg_color(fg_color),
@@ -74,34 +71,81 @@ module tb ();
 
         #(clk_period*4);
 
+        // config and render a sprite
         @(posedge pxclk);
         mag <= 0;
-        early <= 0;
         hpos <= 1;
         pattern <= 16'b1011001010101001;
         fg_color <= 9;
 
         @(posedge pxclk);
         load_tick <= 1;
-
         @(posedge pxclk);
         load_tick <= 0;
-
-
         @(posedge pxclk);
+
         @(posedge pxclk);
         @(posedge pxclk);
         @(posedge pxclk);
 
         // trigger the FSM to start counting and shifting out the sprite pattern
-        col_last_tick <= 1;
-
+        vdp_col0_tick <= 1;
         @(posedge pxclk);
-        col_last_tick <= 0;
-
+        vdp_col0_tick <= 0;
         @(posedge pxclk);
 
-        #(clk_period*500);
+        // wait long enough for the sprite to shift out
+        #(clk_period*50);
+
+
+        // render another sprite
+        @(posedge pxclk);
+        mag <= 0;
+        hpos <= 4;
+        pattern <= 16'b1011001100000000;
+        fg_color <= 'hf;
+
+        @(posedge pxclk);
+        load_tick <= 1;
+        @(posedge pxclk);
+        load_tick <= 0;
+        @(posedge pxclk);
+        @(posedge pxclk);
+        @(posedge pxclk);
+        @(posedge pxclk);
+        @(posedge pxclk);
+        vdp_col0_tick <= 1;
+        @(posedge pxclk);
+        vdp_col0_tick <= 0;
+        @(posedge pxclk);
+
+        #(clk_period*50);
+
+
+        // render a magnified sprite
+        @(posedge pxclk);
+        mag <= 1;
+        hpos <= 7;
+        pattern <= 16'b1011001100000101;
+        fg_color <= 3;
+
+        @(posedge pxclk);
+        load_tick <= 1;
+        @(posedge pxclk);
+        load_tick <= 0;
+        @(posedge pxclk);
+        @(posedge pxclk);
+        vdp_col0_tick <= 1;
+        @(posedge pxclk);
+        vdp_col0_tick <= 0;
+        @(posedge pxclk);
+
+        #(clk_period*90);
+
+
+
+
+
         $finish;
     end
 
