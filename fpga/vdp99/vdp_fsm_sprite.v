@@ -78,8 +78,37 @@ module vdp_fsm_sprite #(
     reg         vdp_dma_rd_tick_reg, vdp_dma_rd_tick_next;
     reg [VRAM_ADDR_WIDTH-1:0]  vdp_dma_addr_reg, vdp_dma_addr_next;
 
-    reg [7:0]   color_reg, color_next;
-    reg [3:0]   color_out_reg, color_out_next;
+
+    // These signals are used to collect the config values for a given sprite before
+    // loading them into a sprite object.
+    // Note to future self: It might use less LUTs to implement the latches here
+    // as opposed to inside the sprite modules.
+    reg         mag_reg, mag_next;
+    reg [8:0]   hpos_reg, hpos_next;
+    reg [15:0]  pattern_reg, pattern_next;
+    reg [3:0]   fg_color_reg, fg_color_next;
+    reg [3:0]   sprite_load_tick_reg, sprite_load_tick_next;
+    reg         sprite_reset_reg, sprite_reset_next;
+
+    wire [3:0]  sprite_color_out[3:0];
+
+    // the sprite controllers
+    genvar i;
+    generate
+        for (i=0; i<4; i=i+1) begin : inst
+            sprite s (
+                .reset(reset | sprite_reset_reg),
+                .pxclk(pxclk),
+                .vdp_col0_tick(col_last),
+                .mag(mag_reg),
+                .hpos(hpos_reg),
+                .pattern(pattern_reg),
+                .fg_color(fg_color_reg),
+                .load_tick(sprite_load_tick_reg[i]),
+                .color_out(sprite_color_out[i])
+            );
+        end
+    endgenerate
 
     localparam SAT_VERT_SENTINEL = 'hd0;    // VDP vertical position representing the end of the SAT
     reg [VRAM_ADDR_WIDTH-1:0] sat_ptr_reg, sat_ptr_next;
@@ -101,8 +130,6 @@ module vdp_fsm_sprite #(
 
     always @(posedge pxclk) begin
         if ( reset ) begin
-            color_reg <= 0;
-            color_out_reg <= 0;
             vdp_dma_rd_tick_reg <= 0;
             vdp_dma_addr_reg <= 0;
             sat_ptr_reg <= 0;
@@ -110,9 +137,13 @@ module vdp_fsm_sprite #(
             sprite_row_reg <= 0;
             sprite_state_reg <= 0;
             sprite_name_reg <= 0;
+            mag_reg <= 0;
+            hpos_reg <= 0;
+            pattern_reg <= 0;
+            fg_color_reg <= 0;
+            sprite_load_tick_reg <= 0;
+            sprite_reset_reg <= 0;
         end else begin
-            color_reg <= color_next;
-            color_out_reg <= color_out_next;
             vdp_dma_rd_tick_reg <= vdp_dma_rd_tick_next;
             vdp_dma_addr_reg <= vdp_dma_addr_next;
             sat_ptr_reg <= sat_ptr_next;
@@ -120,6 +151,12 @@ module vdp_fsm_sprite #(
             sprite_row_reg <= sprite_row_next;
             sprite_state_reg <= sprite_state_next;
             sprite_name_reg <= sprite_name_next;
+            mag_reg <= mag_next;
+            hpos_reg <= hpos_next;
+            pattern_reg <= pattern_next;
+            fg_color_reg <= fg_color_next;
+            sprite_load_tick_reg <= sprite_load_tick_next;
+            sprite_reset_reg <= sprite_reset_next;
         end
     end
 
@@ -139,7 +176,13 @@ module vdp_fsm_sprite #(
 
         vdp_dma_rd_tick_next = 0;       // default to zero makes the ticks 1 vga pxclk wide (be careful of the phase!)
         vdp_dma_addr_next = 'hx;
-        color_out_next = color_out_reg;
+
+        mag_next = mag_reg;
+        hpos_next = hpos_reg;
+        pattern_next = pattern_reg;
+        fg_color_next = fg_color_reg;
+        sprite_load_tick_next = 0;
+        sprite_reset_next = 0;
 
         sprite_row_next = sprite_row_reg;
         sat_ptr_next = sat_ptr_reg;
@@ -156,6 +199,7 @@ module vdp_fsm_sprite #(
             sat_ptr_next = {vdp_sprite_att_base, 7'b0000000};
             vdp_dma_addr_next = sat_ptr_next;
             vdp_dma_rd_tick_next = 1;
+            sprite_reset_next = 1;          // reset all the sprites in case they are not used
 
         end else begin
 
@@ -173,13 +217,16 @@ module vdp_fsm_sprite #(
                 if (vram_dout == SAT_VERT_SENTINEL) begin
                     sprite_state_next[SPRITE_DONE] = 1;
                 end else begin
+// XXX ssiz governs the range height
                     if (sprite_delta < 8) begin     // if in range...
     $display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout, vdp_row, sprite_delta, sprite_ctr_reg);
                         if (sprite_ctr_reg == 4) begin
+    $display("5th sprite sat_ptr_reg:%x", sat_ptr_reg);
                             // this is the 5th sprite
                             // XXX the5thsprite_number = sat_ptr_next[6:2];
                             sprite_state_next[SPRITE_DONE] = 1;
                         end else begin
+    $display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
                             sprite_row_next = sprite_delta;        // save the delta for configuring the sprite
                             sat_ptr_next = sat_ptr_reg+1;           // sprite name address
                             vdp_dma_addr_next = sat_ptr_next;
@@ -202,6 +249,7 @@ module vdp_fsm_sprite #(
                 sat_ptr_next = sat_ptr_reg+1;           // advance to sprite name address
                 vdp_dma_addr_next = sat_ptr_next;
                 vdp_dma_rd_tick_next = 1;
+    $display("sprite:%d sat_ptr_reg:%x HWAIT vram:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
             end
 
             sprite_state_reg[SPRITE_HORIZ]: begin
@@ -209,6 +257,8 @@ module vdp_fsm_sprite #(
                 sat_ptr_next = sat_ptr_reg+1;           // advance to sprite color address
                 vdp_dma_addr_next = sat_ptr_next;
                 vdp_dma_rd_tick_next = 1;
+    $display("sprite:%d sat_ptr_reg:%x HORIZ hpos:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
+                hpos_next = vram_dout;
             end
 
             sprite_state_reg[SPRITE_NAME]: begin
@@ -216,8 +266,11 @@ module vdp_fsm_sprite #(
                 sprite_name_next = vram_dout;
                 sat_ptr_next = sat_ptr_reg+1;           // advance to the next sprite address
                 // prepare for pattern1
-                vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next, sprite_row_reg[2:0]};    // row = 0..15
+// XXX vdp_ssiz will govern the address format (and col/row counting logic) for all sprites
+                vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next, sprite_row_reg[2:0]};    // row = 0..7
+                //vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next[7:2], 1'b0, ??? sprite_row_reg[3:0]};  // ssiz = 1 row=0..15
                 vdp_dma_rd_tick_next = 1;
+    $display("sprite:%d sat_ptr_reg:%x NAME  name:%x", sprite_ctr_reg, sat_ptr_reg, sprite_name_next);
             end
 
             sprite_state_reg[SPRITE_COLOR]: begin
@@ -225,10 +278,15 @@ module vdp_fsm_sprite #(
                 // prepare for pattern2
                 vdp_dma_addr_next = vdp_dma_addr_reg + 16;  // address of the right-half of a wide sprite pattern
                 vdp_dma_rd_tick_next = 1;
+                fg_color_next = vram_dout[3:0];
+                hpos_next = vram_dout[7] ? hpos_next - 32 : hpos_reg;
+    $display("sprite:%d sat_ptr_reg:%x COLOR color:%x ec:%b", sprite_ctr_reg, sat_ptr_reg, fg_color_next, vram_dout[7]);
             end
 
             sprite_state_reg[SPRITE_PTRN1]: begin
                 sprite_state_next[SPRITE_PTRN2] = 1;
+                pattern_next = {vram_dout, 8'b0};
+    $display("sprite:%d sat_ptr_reg:%x PTRN1 pattern_reg:%x", sprite_ctr_reg, sat_ptr_reg, pattern_reg);
             end
 
             sprite_state_reg[SPRITE_PTRN2]: begin
@@ -237,6 +295,12 @@ module vdp_fsm_sprite #(
                 // prepare for DELTA
                 vdp_dma_addr_next = sat_ptr_next;
                 vdp_dma_rd_tick_next = 1;
+                pattern_next[7:0] = vram_dout;
+    $display("sprite:%d sat_ptr_reg:%x PTRN2 vram:%x   <-------------------", sprite_ctr_reg, sat_ptr_reg, vram_dout);
+
+                // save the sprite config
+                sprite_load_tick_next[sprite_ctr_reg] = 1;
+
             end
 
             sprite_state_reg[SPRITE_DONE]:
@@ -256,6 +320,10 @@ module vdp_fsm_sprite #(
     assign vdp_dma_addr = vdp_dma_addr_reg;
     assign vdp_dma_rd_tick = vdp_dma_rd_tick_reg;
 
-    assign color_out = color_out_reg;
+    // A prio encoder to decide which sprite will appear.
+    assign color_out =  sprite_color_out[0] != 0 ? sprite_color_out[0] :
+                        sprite_color_out[1] != 0 ? sprite_color_out[1] :
+                        sprite_color_out[2] != 0 ? sprite_color_out[2] :
+                        sprite_color_out[3];
 
 endmodule

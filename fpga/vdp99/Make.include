@@ -15,5 +15,6 @@ LIB_VDP99_FILES=\
 	$(LIB_VDP99)/vdp_fsm.v \
 	$(LIB_VDP99)/vdp_fsm_gfx.v \
 	$(LIB_VDP99)/vdp_fsm_sprite.v \
+	$(LIB_VDP99)/sprite.v \
 	$(LIB_VDP99)/vram_rd_demux.v \
 	$(LIB_VDP99)/vram.v
