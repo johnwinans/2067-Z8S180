@@ -105,7 +105,7 @@ module sprite
     end
 
     // Sprite is showing when active_reg & the pattern_reg MSb is 1.
-    // Note: after the sprite is done, pattern_reg will be 0. So no need to 'stop' it.
+    // Note: After the sprite is done, pattern_reg will be 0. So no need to 'stop' this.
     assign color_out = (active_reg && hpos_reg==0 && pattern_reg[15]) ? fg_color_reg : 0;
 
 endmodule

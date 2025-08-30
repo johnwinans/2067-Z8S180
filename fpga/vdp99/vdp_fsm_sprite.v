@@ -74,6 +74,7 @@ module vdp_fsm_sprite #(
     input   wire        last_pixel_out,
     input   wire        col_last_out,
     input   wire        row_last_out,
+    input   wire        sprite_tick_out,
 
     output  wire [3:0]  color_out
     );
@@ -197,7 +198,7 @@ module vdp_fsm_sprite #(
         case (1)
 
         sprite_state_reg[SPRITE_IDLE]: begin            // waiting for sprite_tick
-            if (sprite_tick) begin
+            if (sprite_tick_out) begin
                 // Reset the sprite fetch logic for the next VGA pixel row.
                 sprite_state_next[SPRITE_VERT] = 1;
                 sprite_ctr_next = 0;

@@ -71,6 +71,7 @@ module vdp_fsm #(
     output  wire        last_pixel_out,
     output  wire        col_last_out,
     output  wire        row_last_out,
+    input   wire        sprite_tick_out,
     output  wire [3:0]  color_out
     );
 
@@ -117,6 +118,7 @@ module vdp_fsm #(
             .last_pixel_out(last_pixel_out),
             .col_last_out(col_last_out),
             .row_last_out(row_last_out),
+            .sprite_tick_out(sprite_tick_out),
 
             .vram_dout(vram_dout),
 
@@ -161,6 +163,7 @@ module vdp_fsm #(
             .last_pixel_out(last_pixel_out),
             .col_last_out(col_last_out),
             .row_last_out(row_last_out),
+            .sprite_tick_out(sprite_tick_out),
 
             .vram_dout(vram_dout),
 
@@ -180,6 +183,7 @@ module vdp_fsm #(
     reg [PIPE_LEN-1:0]  last_pixel_pipe_reg, last_pixel_pipe_next;
     reg [PIPE_LEN-1:0]  col_last_pipe_reg, col_last_pipe_next;
     reg [PIPE_LEN-1:0]  row_last_pipe_reg, row_last_pipe_next;
+    reg [PIPE_LEN-1:0]  sprite_tick_pipe_reg, sprite_tick_pipe_next;
 
     // pipeline delay for VGA signals
     always @(*) begin
@@ -190,6 +194,7 @@ module vdp_fsm #(
         last_pixel_pipe_next = { last_pixel, last_pixel_pipe_reg[PIPE_LEN-1:1] };
         col_last_pipe_next = { col_last, col_last_pipe_reg[PIPE_LEN-1:1] };
         row_last_pipe_next = { row_last, row_last_pipe_reg[PIPE_LEN-1:1] };
+        sprite_tick_pipe_next = { sprite_tick, sprite_tick_pipe_reg[PIPE_LEN-1:1] };
     end
 
     always @(posedge pxclk) begin
@@ -201,6 +206,7 @@ module vdp_fsm #(
             last_pixel_pipe_reg <= 0;
             col_last_pipe_reg <= 0;
             row_last_pipe_reg <= 0;
+            sprite_tick_pipe_reg <= 0;
         end else begin
             hsync_pipe_reg <= hsync_pipe_next;
             vsync_pipe_reg <= vsync_pipe_next;
@@ -209,6 +215,7 @@ module vdp_fsm #(
             last_pixel_pipe_reg <= last_pixel_pipe_next;
             col_last_pipe_reg <= col_last_pipe_next;
             row_last_pipe_reg <= row_last_pipe_next;
+            sprite_tick_pipe_reg <= sprite_tick_pipe_next;
         end
     end
 
@@ -219,6 +226,7 @@ module vdp_fsm #(
     assign last_pixel_out = last_pixel_pipe_reg[0];
     assign col_last_out = col_last_pipe_reg[0];
     assign row_last_out = row_last_pipe_reg[0];
+    assign sprite_tick_out = sprite_tick_pipe_reg[0];
 
 
     // MUX the VRAM access signals from the gfx & sprite FSMs

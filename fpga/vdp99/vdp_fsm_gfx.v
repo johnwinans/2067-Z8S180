@@ -72,6 +72,7 @@ module vdp_fsm_gfx #(
     input   wire        last_pixel_out,
     input   wire        col_last_out,
     input   wire        row_last_out,
+    input   wire        sprite_tick_out,
 
     output  wire [3:0]  color_out
     );
