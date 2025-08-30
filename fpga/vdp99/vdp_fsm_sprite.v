@@ -27,6 +27,7 @@
 ***************************************************************************/
 
 module vdp_fsm_sprite #(
+    parameter HPOS_OFFSET = 0,                      // offset horizontal to right
     parameter VRAM_SIZE = 8*1024,
     parameter VRAM_ADDR_WIDTH = $clog2(VRAM_SIZE)   // annoying this must be here to use in a port
     ) (
@@ -279,7 +280,8 @@ module vdp_fsm_sprite #(
                 vdp_dma_addr_next = vdp_dma_addr_reg + 16;  // address of the right-half of a wide sprite pattern
                 vdp_dma_rd_tick_next = 1;
                 fg_color_next = vram_dout[3:0];
-                hpos_next = vram_dout[7] ? hpos_next - 32 : hpos_reg;
+
+                hpos_next = (vram_dout[7] ? hpos_next - 32 : hpos_reg) + HPOS_OFFSET;
     $display("sprite:%d sat_ptr_reg:%x COLOR color:%x ec:%b", sprite_ctr_reg, sat_ptr_reg, fg_color_next, vram_dout[7]);
             end
 

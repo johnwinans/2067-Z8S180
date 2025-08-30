@@ -127,6 +127,7 @@ module vdp_fsm #(
 
     // VDP FSM for the sprites
     vdp_fsm_sprite #(
+            .HPOS_OFFSET(PIPE_LEN+32),      // 32 = left border width
             .VRAM_SIZE(VRAM_SIZE)
         ) sprite (
             .reset(reset),
