@@ -37,6 +37,7 @@ module vdp_fsm_sprite #(
     input   wire [9:0]  px_col,
     input   wire [9:0]  px_row,
 
+    // The following config values are stable over time as far as this module is concerned.
     input   wire [2:0]  vdp_mode,
     input   wire        vdp_blank,
     input   wire        vdp_smag,
@@ -49,6 +50,7 @@ module vdp_fsm_sprite #(
     input   wire [3:0]  vdp_fg_color,           // text foreground
     input   wire [3:0]  vdp_bg_color,           // text and border background
 
+    // VRAM access
     output  wire [VRAM_ADDR_WIDTH-1:0] vdp_dma_addr,  // VRAM DMA access address
     output  wire        vdp_dma_rd_tick,        // read vdp_dma_addr
     input   wire [7:0]  vram_dout,              // data from the VRAM
@@ -100,7 +102,7 @@ module vdp_fsm_sprite #(
             sprite s (
                 .reset(reset | sprite_reset_reg),
                 .pxclk(pxclk),
-                .vdp_col0_tick(col_last),
+                .vdp_col0_tick(col_last_out),
                 .mag(mag_reg),
                 .hpos(hpos_reg),
                 .pattern(pattern_reg),
@@ -118,16 +120,15 @@ module vdp_fsm_sprite #(
     reg [7:0] sprite_name_reg, sprite_name_next;
 
     reg [9:0] sprite_state_reg, sprite_state_next;
-    localparam SPRITE_VERT  = 0;
-    localparam SPRITE_DELTA = 1;
-    localparam SPRITE_HWAIT = 2;
-    localparam SPRITE_HORIZ = 3;
-    localparam SPRITE_NAME  = 4;
-    localparam SPRITE_COLOR = 5;
-    localparam SPRITE_WAIT  = 6;
+    localparam SPRITE_IDLE  = 0;
+    localparam SPRITE_VERT  = 1;
+    localparam SPRITE_DELTA = 2;
+    localparam SPRITE_HWAIT = 3;
+    localparam SPRITE_HORIZ = 4;
+    localparam SPRITE_NAME  = 5;
+    localparam SPRITE_COLOR = 6;
     localparam SPRITE_PTRN1 = 7;
     localparam SPRITE_PTRN2 = 8;
-    localparam SPRITE_DONE  = 9;
 
     always @(posedge pxclk) begin
         if ( reset ) begin
@@ -136,7 +137,7 @@ module vdp_fsm_sprite #(
             sat_ptr_reg <= 0;
             sprite_ctr_reg <= 0;
             sprite_row_reg <= 0;
-            sprite_state_reg <= 0;
+            sprite_state_reg <= 1'b1<<SPRITE_IDLE;
             sprite_name_reg <= 0;
             mag_reg <= 0;
             hpos_reg <= 0;
@@ -169,7 +170,7 @@ module vdp_fsm_sprite #(
     always @(*) begin
 `ifdef SIMULATION
         // Sprite-fetching must never happen when vid_active is true.
-        if (vid_active && sprite_state_reg != 1<<SPRITE_DONE) begin
+        if (vid_active && sprite_state_reg != 1'b1<<SPRITE_IDLE) begin
             $display("%d: vid_active and sprite_state_reg != DONE at same time?", $time);
             $finish;
         end
@@ -189,134 +190,136 @@ module vdp_fsm_sprite #(
         sat_ptr_next = sat_ptr_reg;
         sprite_ctr_next = sprite_ctr_reg;
         sprite_name_next = sprite_name_reg;
-        sprite_state_next = 0;      // by default, there is no state (becomes DONE by default case below)
+        sprite_state_next = 0;      // by default, there is no state (becomes SPRITE_IDLE by default case below)
 
-        if (sprite_tick) begin
-            // Reset the sprite fetch logic for the next VGA pixel row.
-            // This is forced any time sprite_tick is true to make debugging easier.
-            // Should be moved into the DONE state.
-            sprite_state_next[SPRITE_VERT] = 1;
-            sprite_ctr_next = 0;
-            sat_ptr_next = {vdp_sprite_att_base, 7'b0000000};
-            vdp_dma_addr_next = sat_ptr_next;
-            vdp_dma_rd_tick_next = 1;
-            sprite_reset_next = 1;          // reset all the sprites in case they are not used
 
-        end else begin
+        (* parallel_case *)
+        case (1)
 
-            (* parallel_case *)
-            case (1)
-            sprite_state_reg[SPRITE_VERT]: begin
-                if (sat_ptr_reg[6:2] == 31) begin           // this address is the end of the SAT
-                    sprite_state_next[SPRITE_DONE] = 1;
-                end else begin
-                    sprite_state_next[SPRITE_DELTA] = 1;
-                end
-            end
-
-            sprite_state_reg[SPRITE_DELTA]: begin       // vram_dout = VDP row number
-                if (vram_dout == SAT_VERT_SENTINEL) begin
-                    sprite_state_next[SPRITE_DONE] = 1;
-                end else begin
-// XXX ssiz governs the range height
-                    if (sprite_delta < 8) begin     // if in range...
-    $display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout, vdp_row, sprite_delta, sprite_ctr_reg);
-                        if (sprite_ctr_reg == 4) begin
-    $display("5th sprite sat_ptr_reg:%x", sat_ptr_reg);
-                            // this is the 5th sprite
-                            // XXX the5thsprite_number = sat_ptr_next[6:2];
-                            sprite_state_next[SPRITE_DONE] = 1;
-                        end else begin
-    $display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
-                            sprite_row_next = sprite_delta;        // save the delta for configuring the sprite
-                            sat_ptr_next = sat_ptr_reg+1;           // sprite name address
-                            vdp_dma_addr_next = sat_ptr_next;
-                            vdp_dma_rd_tick_next = 1;
-                            sprite_state_next[SPRITE_HWAIT] = 1;
-                        end
-                    end else begin
-                        // sprite is not in vertical range
-                        sat_ptr_next = sat_ptr_reg+4;               // advance to the NEXT sprite address
-                        vdp_dma_addr_next = sat_ptr_next;
-                        vdp_dma_rd_tick_next = 1;
-                        sprite_state_next[SPRITE_VERT] = 1;
-                    end
-                end
-            end
-
-            sprite_state_reg[SPRITE_HWAIT]: begin
-                sprite_state_next[SPRITE_HORIZ] = 1;
-                // waiting for horiz value, prepare for sprite name
-                sat_ptr_next = sat_ptr_reg+1;           // advance to sprite name address
-                vdp_dma_addr_next = sat_ptr_next;
-                vdp_dma_rd_tick_next = 1;
-    $display("sprite:%d sat_ptr_reg:%x HWAIT vram:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
-            end
-
-            sprite_state_reg[SPRITE_HORIZ]: begin
-                sprite_state_next[SPRITE_NAME] = 1;
-                sat_ptr_next = sat_ptr_reg+1;           // advance to sprite color address
-                vdp_dma_addr_next = sat_ptr_next;
-                vdp_dma_rd_tick_next = 1;
-    $display("sprite:%d sat_ptr_reg:%x HORIZ hpos:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
-                hpos_next = vram_dout;
-            end
-
-            sprite_state_reg[SPRITE_NAME]: begin
-                sprite_state_next[SPRITE_COLOR] = 1;
-                sprite_name_next = vram_dout;
-                sat_ptr_next = sat_ptr_reg+1;           // advance to the next sprite address
-                // prepare for pattern1
-// XXX vdp_ssiz will govern the address format (and col/row counting logic) for all sprites
-                vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next, sprite_row_reg[2:0]};    // row = 0..7
-                //vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next[7:2], 1'b0, ??? sprite_row_reg[3:0]};  // ssiz = 1 row=0..15
-                vdp_dma_rd_tick_next = 1;
-    $display("sprite:%d sat_ptr_reg:%x NAME  name:%x", sprite_ctr_reg, sat_ptr_reg, sprite_name_next);
-            end
-
-            sprite_state_reg[SPRITE_COLOR]: begin
-                sprite_state_next[SPRITE_PTRN1] = 1;
-                // prepare for pattern2
-                vdp_dma_addr_next = vdp_dma_addr_reg + 16;  // address of the right-half of a wide sprite pattern
-                vdp_dma_rd_tick_next = 1;
-                fg_color_next = vram_dout[3:0];
-
-                hpos_next = (vram_dout[7] ? hpos_next - 32 : hpos_reg) + HPOS_OFFSET;
-    $display("sprite:%d sat_ptr_reg:%x COLOR color:%x ec:%b", sprite_ctr_reg, sat_ptr_reg, fg_color_next, vram_dout[7]);
-            end
-
-            sprite_state_reg[SPRITE_PTRN1]: begin
-                sprite_state_next[SPRITE_PTRN2] = 1;
-                pattern_next = {vram_dout, 8'b0};
-    $display("sprite:%d sat_ptr_reg:%x PTRN1 pattern_reg:%x", sprite_ctr_reg, sat_ptr_reg, pattern_reg);
-            end
-
-            sprite_state_reg[SPRITE_PTRN2]: begin
+        sprite_state_reg[SPRITE_IDLE]: begin            // waiting for sprite_tick
+            if (sprite_tick) begin
+                // Reset the sprite fetch logic for the next VGA pixel row.
                 sprite_state_next[SPRITE_VERT] = 1;
-                sprite_ctr_next = sprite_ctr_reg + 1;       // advance to configure the next sprite
-                // prepare for DELTA
+                sprite_ctr_next = 0;
+                sat_ptr_next = {vdp_sprite_att_base, 7'b0000000};
                 vdp_dma_addr_next = sat_ptr_next;
                 vdp_dma_rd_tick_next = 1;
-                pattern_next[7:0] = vram_dout;
-    $display("sprite:%d sat_ptr_reg:%x PTRN2 vram:%x   <-------------------", sprite_ctr_reg, sat_ptr_reg, vram_dout);
-
-                // save the sprite config
-                sprite_load_tick_next[sprite_ctr_reg] = 1;
-
+                sprite_reset_next = 1;                  // reset (and blank) all the sprites in case they are not used
+            end else begin
+                sprite_state_next[SPRITE_IDLE] = 1;
             end
-
-            sprite_state_reg[SPRITE_DONE]:
-                // seize sprite fetching FSM until next sprite_tick
-                sprite_state_next[SPRITE_DONE] = 1;
-
-            default: begin
-                // should never get here, reset the FSM
-                sprite_state_next = 0;
-                sprite_state_next[SPRITE_DONE] = 1;
-            end
-            endcase
         end
 
+        sprite_state_reg[SPRITE_VERT]: begin
+            if (sat_ptr_reg[6:2] == 31) begin           // this address is the end of the SAT
+                sprite_state_next[SPRITE_IDLE] = 1;
+            end else begin
+                sprite_state_next[SPRITE_DELTA] = 1;
+            end
+        end
+
+        sprite_state_reg[SPRITE_DELTA]: begin       // vram_dout = VDP row number
+            if (vram_dout == SAT_VERT_SENTINEL) begin
+                sprite_state_next[SPRITE_IDLE] = 1;
+            end else begin
+// XXX vdp_ssiz & vdp_smag governs the range height
+                if (sprite_delta < 8) begin     // if in range...
+$display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout, vdp_row, sprite_delta, sprite_ctr_reg);
+                    if (sprite_ctr_reg == 4) begin
+$display("5th sprite sat_ptr_reg:%x", sat_ptr_reg);
+                        // this is the 5th sprite
+                        // XXX the5th sprite_number = sat_ptr_next[6:2];
+                        sprite_state_next[SPRITE_IDLE] = 1;
+                    end else begin
+$display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
+                        sprite_row_next = sprite_delta;        // save the delta for configuring the sprite
+                        sat_ptr_next = sat_ptr_reg+1;           // sprite name address
+                        vdp_dma_addr_next = sat_ptr_next;
+                        vdp_dma_rd_tick_next = 1;
+                        sprite_state_next[SPRITE_HWAIT] = 1;
+                    end
+                end else begin
+                    // sprite is not in vertical range
+                    sat_ptr_next = sat_ptr_reg+4;               // advance to the NEXT sprite address
+                    vdp_dma_addr_next = sat_ptr_next;
+                    vdp_dma_rd_tick_next = 1;
+                    sprite_state_next[SPRITE_VERT] = 1;
+                end
+            end
+        end
+
+        sprite_state_reg[SPRITE_HWAIT]: begin
+            sprite_state_next[SPRITE_HORIZ] = 1;
+            // waiting for horiz value, prepare for sprite name
+            sat_ptr_next = sat_ptr_reg+1;           // advance to sprite name address
+            vdp_dma_addr_next = sat_ptr_next;
+            vdp_dma_rd_tick_next = 1;
+$display("sprite:%d sat_ptr_reg:%x HWAIT vram:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
+        end
+
+        sprite_state_reg[SPRITE_HORIZ]: begin
+            sprite_state_next[SPRITE_NAME] = 1;
+            sat_ptr_next = sat_ptr_reg+1;           // advance to sprite color address
+            vdp_dma_addr_next = sat_ptr_next;
+            vdp_dma_rd_tick_next = 1;
+$display("sprite:%d sat_ptr_reg:%x HORIZ hpos:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
+            hpos_next = vram_dout;
+        end
+
+        sprite_state_reg[SPRITE_NAME]: begin
+            sprite_state_next[SPRITE_COLOR] = 1;
+            sprite_name_next = vram_dout;
+            sat_ptr_next = sat_ptr_reg+1;           // advance to the next sprite address
+            // prepare for pattern1
+// XXX vdp_ssiz will govern the address format (and col/row counting logic) for all sprites
+            vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next, sprite_row_reg[2:0]};    // row = 0..7
+            //vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next[7:2], 1'b0, ??? sprite_row_reg[3:0]};  // ssiz = 1 row=0..15
+            vdp_dma_rd_tick_next = 1;
+$display("sprite:%d sat_ptr_reg:%x NAME  name:%x", sprite_ctr_reg, sat_ptr_reg, sprite_name_next);
+        end
+
+        sprite_state_reg[SPRITE_COLOR]: begin
+            sprite_state_next[SPRITE_PTRN1] = 1;
+            // prepare for pattern2
+//XXX use ssize to supress this when not needed
+            vdp_dma_addr_next = vdp_dma_addr_reg + 16;  // address of the right-half of a wide sprite pattern
+            vdp_dma_rd_tick_next = 1;
+            fg_color_next = vram_dout[3:0];
+            // vram_dout[7] is the early-clock flag, shift the position to the left
+            hpos_next = (vram_dout[7] ? hpos_reg - 32 : hpos_reg) + HPOS_OFFSET;
+$display("sprite:%d sat_ptr_reg:%x COLOR color:%x ec:%b", sprite_ctr_reg, sat_ptr_reg, fg_color_next, vram_dout[7]);
+        end
+
+        sprite_state_reg[SPRITE_PTRN1]: begin
+            sprite_state_next[SPRITE_PTRN2] = 1;
+            //pattern_next = {vram_dout, 8'b0};
+            pattern_next[15:8] = vram_dout;
+$display("sprite:%d sat_ptr_reg:%x PTRN1 pattern_next:%x", sprite_ctr_reg, sat_ptr_reg, pattern_next);
+        end
+
+        sprite_state_reg[SPRITE_PTRN2]: begin
+            // NOTE: This is superfluous when vdp_ssiz == 0, but it simplifies the logic.
+            sprite_state_next[SPRITE_VERT] = 1;
+            sprite_ctr_next = sprite_ctr_reg + 1;       // advance to configure the next sprite
+            // prepare for DELTA
+            vdp_dma_addr_next = sat_ptr_next;
+            vdp_dma_rd_tick_next = 1;
+            pattern_next[7:0] = vdp_ssiz == 0 ? 0 : vram_dout;
+$display("sprite:%d sat_ptr_reg:%x PTRN2 vram:%x  pattern:%x <-------------------", sprite_ctr_reg, sat_ptr_reg, vram_dout, pattern_next);
+
+            // save the sprite config
+            sprite_load_tick_next[sprite_ctr_reg] = 1;
+
+        end
+
+        default: begin
+            // should never get here, reset the FSM
+            sprite_state_next = 0;
+            sprite_state_next[SPRITE_IDLE] = 1;
+$display("sprite FSM is stuck");
+$finish;
+        end
+        endcase
     end
 
     assign vdp_dma_addr = vdp_dma_addr_reg;
