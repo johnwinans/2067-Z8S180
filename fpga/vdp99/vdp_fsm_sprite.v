@@ -224,14 +224,21 @@ module vdp_fsm_sprite #(
             end else begin
 // XXX vdp_ssiz & vdp_smag governs the range height
                 if (sprite_delta < 8) begin     // if in range...
+`ifdef SIMULATION
 $display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout, vdp_row, sprite_delta, sprite_ctr_reg);
+`endif
                     if (sprite_ctr_reg == 4) begin
+`ifdef SIMULATION
 $display("5th sprite sat_ptr_reg:%x", sat_ptr_reg);
+`endif
                         // this is the 5th sprite
                         // XXX the5th sprite_number = sat_ptr_next[6:2];
                         sprite_state_next[SPRITE_IDLE] = 1;
                     end else begin
+`ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
+`endif
+
                         sprite_row_next = sprite_delta;        // save the delta for configuring the sprite
                         sat_ptr_next = sat_ptr_reg+1;           // sprite name address
                         vdp_dma_addr_next = sat_ptr_next;
@@ -254,7 +261,9 @@ $display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
             sat_ptr_next = sat_ptr_reg+1;           // advance to sprite name address
             vdp_dma_addr_next = sat_ptr_next;
             vdp_dma_rd_tick_next = 1;
+`ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x HWAIT vram:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
+`endif
         end
 
         sprite_state_reg[SPRITE_HORIZ]: begin
@@ -262,7 +271,9 @@ $display("sprite:%d sat_ptr_reg:%x HWAIT vram:%d", sprite_ctr_reg, sat_ptr_reg, 
             sat_ptr_next = sat_ptr_reg+1;           // advance to sprite color address
             vdp_dma_addr_next = sat_ptr_next;
             vdp_dma_rd_tick_next = 1;
+`ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x HORIZ hpos:%d", sprite_ctr_reg, sat_ptr_reg, vram_dout);
+`endif
             hpos_next = vram_dout;
         end
 
@@ -275,7 +286,9 @@ $display("sprite:%d sat_ptr_reg:%x HORIZ hpos:%d", sprite_ctr_reg, sat_ptr_reg, 
             vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next, sprite_row_reg[2:0]};    // row = 0..7
             //vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next[7:2], 1'b0, ??? sprite_row_reg[3:0]};  // ssiz = 1 row=0..15
             vdp_dma_rd_tick_next = 1;
+`ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x NAME  name:%x", sprite_ctr_reg, sat_ptr_reg, sprite_name_next);
+`endif
         end
 
         sprite_state_reg[SPRITE_COLOR]: begin
@@ -287,14 +300,18 @@ $display("sprite:%d sat_ptr_reg:%x NAME  name:%x", sprite_ctr_reg, sat_ptr_reg, 
             fg_color_next = vram_dout[3:0];
             // vram_dout[7] is the early-clock flag, shift the position to the left
             hpos_next = (vram_dout[7] ? hpos_reg - 32 : hpos_reg) + HPOS_OFFSET;
+`ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x COLOR color:%x ec:%b", sprite_ctr_reg, sat_ptr_reg, fg_color_next, vram_dout[7]);
+`endif
         end
 
         sprite_state_reg[SPRITE_PTRN1]: begin
             sprite_state_next[SPRITE_PTRN2] = 1;
             //pattern_next = {vram_dout, 8'b0};
             pattern_next[15:8] = vram_dout;
+`ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x PTRN1 pattern_next:%x", sprite_ctr_reg, sat_ptr_reg, pattern_next);
+`endif
         end
 
         sprite_state_reg[SPRITE_PTRN2]: begin
@@ -305,7 +322,9 @@ $display("sprite:%d sat_ptr_reg:%x PTRN1 pattern_next:%x", sprite_ctr_reg, sat_p
             vdp_dma_addr_next = sat_ptr_next;
             vdp_dma_rd_tick_next = 1;
             pattern_next[7:0] = vdp_ssiz == 0 ? 0 : vram_dout;
+`ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x PTRN2 vram:%x  pattern:%x <-------------------", sprite_ctr_reg, sat_ptr_reg, vram_dout, pattern_next);
+`endif
 
             // save the sprite config
             sprite_load_tick_next[sprite_ctr_reg] = 1;
@@ -316,8 +335,10 @@ $display("sprite:%d sat_ptr_reg:%x PTRN2 vram:%x  pattern:%x <------------------
             // should never get here, reset the FSM
             sprite_state_next = 0;
             sprite_state_next[SPRITE_IDLE] = 1;
+`ifdef SIMULATION
 $display("sprite FSM is stuck");
 $finish;
+`endif
         end
         endcase
     end
