@@ -87,7 +87,6 @@ module vdp_fsm_sprite #(
     // loading them into a sprite object.
     // Note to future self: It might use less LUTs to implement the latches here
     // as opposed to inside the sprite modules.
-    reg         mag_reg, mag_next;
     reg [8:0]   hpos_reg, hpos_next;
     reg [15:0]  pattern_reg, pattern_next;
     reg [3:0]   fg_color_reg, fg_color_next;
@@ -104,7 +103,7 @@ module vdp_fsm_sprite #(
                 .reset(reset | sprite_reset_reg),
                 .pxclk(pxclk),
                 .vdp_col0_tick(col_last_out),
-                .mag(mag_reg),
+                .mag(vdp_smag),
                 .hpos(hpos_reg),
                 .pattern(pattern_reg),
                 .fg_color(fg_color_reg),
@@ -140,7 +139,6 @@ module vdp_fsm_sprite #(
             sprite_row_reg <= 0;
             sprite_state_reg <= 1'b1<<SPRITE_IDLE;
             sprite_name_reg <= 0;
-            mag_reg <= 0;
             hpos_reg <= 0;
             pattern_reg <= 0;
             fg_color_reg <= 0;
@@ -154,7 +152,6 @@ module vdp_fsm_sprite #(
             sprite_row_reg <= sprite_row_next;
             sprite_state_reg <= sprite_state_next;
             sprite_name_reg <= sprite_name_next;
-            mag_reg <= mag_next;
             hpos_reg <= hpos_next;
             pattern_reg <= pattern_next;
             fg_color_reg <= fg_color_next;
@@ -180,7 +177,6 @@ module vdp_fsm_sprite #(
         vdp_dma_rd_tick_next = 0;       // default to zero makes the ticks 1 vga pxclk wide (be careful of the phase!)
         vdp_dma_addr_next = 'hx;
 
-        mag_next = mag_reg;
         hpos_next = hpos_reg;
         pattern_next = pattern_reg;
         fg_color_next = fg_color_reg;
