@@ -113,7 +113,9 @@ module top (
         (* parallel_case *)     // no more than one case can match (one-hot)
         case (1)
         mreq_rom:       dout = rom_data;            // boot ROM memory
-        ioreq_rd_f0:    dout = ioreq_rd_f0_data;    // gpio input
+        ioreq_rd_f0:    dout = ioreq_rd_data;       // gpio input
+        ioreq_rd_j3:    dout = ioreq_rd_data;       // J3 input
+        ioreq_rd_j4:    dout = ioreq_rd_data;       // J4 input
         ioreq_rd_vdp:   dout = vdp_dout;            // data from the VDP
         default:        dbus_out = 0;
         endcase
@@ -157,6 +159,12 @@ module top (
 //  wire ioreq_rd_fe = iorq_rd && (a[7:0] == 8'hfe);                
     wire ioreq_rd_fe_tick = iorq_rd_tick && (a[7:0] == 8'hfe);      // flash select disable access port
 
+    wire ioreq_rd_j3 = iorq_rd && (a[7:0] == 8'ha8);
+    wire ioreq_rd_j3_tick = iorq_rd_tick && (a[7:0] == 8'ha8);      // joystick J3
+
+    wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
+    wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);      // joystick J4
+
     // ROM memory address decoder (address bus is 20 bits wide)
     wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
 
@@ -167,11 +175,18 @@ module top (
             gpio_out <= d;
     end
 
-    // It is not really necessary to latch this because the SD signals will be stable during a read:
-    reg [7:0] ioreq_rd_f0_data;     //  = {sd_miso,sd_det,6'bx};  // data value when reading port F0
+    // This should be a 2-always state machine.
+    reg [7:0] ioreq_rd_data;            // data value when reading an internal IO port
     always @(negedge phi) begin
-        if ( ioreq_rd_f0_tick )
-            ioreq_rd_f0_data <= {sd_miso,sd_det,6'bx};
+//        if ( ioreq_rd_f0_tick )
+//               ioreq_rd_f0_data <= {sd_miso,sd_det,6'bx};
+        // ioreq_rd_data is an implied latch in here
+        (* parallel_case *)     // no more than one case can match (one-hot)
+        case (1)
+        ioreq_rd_f0_tick:   ioreq_rd_data <= {sd_miso,sd_det,6'bx};
+        ioreq_rd_j3_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
+        ioreq_rd_j4_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
+        endcase
     end
 
     assign sd_mosi = gpio_out[0];   // connect the GPIO output bits to the SD card pins
@@ -191,9 +206,6 @@ module top (
     assign ce_n = ~(~mreq_n && ~dbus_out );
     assign oe_n = mreq_n | rd_n;
     assign we_n = mreq_n | wr_n;
-
-
-
 
     wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
     wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
@@ -234,14 +246,6 @@ module top (
 */
     assign vga_hsync = ~vdp_hsync;
     assign vga_vsync = ~vdp_vsync;
-
-/*
-    wire ioreq_rd_j3 = iorq_rd && (a[7:0] == 8'ha8);
-    wire ioreq_rd_j3_tick = iorq_rd_tick && (a[7:0] == 8'ha8);      // joystick J3
-
-    wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
-    wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);      // joystick J4
-*/
 
 
     // show some signals from the GPIO ports on the LEDs for reference
