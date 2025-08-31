@@ -164,7 +164,7 @@ module vdp_fsm_sprite #(
     localparam VVID_BEGIN = 48;                                         // first vga active video line
     wire [7:0] vdp_row      = (px_row + 1 - VVID_BEGIN) >>> 1;          // truncate to 8 to make comparisons easier
     wire [7:0] sprite_delta = vdp_row - (vram_dout+1);                  // which line of a sprite we are rendering
-    reg  [4:0] sprite_size;
+    reg  [5:0] sprite_size;
 
     always @(*) begin
 `ifdef SIMULATION
@@ -226,7 +226,6 @@ module vdp_fsm_sprite #(
             if (vram_dout == SAT_VERT_SENTINEL) begin
                 sprite_state_next[SPRITE_IDLE] = 1;
             end else begin
-// XXX vdp_ssiz & vdp_smag governs the range height
                 if (sprite_delta < sprite_size) begin     // if in range...
 `ifdef SIMULATION
 $display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout, vdp_row, sprite_delta, sprite_ctr_reg);
@@ -251,7 +250,7 @@ $display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
                         sprite_state_next[SPRITE_HWAIT] = 1;
                     end
                 end else begin
-                    // sprite is not in vertical range
+                    // sprite is not in vertical range, skip it
                     sat_ptr_next = sat_ptr_reg+4;               // advance to the NEXT sprite address
                     vdp_dma_addr_next = sat_ptr_next;
                     vdp_dma_rd_tick_next = 1;
@@ -287,9 +286,13 @@ $display("sprite:%d sat_ptr_reg:%x HORIZ hpos:%d", sprite_ctr_reg, sat_ptr_reg, 
             sprite_name_next = vram_dout;
             sat_ptr_next = sat_ptr_reg+1;           // advance to the next sprite address
             // prepare for pattern1
-// XXX vdp_ssiz will govern the address format (and col/row counting logic) for all sprites
-            vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next, sprite_row_reg[2:0]};    // row = 0..7
-            //vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next[7:2], 1'b0, ??? sprite_row_reg[3:0]};  // ssiz = 1 row=0..15
+            if ( vdp_ssiz )
+                // 16x16 sprites only have a %4 'name' as implied by page 3-4 of
+                // the TMS9918A/TMS9928A/TMS9929A VDP Data Manual (MP010A) (c) 1982.
+                // Note the diagram in VDP Programmer's Guide (SPPU004) (c) 1984 is garbage.
+                vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next[7:2], 1'b0, sprite_row_reg[3:0]};  // 16x16
+            else
+                vdp_dma_addr_next = {vdp_sprite_pat_base, sprite_name_next, sprite_row_reg[2:0]};    // 8x8
             vdp_dma_rd_tick_next = 1;
 `ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x NAME  name:%x", sprite_ctr_reg, sat_ptr_reg, sprite_name_next);
@@ -299,9 +302,8 @@ $display("sprite:%d sat_ptr_reg:%x NAME  name:%x", sprite_ctr_reg, sat_ptr_reg, 
         sprite_state_reg[SPRITE_COLOR]: begin
             sprite_state_next[SPRITE_PTRN1] = 1;
             // prepare for pattern2
-//XXX use ssize to supress this when not needed
             vdp_dma_addr_next = vdp_dma_addr_reg + 16;  // address of the right-half of a wide sprite pattern
-            vdp_dma_rd_tick_next = 1;
+            vdp_dma_rd_tick_next = vdp_ssiz;            // if we are 16x16 then read the other half, else not
             fg_color_next = vram_dout[3:0];
             // vram_dout[7] is the early-clock flag, shift the position to the left
             hpos_next = (vram_dout[7] ? hpos_reg - 32 : hpos_reg) + HPOS_OFFSET;
@@ -312,7 +314,6 @@ $display("sprite:%d sat_ptr_reg:%x COLOR color:%x ec:%b", sprite_ctr_reg, sat_pt
 
         sprite_state_reg[SPRITE_PTRN1]: begin
             sprite_state_next[SPRITE_PTRN2] = 1;
-            //pattern_next = {vram_dout, 8'b0};
             pattern_next[15:8] = vram_dout;
 `ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x PTRN1 pattern_next:%x", sprite_ctr_reg, sat_ptr_reg, pattern_next);
@@ -320,13 +321,13 @@ $display("sprite:%d sat_ptr_reg:%x PTRN1 pattern_next:%x", sprite_ctr_reg, sat_p
         end
 
         sprite_state_reg[SPRITE_PTRN2]: begin
-            // NOTE: This is superfluous when vdp_ssiz == 0, but it simplifies the logic.
+            // NOTE: Consuming a time slot for this is superfluous when vdp_ssiz == 0, but simplifies the code.
             sprite_state_next[SPRITE_VERT] = 1;
             sprite_ctr_next = sprite_ctr_reg + 1;       // advance to configure the next sprite
             // prepare for DELTA
             vdp_dma_addr_next = sat_ptr_next;
             vdp_dma_rd_tick_next = 1;
-            pattern_next[7:0] = vdp_ssiz == 0 ? 0 : vram_dout;
+            pattern_next[7:0] = vdp_ssiz ? vram_dout : 0;
 `ifdef SIMULATION
 $display("sprite:%d sat_ptr_reg:%x PTRN2 vram:%x  pattern:%x <-------------------", sprite_ctr_reg, sat_ptr_reg, vram_dout, pattern_next);
 `endif
