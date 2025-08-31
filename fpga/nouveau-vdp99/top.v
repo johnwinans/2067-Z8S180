@@ -231,26 +231,18 @@ module top (
         .vsync(vdp_vsync)
     );
 
-
+    // Remap the 4-bit VDP color codes to 6-bit RGB
     color_palette palette (
         .color(vdp_color),
         .red(vga_red),
         .grn(vga_grn),
         .blu(vga_blu)
     );
-/*
-    // XXX a hack for now.  Need a decoder & 6-bit DAC for TI99 VDP colors 
-    assign vga_red = { vdp_color[2], vdp_color[2] };
-    assign vga_grn = { vdp_color[1], vdp_color[1] };
-    assign vga_blu = { vdp_color[0], vdp_color[0] };
-*/
+
     assign vga_hsync = ~vdp_hsync;
     assign vga_vsync = ~vdp_vsync;
 
-
     // show some signals from the GPIO ports on the LEDs for reference
     assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};
-
-
 
 endmodule
