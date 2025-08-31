@@ -164,6 +164,7 @@ module vdp_fsm_sprite #(
     localparam VVID_BEGIN = 48;                                         // first vga active video line
     wire [7:0] vdp_row      = (px_row + 1 - VVID_BEGIN) >>> 1;          // truncate to 8 to make comparisons easier
     wire [7:0] sprite_delta = vdp_row - (vram_dout+1);                  // which line of a sprite we are rendering
+    reg  [4:0] sprite_size;
 
     always @(*) begin
 `ifdef SIMULATION
@@ -173,6 +174,12 @@ module vdp_fsm_sprite #(
             $finish;
         end
 `endif
+        // determine the sprite height
+        case (1)
+        (vdp_ssiz & vdp_smag):  sprite_size = 32;
+        (vdp_ssiz ^ vdp_smag):  sprite_size = 16;
+        default:                sprite_size = 8;
+        endcase
 
         vdp_dma_rd_tick_next = 0;       // default to zero makes the ticks 1 vga pxclk wide (be careful of the phase!)
         vdp_dma_addr_next = 'hx;
@@ -220,7 +227,7 @@ module vdp_fsm_sprite #(
                 sprite_state_next[SPRITE_IDLE] = 1;
             end else begin
 // XXX vdp_ssiz & vdp_smag governs the range height
-                if (sprite_delta < 8) begin     // if in range...
+                if (sprite_delta < sprite_size) begin     // if in range...
 `ifdef SIMULATION
 $display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout, vdp_row, sprite_delta, sprite_ctr_reg);
 `endif
@@ -236,7 +243,8 @@ $display("5th sprite sat_ptr_reg:%x", sat_ptr_reg);
 $display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
 `endif
 
-                        sprite_row_next = sprite_delta;        // save the delta for configuring the sprite
+                        // save the delta for configuring the sprite
+                        sprite_row_next = vdp_smag ? sprite_delta/2 : sprite_delta;
                         sat_ptr_next = sat_ptr_reg+1;           // sprite name address
                         vdp_dma_addr_next = sat_ptr_next;
                         vdp_dma_rd_tick_next = 1;
