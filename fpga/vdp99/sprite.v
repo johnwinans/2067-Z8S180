@@ -45,12 +45,13 @@ module sprite
     output  wire [3:0]  color_out       // set to either fg_color or zero
     );
 
-    reg         active_reg, active_next;        // sprite rendering is active
-    reg [1:0]   pxvdp_reg, pxvdp_next;          // counts at pxclk rate
-    reg         mag_reg, mag_next;              // false = 1:1, true = 2:1 (magnify VDP pixels)
-    reg [8:0]   hpos_reg, hpos_next;            // 0 = 32 VDP px to left of border
-    reg [15:0]  pattern_reg, pattern_next;      // 16-bit row value that will shift out at hpos_reg
-    reg [3:0]   fg_color_reg, fg_color_next;    // the sprite foreground color
+    reg         active_reg, active_next;            // sprite rendering is active
+    reg [1:0]   pxvdp_reg, pxvdp_next;              // counts at pxclk rate
+    reg         mag_reg, mag_next;                  // false = 1:1, true = 2:1 (magnify VDP pixels)
+    reg [8:0]   hpos_reg, hpos_next;                // 0 = 32 VDP px to left of border
+    reg         hpos_phase_reg, hpos_phase_next;    // used to remember if the hpos is even or odd
+    reg [15:0]  pattern_reg, pattern_next;          // 16-bit row value that will shift out at hpos_reg
+    reg [3:0]   fg_color_reg, fg_color_next;        // the sprite foreground color
 
     always @(posedge pxclk) begin
         if (reset) begin
@@ -58,6 +59,7 @@ module sprite
             pxvdp_reg <= 0;
             mag_reg <= 0;
             hpos_reg <= 0;
+            hpos_phase_reg <= 0;
             pattern_reg <= 0;
             fg_color_reg <= 0;
         end else begin
@@ -65,6 +67,7 @@ module sprite
             pxvdp_reg <= pxvdp_next;
             mag_reg <= mag_next;
             hpos_reg <= hpos_next;
+            hpos_phase_reg <= hpos_phase_next;
             pattern_reg <= pattern_next;
             fg_color_reg <= fg_color_next;
         end
@@ -74,6 +77,7 @@ module sprite
         active_next = active_reg;
         mag_next = mag_reg;
         hpos_next = hpos_reg;
+        hpos_phase_next = hpos_phase_reg;
         pattern_next = pattern_reg;
         fg_color_next = fg_color_reg;
 
@@ -83,6 +87,7 @@ module sprite
             active_next = 0;
             mag_next = mag;
             hpos_next = hpos;
+            hpos_phase_next = hpos[0];
             pattern_next = pattern;
             fg_color_next = fg_color;
         end
@@ -91,17 +96,18 @@ module sprite
             active_next = 1;                // start counting/rendering the sprite
             pxvdp_next = 0;                 // jam sync the phase so start at zero
         end 
-            if (active_reg && pxvdp_reg[0]) begin
-                // skip hpos_reg pixels and then start showing the pattern bits
-                if (hpos_reg != 0) begin
-                    hpos_next = hpos_reg-1;
-                end else begin
-                    // mag_reg doubles the size of the pixels, shift 1/2 as often
-                    if ((mag_reg && pxvdp_reg==2'b11) || (~mag_reg && pxvdp_reg[0])) begin
-                        pattern_next = { pattern_reg[14:0], 1'b0 };     // shift left one bit
-                    end
-                end
+        if (active_reg && pxvdp_reg[0]) begin
+            // skip hpos_reg pixels and then start showing the pattern bits
+            if (hpos_reg != 0) begin
+                hpos_next = hpos_reg-1;
+            end else begin
+                // mag_reg doubles the size of the pixels, shift 1/2 as often
+                if ( ~mag_reg )
+                    pattern_next = { pattern_reg[14:0], 1'b0 };
+                else if ( pxvdp_reg[1] == ~hpos_phase_reg )         // shifting from an even or odd hpos?
+                    pattern_next = { pattern_reg[14:0], 1'b0 };
             end
+        end
     end
 
     // Sprite is showing when active_reg & the pattern_reg MSb is 1.
