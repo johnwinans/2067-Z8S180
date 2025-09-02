@@ -149,6 +149,10 @@ module vdp99 #(
     wire row_last_out;
     wire [3:0]  color_out;
 
+    wire        sprite_fifth_flag;             // true if the fifth_sprite value is value
+    wire [4:0]  sprite_fifth_sprite;           // the fifth sprite number on a line
+    wire        sprite_collision;              // two visible sprites have collided
+
     vdp_fsm #( .VRAM_SIZE(VRAM_SIZE) ) fsm
     (
         .reset(reset),
@@ -188,7 +192,12 @@ module vdp99 #(
         .last_pixel_out(last_pixel_out),
         .col_last_out(col_last_out),
         .row_last_out(row_last_out),
-        .color_out(color_out)
+        .color_out(color_out),
+
+        .sprite_status_reset(rd_tick && mode==1),       // reset using same signal that resets the IRQ flag
+        .sprite_fifth_flag(sprite_fifth_flag),
+        .sprite_fifth_sprite(sprite_fifth_sprite),
+        .sprite_collision(sprite_collision)
     );
 
     reg [3:0] color_reg;
@@ -211,7 +220,7 @@ module vdp99 #(
     assign vsync = vsync_out;
 
     assign irq = vdp_ie ? irq_status : 0;
-    wire [7:0]  vdp_status = { irq_status, 7'b0 };
+    wire [7:0]  vdp_status = { irq_status, sprite_fifth_flag, sprite_collision, sprite_fifth_sprite };
 
     // vdmux consumes and caches the vram read data on behalf of the CPU.
     // It exists to pre-fetch vram data on behalf of the CPU so that the CPU

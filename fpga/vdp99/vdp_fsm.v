@@ -72,7 +72,12 @@ module vdp_fsm #(
     output  wire        col_last_out,
     output  wire        row_last_out,
     input   wire        sprite_tick_out,
-    output  wire [3:0]  color_out
+    output  wire [3:0]  color_out,
+
+    input   wire        sprite_status_reset,           // used to reset the fifth & collision status (for polling)
+    output  wire        sprite_fifth_flag,             // true if the fifth_sprite value is value
+    output  wire [4:0]  sprite_fifth_sprite,           // the fifth sprite number on a line
+    output  wire        sprite_collision               // two visible sprites have collided
     );
 
     wire [3:0]                  color_out_gfx;
@@ -169,7 +174,13 @@ module vdp_fsm #(
 
             .vdp_dma_addr(vdp_dma_addr_sprite),
             .vdp_dma_rd_tick(vdp_dma_rd_tick_sprite),
-            .color_out(color_out_sprite)
+            .color_out(color_out_sprite),
+
+            .status_reset(sprite_status_reset),
+            .fifth_flag(sprite_fifth_flag),
+            .fifth_sprite(sprite_fifth_sprite),
+            .collision(sprite_collision)
+
         );
 
 

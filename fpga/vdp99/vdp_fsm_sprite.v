@@ -76,12 +76,20 @@ module vdp_fsm_sprite #(
     input   wire        row_last_out,
     input   wire        sprite_tick_out,
 
+    input   wire        status_reset,           // used to reset the fifth & collision status (for polling)
+    output  wire        fifth_flag,             // true if the fifth_sprite value is value
+    output  wire [4:0]  fifth_sprite,           // the fifth sprite number on a line
+    output  wire        collision,              // two visible sprites have collided
+
     output  wire [3:0]  color_out
     );
 
     reg         vdp_dma_rd_tick_reg, vdp_dma_rd_tick_next;
     reg [VRAM_ADDR_WIDTH-1:0]  vdp_dma_addr_reg, vdp_dma_addr_next;
 
+    reg         collision_reg, collision_next;
+    reg [4:0]   fifth_sprite_reg, fifth_sprite_next;
+    reg         fifth_flag_reg, fifth_flag_next;
 
     // These signals are used to collect the config values for a given sprite before
     // loading them into a sprite object.
@@ -112,6 +120,7 @@ module vdp_fsm_sprite #(
             );
         end
     endgenerate
+
 
     localparam SAT_VERT_SENTINEL = 'hd0;    // VDP vertical position representing the end of the SAT
     reg [VRAM_ADDR_WIDTH-1:0] sat_ptr_reg, sat_ptr_next;
@@ -144,6 +153,9 @@ module vdp_fsm_sprite #(
             fg_color_reg <= 0;
             sprite_load_tick_reg <= 0;
             sprite_reset_reg <= 0;
+            collision_reg <= 0;
+            fifth_sprite_reg <= 0;
+            fifth_flag_reg <= 0;
         end else begin
             vdp_dma_rd_tick_reg <= vdp_dma_rd_tick_next;
             vdp_dma_addr_reg <= vdp_dma_addr_next;
@@ -157,6 +169,9 @@ module vdp_fsm_sprite #(
             fg_color_reg <= fg_color_next;
             sprite_load_tick_reg <= sprite_load_tick_next;
             sprite_reset_reg <= sprite_reset_next;
+            collision_reg <= collision_next;
+            fifth_sprite_reg <= fifth_sprite_next;
+            fifth_flag_reg <= fifth_flag_next;
         end
     end
 
@@ -190,12 +205,34 @@ module vdp_fsm_sprite #(
         sprite_load_tick_next = 0;
         sprite_reset_next = 0;
 
+        collision_next = collision_reg;
+        fifth_sprite_next = fifth_sprite_reg;
+        fifth_flag_next = fifth_sprite_reg;
+
         sprite_row_next = sprite_row_reg;
         sat_ptr_next = sat_ptr_reg;
         sprite_ctr_next = sprite_ctr_reg;
         sprite_name_next = sprite_name_reg;
         sprite_state_next = 0;      // by default, there is no state (becomes SPRITE_IDLE by default case below)
 
+        // When the status register is read, reset the sprite status bits
+        if ( status_reset ) begin
+            collision_next = 0;
+            fifth_sprite_next = 0;
+            fifth_flag_next = 0;
+        end
+
+        // collision detector runs all the time watching if multiple sprites are rendering a color at the same time
+        if ( collision_reg == 0 ) begin
+            case ({ sprite_color_out[0]!=0, sprite_color_out[1]!=0, sprite_color_out[2]!=0, sprite_color_out[3]!=0 })
+            4'b0000:    collision_next = 0;
+            4'b0001:    collision_next = 0;
+            4'b0010:    collision_next = 0;
+            4'b0100:    collision_next = 0;
+            4'b1000:    collision_next = 0;
+            default:    collision_next = 1;      // more than 1 must be opaque
+            endcase
+        end
 
         (* parallel_case *)
         case (1)
@@ -234,8 +271,12 @@ $display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout,
 `ifdef SIMULATION
 $display("5th sprite sat_ptr_reg:%x", sat_ptr_reg);
 `endif
-                        // this is the 5th sprite
-                        // XXX the5th sprite_number = sat_ptr_next[6:2];
+                        // This is the 5th sprite
+                        if ( ~fifth_flag_reg ) begin
+                            // if not already reporting one...
+                            fifth_sprite_next = sat_ptr_next[6:2];
+                            fifth_flag_next = 1;
+                        end
                         sprite_state_next[SPRITE_IDLE] = 1;
                     end else begin
 `ifdef SIMULATION
@@ -347,6 +388,7 @@ $finish;
 `endif
         end
         endcase
+
     end
 
     assign vdp_dma_addr = vdp_dma_addr_reg;
@@ -357,5 +399,9 @@ $finish;
                         sprite_color_out[1] != 0 ? sprite_color_out[1] :
                         sprite_color_out[2] != 0 ? sprite_color_out[2] :
                         sprite_color_out[3];
+
+    assign collision = collision_reg;
+    assign fifth_sprite = fifth_sprite_reg;
+    assign fifth_flag = fifth_flag_reg;
 
 endmodule
