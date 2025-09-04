@@ -172,7 +172,7 @@ module vdp_fsm_gfx #(
                     vdp_dma_addr_next = { vdp_name_base, tile_ctr_reg };
                     vdp_dma_rd_tick_next = 1;
                 end
-                ring_ctr_reg[1]: begin      // capture the tile name from the pattern table
+                ring_ctr_reg[1]: begin      // capture the tile name
                     name_next = vram_dout;
                     // The CPU can use this slot
                 end
