@@ -185,7 +185,9 @@ module vdp_fsm_gfx #(
                     3'b001:     // graphics mode 2
                         // tile_ctr_reg % 256 gives us the screen partition
                         vdp_dma_addr_next = { vdp_pattern_base[2], tile_ctr_reg[9:8], name_reg, px_row[3:1] };
-                    //3'b010:     // multicolor mode
+                    3'b010:     // multicolor mode
+                        // like GM1 but different pattern row logic
+                        vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[5:3] };
                     3'b100:     // text mode
                         // name*8 + character row number ( use 3:1 because we are doubling the rows )
                         vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[3:1] };
@@ -201,7 +203,11 @@ module vdp_fsm_gfx #(
                         vdp_dma_addr_next = { vdp_color_base, 1'b0, name_reg[7:3] };
                     3'b001:     // graphics mode 2
                         vdp_dma_addr_next = { vdp_color_base[7], tile_ctr_reg[9:8], name_reg, px_row[3:1] };
-                    //3'b010:     // multicolor mode
+                    3'b010: begin     // multicolor mode
+                        pattern_next = 8'b11110000;         // the implied pattern
+                        color_next = vram_dout;             // the pattern table contains the color
+                        vdp_dma_rd_tick_next = 0;           // nothing more to read here
+                    end
                     //3'b100:     // text mode
                     default: begin
                         // multicolor & text have no color table
@@ -213,7 +219,8 @@ module vdp_fsm_gfx #(
                     case ( vdp_mode )
                     3'b100:        // text mode
                         color_next = { vdp_fg_color, vdp_bg_color };
-                    //3'b010:     // multicolor mode (get color from pattern table & render differently)
+                    3'b010:     // multicolor mode (get color from pattern table & render differently)
+                        color_next = color_reg;         // no-op: do not alter color_next here!
                     //3'b000:     // graphics mode 1
                     //3'b001:     // graphics mode 2
                     default:
