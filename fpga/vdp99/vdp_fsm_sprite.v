@@ -207,7 +207,7 @@ module vdp_fsm_sprite #(
 
         collision_next = collision_reg;
         fifth_sprite_next = fifth_sprite_reg;
-        fifth_flag_next = fifth_sprite_reg;
+        fifth_flag_next = fifth_flag_reg;
 
         sprite_row_next = sprite_row_reg;
         sat_ptr_next = sat_ptr_reg;
@@ -223,7 +223,7 @@ module vdp_fsm_sprite #(
         end
 
         // collision detector runs all the time watching if multiple sprites are rendering a color at the same time
-        if ( collision_reg == 0 ) begin
+        if ( vid_active_out && collision_reg == 0 ) begin
             case ({ sprite_color_out[0]!=0, sprite_color_out[1]!=0, sprite_color_out[2]!=0, sprite_color_out[3]!=0 })
             4'b0000:    collision_next = 0;
             4'b0001:    collision_next = 0;
