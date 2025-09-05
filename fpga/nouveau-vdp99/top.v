@@ -192,7 +192,7 @@ module top (
         (* parallel_case *)     // no more than one case can match (one-hot)
         case (1)
         ioreq_rd_f0_tick:   ioreq_rd_data <= {sd_miso,sd_det,6'bx};
-        ioreq_rd_j3_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, 1'b1, joy1_fire };
+        ioreq_rd_j3_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, ~vdp_irq, joy1_fire };
         ioreq_rd_j4_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, 1'b1, joy1_fire };  // XXX
         //ioreq_rd_j4_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
         endcase
