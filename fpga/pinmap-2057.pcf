@@ -110,3 +110,10 @@ set_io -nowarn              vga_blu[1]     94   # 470
 set_io -nowarn              vga_hsync   104     # 100
 set_io -nowarn              vga_vsync   106     # 100
 
+set_io -nowarn -pullup yes	joy1_up		74
+set_io -nowarn -pullup yes	joy1_dn		64
+set_io -nowarn -pullup yes	joy1_lt		60
+set_io -nowarn -pullup yes	joy1_rt		62
+set_io -nowarn -pullup yes	joy1_fire	76
+set_io -nowarn -pullup yes	joy1_btn2	79
+

@@ -66,6 +66,13 @@ module top (
     input wire          sd_miso,
     input wire          sd_det,
 
+    input wire          joy1_up,
+    input wire          joy1_dn,
+    input wire          joy1_lt,
+    input wire          joy1_rt,
+    input wire          joy1_fire,
+    input wire          joy1_btn2,
+
     output  wire [1:0]  vga_red,
     output  wire [1:0]  vga_grn,
     output  wire [1:0]  vga_blu,
@@ -181,11 +188,13 @@ module top (
 //        if ( ioreq_rd_f0_tick )
 //               ioreq_rd_f0_data <= {sd_miso,sd_det,6'bx};
         // ioreq_rd_data is an implied latch in here
+        // XXX synchronize the joystick inputs at some point
         (* parallel_case *)     // no more than one case can match (one-hot)
         case (1)
         ioreq_rd_f0_tick:   ioreq_rd_data <= {sd_miso,sd_det,6'bx};
-        ioreq_rd_j3_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
-        ioreq_rd_j4_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
+        ioreq_rd_j3_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, 1'b1, joy1_fire };
+        ioreq_rd_j4_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, 1'b1, joy1_fire };  // XXX
+        //ioreq_rd_j4_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
         endcase
     end
 
