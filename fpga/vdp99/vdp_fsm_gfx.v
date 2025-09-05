@@ -205,7 +205,7 @@ module vdp_fsm_gfx #(
                         vdp_dma_addr_next = { vdp_color_base[7], tile_ctr_reg[9:8], name_reg, px_row[3:1] };
                     3'b010: begin     // multicolor mode
                         pattern_next = 8'b11110000;         // the implied multicolor mode pattern value
-                        vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[5:3] };
+                        vdp_dma_addr_next = { vdp_pattern_base, name_reg, px_row[5:3]-3'h6 };
                     end
                     //3'b100:     // text mode
                     default: begin
