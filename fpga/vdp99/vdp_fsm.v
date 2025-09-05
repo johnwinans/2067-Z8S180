@@ -71,7 +71,7 @@ module vdp_fsm #(
     output  wire        last_pixel_out,
     output  wire        col_last_out,
     output  wire        row_last_out,
-    input   wire        sprite_tick_out,
+    output  wire        sprite_tick_out,
     output  wire [3:0]  color_out,
 
     input   wire        sprite_status_reset,           // used to reset the fifth & collision status (for polling)
