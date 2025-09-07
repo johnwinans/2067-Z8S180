@@ -22,3 +22,9 @@ ay_regs_tb.vvp: $(FILES) ay_regs_tb.v
 
 ay_regs: ay_regs_tb.vcd
 	gtkwave $^
+
+ay3891x_tb.vvp: $(FILES) ay3891x_tb.v
+	$(VERILOG_SIM) -s tb -o $@ $^
+
+ay3891x: ay3891x_tb.vcd
+	gtkwave $^
