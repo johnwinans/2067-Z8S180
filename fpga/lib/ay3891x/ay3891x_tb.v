@@ -64,7 +64,7 @@ module tb ();
         write_register( 0, 8'h21 );     // A
         write_register( 1, 8'h0f );
         write_register( 8, 8'h0f );     // max amp, no envelope
-        write_register( 7, 8'h07 );     // enable all tones
+        write_register( 7, 8'hf0 );     // enable all tones & noise on A
 
         #1000;
 

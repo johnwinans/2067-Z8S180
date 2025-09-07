@@ -14,6 +14,8 @@ LIB_UTILS_FILES=\
 	$(LIB_UTILS)/stretcher/sync_stretch.v \
 	$(LIB_UTILS)/crc/crc.v \
 	$(LIB_UTILS)/ay3891x/ay3891x.v \
+	$(LIB_UTILS)/ay3891x/ay_tone.v \
 	$(LIB_UTILS)/ay3891x/ay_noise.v \
 	$(LIB_UTILS)/ay3891x/ay_regs.v \
+	$(LIB_UTILS)/ay3891x/ay_mux.v \
 	$(LIB_UTILS)/prescaler/prescaler.v

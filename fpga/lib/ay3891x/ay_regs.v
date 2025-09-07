@@ -59,6 +59,7 @@ module ay_regs (
             addr_reg <= 0;
             for ( i=0; i<16; i = i+1 )
                 regs[i] <= 0;
+            regs[7] <= 8'hff;                   // disable all outputs
         end else begin
             addr_reg <= addr_next;
         end

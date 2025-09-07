@@ -22,41 +22,36 @@
 `timescale 1ns/1ns
 `default_nettype none
 
-module ay_noise (
+module ay_mux (
     input wire          reset,
     input wire          clk,
-    input wire          ay_clk,         // synchronized-ish locked to clk
-    input wire [4:0]    period,
+    input wire          tone,
+    input wire          noise,
+    input wire          enable_noise,
+    input wire          enable_tone,
     output wire         out
     );
 
-    // use a CDMA2000 CRC feeding back on itself
-    reg [8:0]   noise_ctr_reg, noise_ctr_next;
-    reg         crc_enable_reg, crc_enable_next;
-    wire [15:0] crc_out;
-    assign      out = crc_out[15];
+    reg out_reg, out_next;
 
-    crc #(.BITS(16), .POLY(16'hC867), .INIT(16'hFFFF), .REF_OUT(0), .XOR_OUT(16'h0)) crc_cdma2000 (.clk(clk), .rst(reset), .data(noise_ctr_reg[0]), .enable(crc_enable_reg), .crc_out(crc_out));
-
+    // Note: this will phase-shift the output by 1 clk
     always @(posedge clk) begin
         if (reset) begin
-            noise_ctr_reg <= 0;
-            crc_enable_reg <= 0;
+            out_reg <= 0;
         end else begin
-            noise_ctr_reg <= noise_ctr_next;
-            crc_enable_reg <= crc_enable_next;
+            out_reg <= out_next;
         end
     end
 
     always @(*) begin
-        if ( noise_ctr_reg == 0 ) begin
-            //noise_ctr_next = { period , 4'b0000 };      // 16 for noise prescaler
-            noise_ctr_next = period;
-            crc_enable_next <= 1;
-        end else begin
-            noise_ctr_next = noise_ctr_reg - 1;
-            crc_enable_next = 0;
-        end
+        case ( { enable_noise, enable_tone } )
+        2'b00:  out_next = tone & noise;
+        2'b01:  out_next = noise;
+        2'b10:  out_next = tone;
+        2'b11:  out_next = 0;
+        endcase
     end
+
+    assign out = out_reg;
 
 endmodule

@@ -41,7 +41,8 @@ module ay3891x #(
 
     localparam AY_CLK_FREQ = 1789773;
 
-    wire        ay_clk;                 // 1.789773 MHZ clock
+    wire        clk16;                  // 1.789773/16 MHZ clock
+    wire        clk256;                 // 1.789773/256 MHZ clock
     wire [7:0]  r0;                     // fine tune A
     wire [7:0]  r1;                     // course tune A
     wire [7:0]  r2;                     // fine B
@@ -58,14 +59,30 @@ module ay3891x #(
     wire [7:0]  r13;                    // Envelope shape
 
     wire        noise_out;              // noise bit stream
+    wire        tonea_out;
+    wire        toneb_out;
+    wire        tonec_out;
 
+    wire        muxa_out;
+    wire        muxb_out;
+    wire        muxc_out;
+
+    // XXX it might not be easy for the compiler to merge these prescalers
     prescaler #(
-        .IN_FREQ(CLK_FREQ),
+        .IN_FREQ(CLK_FREQ*16),
         .OUT_FREQ(AY_CLK_FREQ)
-    ) ay_prescaler (
+    ) ay_prescaler16 (
         .reset(reset),
         .clk(clk),
-        .out(ay_clk)
+        .out(clk16)
+    );
+    prescaler #(
+        .IN_FREQ(CLK_FREQ*256),
+        .OUT_FREQ(AY_CLK_FREQ)
+    ) ay_prescaler256 (
+        .reset(reset),
+        .clk(clk),
+        .out(clk256)
     );
 
     ay_regs regs (
@@ -95,14 +112,64 @@ module ay3891x #(
     ay_noise noise (
         .reset(reset),
         .clk(clk),
-        .ay_clk(ay_clk),
+        .ay_clk(clk16),
         .period(r6[4:0]),
         .out(noise_out)
     );
 
-    // XXX tone generators
-    // XXX envelope generator
-    // XXX mux / summing circuit
+    ay_tone tonea (
+        .reset(reset),
+        .clk(clk),
+        .ay_clk(clk16),
+        .period( { r1[3:0], r0 } ),
+        .out(tonea_out)
+    );
+    ay_tone toneb (
+        .reset(reset),
+        .clk(clk),
+        .ay_clk(clk16),
+        .period( { r3[3:0], r2 } ),
+        .out(toneb_out)
+    );
+    ay_tone tonec (
+        .reset(reset),
+        .clk(clk),
+        .ay_clk(clk16),
+        .period( { r5[3:0], r4 } ),
+        .out(tonec_out)
+    );
 
+    ay_mux muxa (
+        .reset(reset),
+        .clk(clk),
+        .tone(tonea_out),
+        .noise(noise_out),
+        .enable_tone(r7[0]),
+        .enable_noise(r7[3]),
+        .out(muxa_out)
+    );
+    ay_mux muxb (
+        .reset(reset),
+        .clk(clk),
+        .tone(toneb_out),
+        .noise(noise_out),
+        .enable_tone(r7[1]),
+        .enable_noise(r7[4]),
+        .out(muxb_out)
+    );
+    ay_mux muxc (
+        .reset(reset),
+        .clk(clk),
+        .tone(tonec_out),
+        .noise(noise_out),
+        .enable_tone(r7[2]),
+        .enable_noise(r7[5]),
+        .out(muxc_out)
+    );
+
+    // XXX amplitude control
+    // XXX envelope generator
+
+    assign aout = { muxc_out, muxb_out, muxa_out };
 
 endmodule
