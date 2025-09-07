@@ -16,3 +16,9 @@ ay_noise_tb.vvp: $(FILES) ay_noise_tb.v
 
 ay_noise: ay_noise_tb.vcd
 	gtkwave $^
+
+ay_regs_tb.vvp: $(FILES) ay_regs_tb.v
+	$(VERILOG_SIM) -s tb -o $@ $^
+
+ay_regs: ay_regs_tb.vcd
+	gtkwave $^
