@@ -11,4 +11,6 @@ LIB_UTILS_FILES=\
 	$(LIB_UTILS)/cdc/z80_wr_cdc.v \
 	$(LIB_UTILS)/iorq/iorq_rd_fsm.v \
 	$(LIB_UTILS)/iorq/iorq_wr_fsm.v \
-	$(LIB_UTILS)/stretcher/sync_stretch.v
+	$(LIB_UTILS)/stretcher/sync_stretch.v \
+	$(LIB_UTILS)/crc/crc.v \
+	$(LIB_UTILS)/prescaler/prescaler.v
