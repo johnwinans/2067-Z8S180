@@ -188,11 +188,13 @@ module tb ();
         vdp_reg <= 0;
         vdp_reg_value <= 'h00;      // graphics mode 1
         //vdp_reg_value <= 'h02;      // graphics mode 2
+        //vdp_reg_value <= 'h00;      // graphics mode 4
         do_reg_write <= 1;
         @(negedge do_reg_write);
 
         vdp_reg <= 1;
         vdp_reg_value <= 'h60;      // graphics mode 1, enable screen, IE
+        //vdp_reg_value <= 'h68;      // graphics mode 4, enable screen, IE
         //vdp_reg_value <= 'h70;      // text mode, enable screen, IE
         //vdp_reg_value <= 'h50;      // text mode, enable screen, IE=0
         //vdp_reg_value <= 'h60;      // graphics mode 2, enable screen, IE
