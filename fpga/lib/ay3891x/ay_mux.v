@@ -48,7 +48,7 @@ module ay_mux (
         2'b00:  out_next = tone & noise;
         2'b01:  out_next = noise;
         2'b10:  out_next = tone;
-        2'b11:  out_next = 0;
+        2'b11:  out_next = 1;               // when disabled, output a 1
         endcase
     end
 
