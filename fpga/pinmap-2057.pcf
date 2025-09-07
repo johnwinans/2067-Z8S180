@@ -117,3 +117,6 @@ set_io -nowarn -pullup yes	joy1_rt		62
 set_io -nowarn -pullup yes	joy1_fire	76
 set_io -nowarn -pullup yes	joy1_btn2	79
 
+set_io -nowarn				aout[0]		91
+set_io -nowarn				aout[1]		88
+set_io -nowarn				aout[2]		85

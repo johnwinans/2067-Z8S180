@@ -79,6 +79,8 @@ module top (
     output  wire        vga_hsync,
     output  wire        vga_vsync,
 
+    output  wire [2:0]  aout,       // hack for testing the AY-3-891x
+
     output wire [15:0]  tp          // handy-dandy test-point outputs
     );
 
@@ -88,8 +90,10 @@ module top (
     //            93            90            87   84 82      80    78    75    73    63    61      56
 
 
-    localparam NUM_BOOT_BRAMS = 6;                  // Even number due to bug in yosys newer versions!
-    localparam NUM_VRAM_BRAMS = 32-NUM_BOOT_BRAMS;  // 32 total in ICE40HX4/8K, residual = VRAM
+    localparam HWCLK_FREQ       = 25000000;
+
+    localparam NUM_BOOT_BRAMS   = 6;                  // Even number due to bug in yosys newer versions!
+    localparam NUM_VRAM_BRAMS   = 32-NUM_BOOT_BRAMS;  // 32 total in ICE40HX4/8K, residual = VRAM
 
     // a boot ROM
     wire [7:0]  rom_data;           // ROM output data bus
@@ -123,6 +127,7 @@ module top (
         ioreq_rd_f0:    dout = ioreq_rd_data;       // gpio input
         ioreq_rd_j3:    dout = ioreq_rd_data;       // J3 input
         ioreq_rd_j4:    dout = ioreq_rd_data;       // J4 input
+        ioreq_rd_ay:    dout = ioreq_rd_data;       // ay-3-8910
         ioreq_rd_vdp:   dout = vdp_dout;            // data from the VDP
         default:        dbus_out = 0;
         endcase
@@ -172,8 +177,29 @@ module top (
     wire ioreq_rd_j4 = iorq_rd && (a[7:0] == 8'ha9);
     wire ioreq_rd_j4_tick = iorq_rd_tick && (a[7:0] == 8'ha9);      // joystick J4
 
+    // B0 & B1 are the ay registers
+    wire ioreq_wr_ay = iorq_wr && (a[7:1] == 8'hb0>>1);
+    wire ioreq_wr_ay_tick = iorq_wr_tick && (a[7:1] == 8'hb0>>1);
+    wire ioreq_rd_ay = iorq_rd && (a[7:1] == 8'hb0>>1);
+    wire ioreq_rd_ay_tick = iorq_rd_tick && (a[7:1] == 8'hb0>>1);
+
     // ROM memory address decoder (address bus is 20 bits wide)
     wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
+
+    wire ay_rdata;
+
+    ay3891x #(
+        .CLK_FREQ(HWCLK_FREQ),
+        ) ay (
+        .reset(reset),
+        .clk(hwclk),
+        .a0(a[0]),
+        .wr_tick(ioreq_wr_ay_tick),
+        .wdata(d),
+        .rd_tick(ioreq_rd_ay_tick),
+        .rdata(ay_rdata),
+        .aout(aout)
+        );
 
     // The GPIO output latch
     reg [7:0] gpio_out;
@@ -195,6 +221,7 @@ module top (
         ioreq_rd_j3_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, ~vdp_irq, joy1_fire };
         ioreq_rd_j4_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, 1'b1, joy1_fire };  // XXX
         //ioreq_rd_j4_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
+        ioreq_rd_ay_tick:   ioreq_rd_data <= ay_rdata;
         endcase
     end
 
@@ -226,7 +253,7 @@ module top (
     wire vdp_irq;
 
     z80_vdp99 #( .VRAM_SIZE(NUM_VRAM_BRAMS*512) ) vdp (
-        .reset,
+        .reset(reset),
         .phi(phi),
         .pxclk(hwclk),
         .cpu_mode(a[0]),
