@@ -13,4 +13,5 @@ LIB_UTILS_FILES=\
 	$(LIB_UTILS)/iorq/iorq_wr_fsm.v \
 	$(LIB_UTILS)/stretcher/sync_stretch.v \
 	$(LIB_UTILS)/crc/crc.v \
+	$(LIB_UTILS)/ay3891x/ay_noise.v \
 	$(LIB_UTILS)/prescaler/prescaler.v
