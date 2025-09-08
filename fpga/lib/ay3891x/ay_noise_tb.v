@@ -29,9 +29,9 @@ module tb ();
     wire    ay_clk;
     wire    noise_out;
 
-    localparam CLK_FREQ         = 25000000;
+    localparam CLK_FREQ         = 100;  //25000000;
     localparam CLK_PERIOD       = (1.0/CLK_FREQ)*1000000000;
-    localparam AY_CLK_FREQ      = 1789773;
+    localparam AY_CLK_FREQ      = 50;   // 1789773;
     localparam AY_CLK_PERIOD    = (1.0/AY_CLK_FREQ)*1000000000;
 
     wire [4:0] NOISE_PERIOD     = 9;
@@ -44,7 +44,7 @@ module tb ();
     ) the_prescaler (
         .reset(reset),
         .clk(clk),
-        .out(ay_clk)
+        .out_tick(ay_clk)
     );
 
     ay_noise noise (
@@ -65,7 +65,7 @@ module tb ();
         reset <= 0;
         #(CLK_PERIOD*4);
 
-        //#(NOISE_PERIOD*AY_CLK_PERIOD*1000);
+        #(NOISE_PERIOD*AY_CLK_PERIOD*1000);
         #1000000;
 
         $finish;

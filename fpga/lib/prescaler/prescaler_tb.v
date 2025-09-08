@@ -40,7 +40,7 @@ module tb ();
     ) uut (
         .reset(reset),
         .clk(clk),
-        .out(ay_clk)
+        .out_tick(ay_clk)
     );
 
     initial begin
@@ -54,7 +54,7 @@ module tb ();
         #(CLK_PERIOD*4);
 
         //#(CLK_FREQ*2);
-        #10000;
+        #100000;
 
         $finish;
     end

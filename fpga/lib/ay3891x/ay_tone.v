@@ -25,7 +25,7 @@
 module ay_tone (
     input wire          reset,
     input wire          clk,
-    input wire          ay_clk,         // synchronized-ish locked to clk
+    input wire          ay_clk,     // a tick in the clk domain
     input wire [11:0]   period,
     output wire         out
     );
@@ -44,7 +44,7 @@ module ay_tone (
     end
 
     always @(*) begin
-        if ( tone_ctr_reg == 0 ) begin
+        if ( ay_clk && tone_ctr_reg == 0 ) begin
             tone_ctr_next = period/2;
             out_next = ~out_reg;
         end else begin

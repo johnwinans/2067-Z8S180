@@ -67,14 +67,13 @@ module ay3891x #(
     wire        muxb_out;
     wire        muxc_out;
 
-    // XXX it might not be easy for the compiler to merge these prescalers
     prescaler #(
         .IN_FREQ(CLK_FREQ*16),
         .OUT_FREQ(AY_CLK_FREQ)
     ) ay_prescaler16 (
         .reset(reset),
         .clk(clk),
-        .out(clk16)
+        .out_tick(clk16)
     );
     prescaler #(
         .IN_FREQ(CLK_FREQ*256),
@@ -82,7 +81,7 @@ module ay3891x #(
     ) ay_prescaler256 (
         .reset(reset),
         .clk(clk),
-        .out(clk256)
+        .out_tick(clk256)
     );
 
     ay_regs regs (

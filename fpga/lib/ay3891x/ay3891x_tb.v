@@ -19,7 +19,7 @@
 //
 //**************************************************************************
 
-`timescale 1ns/1ns
+`timescale 10ns/1ns
 `default_nettype none
 
 module tb ();
@@ -87,7 +87,7 @@ module tb ();
         write_register( 12, 8'he2 );    // envelope MSB
         write_register( 13, 8'h02 );    // envelope shape/cycle
 
-        #100000;
+        #10000000;
 
         $finish;
     end

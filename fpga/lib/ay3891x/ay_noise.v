@@ -25,7 +25,7 @@
 module ay_noise (
     input wire          reset,
     input wire          clk,
-    input wire          ay_clk,         // synchronized-ish locked to clk
+    input wire          ay_clk,         // a tick in the clk domain
     input wire [4:0]    period,
     output wire         out
     );
@@ -49,8 +49,7 @@ module ay_noise (
     end
 
     always @(*) begin
-        if ( noise_ctr_reg == 0 ) begin
-            //noise_ctr_next = { period , 4'b0000 };      // 16 for noise prescaler
+        if ( ay_clk && noise_ctr_reg == 0 ) begin
             noise_ctr_next = period;
             crc_enable_next <= 1;
         end else begin

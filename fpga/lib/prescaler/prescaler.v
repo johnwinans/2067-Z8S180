@@ -28,15 +28,15 @@ module prescaler #(
     ) (
     input wire      reset,
     input wire      clk,
-    output wire     out
+    output wire     out_tick            // single-tick output
     );
 
     // Generate a clock that is close to the OUT_FREQ
-    localparam CLK_DIV = IN_FREQ / OUT_FREQ / 2;
+    localparam integer CLK_DIV = ((1.0*IN_FREQ) / OUT_FREQ) + 0.5;
     reg [$clog2(CLK_DIV):0] clk_reg, clk_next;
     reg out_reg, out_next;
 
-    assign out = out_reg;
+    assign out_tick = out_reg;
 
     always @(posedge clk) begin
         if ( reset ) begin
@@ -50,10 +50,10 @@ module prescaler #(
 
     always @(*) begin
         if ( clk_reg >=CLK_DIV ) begin
-            out_next = ~out_reg;
+            out_next = 1;
             clk_next = 0;
         end else begin
-            out_next = out_reg;
+            out_next = 0;
             clk_next = clk_reg + 1;
         end
     end
