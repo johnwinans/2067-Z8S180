@@ -28,3 +28,9 @@ ay3891x_tb.vvp: $(FILES) ay3891x_tb.v
 
 ay3891x: ay3891x_tb.vcd
 	gtkwave $^
+
+ay_adc_tb.vvp: $(FILES) ay_adc_tb.v
+	$(VERILOG_SIM) -s tb -o $@ $^
+
+adc: ay_adc_tb.vcd
+	gtkwave $^

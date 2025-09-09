@@ -61,33 +61,35 @@ module tb ();
         #(CLK_PERIOD*4);
 
         @(posedge clk);
-        write_register( 0, 8'h21 );     // A
-        write_register( 1, 8'h0f );
-        write_register( 8, 8'h0f );     // max amp, no envelope
-        write_register( 7, 8'hf0 );     // enable all tones & noise on A
+        write_register( 0, 8'h11 );     // A
+        write_register( 1, 8'h00 );
+        write_register( 8, 8'h0e );     // amp, no envelope
+        //write_register( 7, 8'hf0 );     // enable all tones & noise on A
+        write_register( 7, 8'hf8 );     // enable all tones & no noise
 
         #1000;
 
         @(posedge clk);
         write_register( 2, 8'h22 );     // B
-        write_register( 3, 8'h02 );
-        write_register( 9, 8'h0f );     // max amp, no envelope
+        write_register( 3, 8'h00 );
+        write_register( 9, 8'h0d );     // amp, no envelope
 
         #1000;
 
         @(posedge clk);
         write_register( 4, 8'h33 );     // C
-        write_register( 5, 8'h03 );
-        write_register( 10, 8'h0f );     // max amp, no envelope
+        write_register( 5, 8'h00 );
+        write_register( 10, 8'h0c );     // amp, no envelope
 
         #1000;
         @(posedge clk);
-        write_register( 6, 8'h10 );     // noise period
+        write_register( 6, 8'h03 );     // noise period
         write_register( 11, 8'he1 );    // envelope LSB
         write_register( 12, 8'he2 );    // envelope MSB
         write_register( 13, 8'h02 );    // envelope shape/cycle
 
-        #10000000;
+        //#10000000;
+        #(25000000*4);
 
         $finish;
     end

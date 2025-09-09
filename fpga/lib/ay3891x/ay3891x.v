@@ -67,6 +67,10 @@ module ay3891x #(
     wire        muxb_out;
     wire        muxc_out;
 
+    wire        adca_out;
+    wire        adcb_out;
+    wire        adcc_out;
+
     prescaler #(
         .IN_FREQ(CLK_FREQ*16),
         .OUT_FREQ(AY_CLK_FREQ)
@@ -166,9 +170,33 @@ module ay3891x #(
         .out(muxc_out)
     );
 
-    // XXX amplitude control
+    // amplitude controlers
+    ay_adc adca (
+        .reset(reset),
+        .clk(clk),
+        .amp(r8[3:0]),
+        .in(muxa_out),
+        .out(adca_out)
+    );
+    ay_adc adcb (
+        .reset(reset),
+        .clk(clk),
+        .amp(r9[3:0]),
+        .in(muxb_out),
+        .out(adcb_out)
+    );
+    ay_adc adcc (
+        .reset(reset),
+        .clk(clk),
+        .amp(r10[3:0]),
+        .in(muxc_out),
+        .out(adcc_out)
+    );
+
+    
     // XXX envelope generator
 
-    assign aout = { muxc_out, muxb_out, muxa_out };
+
+    assign aout = { adcc_out, adcb_out, adca_out };
 
 endmodule
