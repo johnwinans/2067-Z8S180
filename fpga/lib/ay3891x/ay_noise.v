@@ -49,13 +49,18 @@ module ay_noise (
     end
 
     always @(*) begin
-        if ( ay_clk && noise_ctr_reg == 0 ) begin
-            noise_ctr_next = period;
-            crc_enable_next <= 1;
-        end else begin
-            noise_ctr_next = noise_ctr_reg - 1;
-            crc_enable_next = 0;
+        noise_ctr_next = noise_ctr_reg;
+        crc_enable_next <= 0;
+
+        if ( ay_clk ) begin
+            if ( noise_ctr_reg == 0 ) begin
+                noise_ctr_next = period;
+                crc_enable_next <= 1;
+            end else begin
+                noise_ctr_next = noise_ctr_reg - 1;
+            end
         end
     end
+
 
 endmodule

@@ -44,12 +44,16 @@ module ay_tone (
     end
 
     always @(*) begin
-        if ( ay_clk && tone_ctr_reg == 0 ) begin
-            tone_ctr_next = period/2;
-            out_next = ~out_reg;
-        end else begin
-            tone_ctr_next = tone_ctr_reg - 1;
-            out_next = out_reg;
+        tone_ctr_next = tone_ctr_reg;
+        out_next = out_reg;
+
+        if ( ay_clk ) begin
+            if ( tone_ctr_reg == 0 ) begin
+                tone_ctr_next = period/2;           // reload the counter for next 1/2 wave
+                out_next = ~out_reg;                // flip the output
+            end else begin
+                tone_ctr_next = tone_ctr_reg - 1;
+            end
         end
     end
 
