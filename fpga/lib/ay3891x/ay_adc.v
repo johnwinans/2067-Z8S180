@@ -30,11 +30,13 @@ module ay_adc (
     output wire         out             // the PWM modulated output signal
     );
 
-    reg [9:0]   log_amp;
+    localparam  MAX_PERIOD = 111;
+
+    reg [$clog2(MAX_PERIOD)-1:0]   log_amp;
     wire        pwm_out;
 
     pwm #(
-            .MAX_PERIOD(1000)
+            .MAX_PERIOD(MAX_PERIOD)
         ) dac (
             .reset(reset),
             .clk(clk),
@@ -46,21 +48,21 @@ module ay_adc (
     always @(*) begin
         case (amp)
             4'h0:   log_amp = 0;
-            4'h1:   log_amp = 6;
-            4'h2:   log_amp = 9;
-            4'h3:   log_amp = 14;
-            4'h4:   log_amp = 21;
-            4'h5:   log_amp = 30;
-            4'h6:   log_amp = 43;
-            4'h7:   log_amp = 62;
-            4'h8:   log_amp = 88;
-            4'h9:   log_amp = 125;
-            4'ha:   log_amp = 152;
-            4'hb:   log_amp = 250;
-            4'hc:   log_amp = 303;
-            4'hd:   log_amp = 500;
-            4'he:   log_amp = 707;
-            4'hf:   log_amp = 1000;
+            4'h1:   log_amp = 1;
+            4'h2:   log_amp = 2;
+            4'h3:   log_amp = 3;
+            4'h4:   log_amp = 4;
+            4'h5:   log_amp = 5;
+            4'h6:   log_amp = 6;
+            4'h7:   log_amp = 7;
+            4'h8:   log_amp = 10;
+            4'h9:   log_amp = 14;
+            4'ha:   log_amp = 17;
+            4'hb:   log_amp = 28;
+            4'hc:   log_amp = 34;
+            4'hd:   log_amp = 56;
+            4'he:   log_amp = 79;
+            4'hf:   log_amp = 111;
         endcase
     end
 
