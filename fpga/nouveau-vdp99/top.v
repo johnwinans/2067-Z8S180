@@ -186,7 +186,7 @@ module top (
     // ROM memory address decoder (address bus is 20 bits wide)
     wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
 
-    wire ay_rdata;
+    wire [7:0] ay_rdata;
 
     ay3891x #(
         .CLK_FREQ(HWCLK_FREQ),
