@@ -172,21 +172,21 @@ module ay3891x #(
 
     // amplitude controlers
     ay_adc adca (
-        .reset(reset),
+        .reset(reset|~muxa_out),        // reset when wave is low so not cause pulse-crawl
         .clk(clk),
         .amp(r8[3:0]),
         .in(muxa_out),
         .out(adca_out)
     );
     ay_adc adcb (
-        .reset(reset),
+        .reset(reset|~muxb_out),
         .clk(clk),
         .amp(r9[3:0]),
         .in(muxb_out),
         .out(adcb_out)
     );
     ay_adc adcc (
-        .reset(reset),
+        .reset(reset|~muxc_out),
         .clk(clk),
         .amp(r10[3:0]),
         .in(muxc_out),
