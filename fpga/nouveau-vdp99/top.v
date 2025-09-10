@@ -186,7 +186,8 @@ module top (
     // ROM memory address decoder (address bus is 20 bits wide)
     wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
 
-    wire [7:0] ay_rdata;
+    wire [7:0]  ay_rdata;
+    wire [2:0]  ay3891x_out;
 
     ay3891x #(
         .CLK_FREQ(HWCLK_FREQ),
@@ -198,8 +199,12 @@ module top (
         .wdata(d),
         .rd_tick(ioreq_rd_ay_tick),
         .rdata(ay_rdata),
-        .aout(aout)
+        .aout(ay3891x_out)
         );
+
+    assign aout = ay3891x_out;
+    //assign aout = {2'b00, |ay3891x_out};    // OR the three channels into only the A channel output bit
+
 
     // The GPIO output latch
     reg [7:0] gpio_out;
