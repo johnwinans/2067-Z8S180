@@ -181,7 +181,7 @@ module ay3891x #(
         .env_clk_tick(clk256),           // %256 tick clock
         .shape_tick(shape_tick),
         .shape(r13[3:0]),
-        .period( { r11, r12 } ),
+        .period( { r12, r11 } ),
         .out(env_amp)
     );
 
