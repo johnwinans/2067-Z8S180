@@ -34,3 +34,9 @@ ay_adc_tb.vvp: $(FILES) ay_adc_tb.v
 
 adc: ay_adc_tb.vcd
 	gtkwave $^
+
+ay_env_tb.vvp: $(FILES) ay_env_tb.v
+	$(VERILOG_SIM) -s tb -o $@ $^
+
+ay_env: ay_env_tb.vcd
+	gtkwave $^

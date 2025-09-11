@@ -19,5 +19,6 @@ LIB_UTILS_FILES=\
 	$(LIB_UTILS)/ay3891x/ay_regs.v \
 	$(LIB_UTILS)/ay3891x/ay_mux.v \
 	$(LIB_UTILS)/ay3891x/ay_adc.v \
+	$(LIB_UTILS)/ay3891x/ay_env.v \
 	$(LIB_UTILS)/pwm/pwm.v \
 	$(LIB_UTILS)/prescaler/prescaler.v

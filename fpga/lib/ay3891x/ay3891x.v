@@ -43,6 +43,7 @@ module ay3891x #(
 
     wire        clk16;                  // 1.789773/16 MHZ clock
     wire        clk256;                 // 1.789773/256 MHZ clock
+    wire        shape_tick;             // true after the envelop shape r13 has been written
     wire [7:0]  r0;                     // fine tune A
     wire [7:0]  r1;                     // course tune A
     wire [7:0]  r2;                     // fine B
@@ -96,6 +97,7 @@ module ay3891x #(
         .wdata(wdata),
         .rd_tick(rd_tick),
         .rdata(rdata),
+        .shape_tick(shape_tick),
         .r0(r0),
         .r1(r1),
         .r2(r2),
@@ -170,32 +172,42 @@ module ay3891x #(
         .out(muxc_out)
     );
 
+
+    // envelope generator
+    wire [3:0] env_amp;
+    ay_env env (
+        .reset(reset),
+        .clk(clk),
+        .env_clk_tick(clk256),           // %256 tick clock
+        .shape_tick(shape_tick),
+        .shape(r13[3:0]),
+        .period( { r11, r12 } ),
+        .out(env_amp)
+    );
+
+
     // amplitude controlers
     ay_adc adca (
         .reset(reset|~muxa_out),        // reset when wave is low so not cause pulse-crawl
         .clk(clk),
-        .amp(r8[3:0]),
+        .amp(r8[4] ? env_amp : r8[3:0]),
         .in(muxa_out),
         .out(adca_out)
     );
     ay_adc adcb (
         .reset(reset|~muxb_out),
         .clk(clk),
-        .amp(r9[3:0]),
+        .amp(r9[4] ? env_amp : r9[3:0]),
         .in(muxb_out),
         .out(adcb_out)
     );
     ay_adc adcc (
         .reset(reset|~muxc_out),
         .clk(clk),
-        .amp(r10[3:0]),
+        .amp(r10[4] ? env_amp : r10[3:0]),
         .in(muxc_out),
         .out(adcc_out)
     );
-
-    
-    // XXX envelope generator
-
 
     assign aout = { adcc_out, adcb_out, adca_out };
 

@@ -31,6 +31,7 @@ module ay_regs (
     input wire          rd_tick,        // a write tick in the clk2 domain when dout is valid
     output wire [7:0]   rdata,          // data will be valid during the period following rd_tick
 
+    output  wire        shape_tick,     // a one-cycle tick when r13 has been written
     output  wire [7:0]  r0,
     output  wire [7:0]  r1,
     output  wire [7:0]  r2,
@@ -51,6 +52,7 @@ module ay_regs (
     reg [4:0]   addr_reg, addr_next;            // extra bit for the IO ports
     reg [7:0]   rdata_reg;
     reg [7:0]   regs[0:15];                     // implement 16, but we use 14
+    reg         shape_tick_reg;
 
     integer i;
 
@@ -68,8 +70,12 @@ module ay_regs (
     // register read-write logic
     always @(posedge clk) begin
         rdata_reg <= regs[addr_reg];
-        if ( wr_tick & a0 )
+        if ( wr_tick & a0 ) begin
             regs[addr_reg] <= wdata;
+            shape_tick_reg <= addr_reg == 13 ? 1 : 0;
+        end else begin
+            shape_tick_reg <= 0;
+        end
     end
 
     always @(*) begin
@@ -77,6 +83,7 @@ module ay_regs (
     end
 
     assign rdata = rdata_reg;
+    assign shape_tick = shape_tick_reg;
 
     assign r0 = regs[0];
     assign r1 = regs[1];
