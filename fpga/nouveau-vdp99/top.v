@@ -127,7 +127,7 @@ module top (
         ioreq_rd_f0:    dout = ioreq_rd_data;       // gpio input
         ioreq_rd_j3:    dout = ioreq_rd_data;       // J3 input
         ioreq_rd_j4:    dout = ioreq_rd_data;       // J4 input
-        ioreq_rd_ay:    dout = ioreq_rd_data;       // ay-3-8910
+        ioreq_rd_ay:    dout = ay_dout;       		// ay-3-8910
         ioreq_rd_vdp:   dout = vdp_dout;            // data from the VDP
         default:        dbus_out = 0;
         endcase
@@ -179,26 +179,25 @@ module top (
 
     // B0 & B1 are the ay registers
     wire ioreq_wr_ay = iorq_wr && (a[7:1] == 8'hb0>>1);
-    wire ioreq_wr_ay_tick = iorq_wr_tick && (a[7:1] == 8'hb0>>1);
     wire ioreq_rd_ay = iorq_rd && (a[7:1] == 8'hb0>>1);
-    wire ioreq_rd_ay_tick = iorq_rd_tick && (a[7:1] == 8'hb0>>1);
 
     // ROM memory address decoder (address bus is 20 bits wide)
     wire mreq_rom = rom_sel && mem_rd && a[19:12] == 0;         // all top MSBs of bottom 4K are zero
 
-    wire [7:0]  ay_rdata;
+    wire [7:0]  ay_dout;
     wire [2:0]  ay3891x_out;
 
-    ay3891x #(
+    z80_ay3891x #(
         .CLK_FREQ(HWCLK_FREQ),
         ) ay (
         .reset(reset),
+		.phi(phi),
         .clk(hwclk),
         .a0(a[0]),
-        .wr_tick(ioreq_wr_ay_tick),
+        .cpu_wr(ioreq_wr_ay),
         .wdata(d),
-        .rd_tick(ioreq_rd_ay_tick),
-        .rdata(ay_rdata),
+        .cpu_rd(ioreq_rd_ay),
+        .rdata(ay_dout),
         .aout(ay3891x_out)
         );
 
@@ -216,8 +215,6 @@ module top (
     // This should be a 2-always state machine.
     reg [7:0] ioreq_rd_data;            // data value when reading an internal IO port
     always @(negedge phi) begin
-//        if ( ioreq_rd_f0_tick )
-//               ioreq_rd_f0_data <= {sd_miso,sd_det,6'bx};
         // ioreq_rd_data is an implied latch in here
         // XXX synchronize the joystick inputs at some point
         (* parallel_case *)     // no more than one case can match (one-hot)
@@ -225,8 +222,6 @@ module top (
         ioreq_rd_f0_tick:   ioreq_rd_data <= {sd_miso,sd_det,6'bx};
         ioreq_rd_j3_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, ~vdp_irq, joy1_fire };
         ioreq_rd_j4_tick:   ioreq_rd_data <= { joy1_up, joy1_dn, joy1_rt, joy1_btn2, 1'b1, joy1_lt, 1'b1, joy1_fire };  // XXX
-        //ioreq_rd_j4_tick:   ioreq_rd_data <= 8'hff;                     // XXX finish this
-        ioreq_rd_ay_tick:   ioreq_rd_data <= ay_rdata;
         endcase
     end
 
@@ -236,7 +231,6 @@ module top (
 
     assign busreq_n = 1'b1;     // de-assert /BUSREQ
     assign dreq1_n = 1'b1;      // de-assert /DREQ1
-    //assign int_n = 3'b111;      // de-assert /INT0 /INT1 /INT2
     assign int_n = { ~vdp_irq, 2'b11 };
     assign nmi_n = 1'b1;        // de-assert /NMI
     assign wait_n = 1'b1;       // de-assert /WAIT
