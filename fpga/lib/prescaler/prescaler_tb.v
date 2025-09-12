@@ -29,7 +29,7 @@ module tb ();
     wire    ay_clk;
 
     localparam CLK_FREQ         = 25000000;
-    localparam AY_CLK_FREQ      = 1789773;
+    localparam AY_CLK_FREQ      = CLK_FREQ/4;		// 1789773;
     localparam CLK_PERIOD       = (1.0/CLK_FREQ)*1000000000;
 
     always #(CLK_PERIOD/2) clk = ~clk;
@@ -52,6 +52,8 @@ module tb ();
         #(CLK_PERIOD*4);
         reset <= 0;
         #(CLK_PERIOD*4);
+
+$display( " CLK_DIV: %d", uut.CLK_DIV );
 
         //#(CLK_FREQ*2);
         #100000;

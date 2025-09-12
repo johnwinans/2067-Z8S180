@@ -32,15 +32,15 @@ module prescaler #(
     );
 
     // Generate a clock that is close to the OUT_FREQ
-    localparam integer CLK_DIV = ((1.0*IN_FREQ) / OUT_FREQ) + 0.5;
-    reg [$clog2(CLK_DIV):0] clk_reg, clk_next;
+    localparam integer CLK_DIV = ((1.0*IN_FREQ) / OUT_FREQ);
+    reg [$clog2(CLK_DIV)-1:0] clk_reg, clk_next;
     reg out_reg, out_next;
 
     assign out_tick = out_reg;
 
     always @(posedge clk) begin
         if ( reset ) begin
-            clk_reg <= 0;
+            clk_reg <= CLK_DIV-1;
             out_reg <= 0;
         end else begin
             clk_reg <= clk_next;
@@ -49,12 +49,12 @@ module prescaler #(
     end
 
     always @(*) begin
-        if ( clk_reg >=CLK_DIV ) begin
+        if ( clk_reg == 0 ) begin
             out_next = 1;
-            clk_next = 0;
+            clk_next = CLK_DIV-1;
         end else begin
             out_next = 0;
-            clk_next = clk_reg + 1;
+            clk_next = clk_reg - 1;
         end
     end
 
