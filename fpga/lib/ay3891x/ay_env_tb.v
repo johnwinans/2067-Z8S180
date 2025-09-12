@@ -33,9 +33,9 @@ module tb ();
     wire        ay_clk;
     wire [3:0]  out;
 
-    localparam CLK_FREQ         = 16;  //25000000;
+    localparam CLK_FREQ         = 25000000;
     localparam CLK_PERIOD       = (1.0/CLK_FREQ)*1000000000;
-    localparam AY_CLK_FREQ      = 8;   // 1789773;
+    localparam AY_CLK_FREQ      = CLK_FREQ/4;					// 97656;	// %256
     localparam AY_CLK_PERIOD    = (1.0/AY_CLK_FREQ)*1000000000;
 
     always #(CLK_PERIOD/2) clk = ~clk;
@@ -51,10 +51,10 @@ module tb ();
 
     ay_env env (
         .reset(reset),
-        .clk(clk),
-        .env_clk_tick(ay_clk),   // %256 tick clock
-        .shape_tick(shape_tick),     // true if shape has changed
-        .shape(shape),          // cont, attack, alt, hold
+        .clk(clk),					// bus clock
+        .env_clk_tick(ay_clk),   	// envelope clock
+        .shape_tick(shape_tick),    // true if shape has changed
+        .shape(shape),          	// cont, attack, alt, hold
         .period(period),
         .out(out)
     );
