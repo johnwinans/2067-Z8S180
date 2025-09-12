@@ -81,8 +81,8 @@ module ay3891x #(
         .out_tick(clk16)
     );
     prescaler #(
-        .IN_FREQ(CLK_FREQ*256),
-        .OUT_FREQ(AY_CLK_FREQ)
+        .IN_FREQ(CLK_FREQ),
+        .OUT_FREQ(CLK_FREQ/256)
     ) ay_prescaler256 (
         .reset(reset),
         .clk(clk),
