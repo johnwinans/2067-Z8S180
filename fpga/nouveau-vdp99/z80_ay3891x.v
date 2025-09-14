@@ -74,7 +74,7 @@ module z80_ay3891x #(
             cpu_dout_reg <= ay_rdata;
 
     ay3891x #(
-        .CLK_FREQ(CLK_FREQ),
+        .CLK_FREQ(CLK_FREQ)
         ) ay (
         .reset(reset),
         .clk(clk),
