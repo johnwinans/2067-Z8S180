@@ -243,6 +243,14 @@ module vdp_fsm #(
     // MUX the VRAM access signals from the gfx & sprite FSMs
     // Note that the sprite FSM does NOT access the VRAM when vid_active is high
 
+`ifdef SIMULATION
+    always @(*)
+        if ( vdp_dma_rd_tick_gfx && vdp_dma_rd_tick_sprite ) begin
+            $display("%d: vdp_dma_rd_tick_gfx and vdp_dma_rd_tick_sprite are both active at the same time!", $time);
+            $finish;
+        end
+`endif
+
     assign vdp_dma_rd_tick = vdp_dma_rd_tick_gfx | vdp_dma_rd_tick_sprite;
     assign vdp_dma_addr = vdp_dma_rd_tick_gfx ? vdp_dma_addr_gfx : vdp_dma_addr_sprite;
 
