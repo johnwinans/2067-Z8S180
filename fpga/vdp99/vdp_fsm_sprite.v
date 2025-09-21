@@ -285,7 +285,7 @@ $display("sprite:%d sat_ptr_reg:%x", sprite_ctr_reg, sat_ptr_reg);
 
                         // save the delta for configuring the sprite
                         sprite_row_next = vdp_smag ? sprite_delta/2 : sprite_delta;
-                        sat_ptr_next = sat_ptr_reg+1;           // sprite name address
+                        sat_ptr_next = sat_ptr_reg+1;           // sprite horizontal pos address
                         vdp_dma_addr_next = sat_ptr_next;
                         vdp_dma_rd_tick_next = 1;
                         sprite_state_next[SPRITE_HWAIT] = 1;
