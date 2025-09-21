@@ -241,7 +241,7 @@ module vdp_fsm #(
 
 
     // MUX the VRAM access signals from the gfx & sprite FSMs
-    // Note that the sprite FSM does NOT access the VRAM when vid_active is high
+    // Note that the sprite FSM does NOT access the VRAM when vid_active_out is high
 
 `ifdef SIMULATION
     always @(*)
