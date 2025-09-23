@@ -1,4 +1,4 @@
-#A Z80 Nouveau with a TI99 style VDP
+# A Z80 Nouveau with a TI99 style VDP
 
 Note that the IO interface of the VDP is running in the
 pixel clock domain and the CPU is running in the PHI clock
@@ -21,4 +21,24 @@ for a suitable test pattern for commit: e3811cc2d82fea9283de4cb5aa280cf6de1f5f84
   010E  DJNZ F6
   0110  NOP  
   0111  RET  
+```
+
+# Memory Map
+
+Note that the Z8S180 has its own internal IO devices mapped to addresses 00-3F.
+
+```
+80	VDP VRAM
+81	VDP registers
+
+A8	Joystick J3
+A9	Joystick J4
+
+B0	AY-3-8910
+B1	AY-3-8910
+
+F0	GPIO input
+F1	GPIO output
+
+FE	Boot flash select disable
 ```
