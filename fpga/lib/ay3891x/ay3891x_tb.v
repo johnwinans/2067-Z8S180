@@ -54,6 +54,8 @@ module tb ();
         $dumpfile( { `__FILE__, "cd" } );
         $dumpvars;
 
+$display( "/16:%d, /256:%d ", uut.ay_prescaler16.CLK_DIV, uut.ay_prescaler256.CLK_DIV );
+
         #(CLK_PERIOD*4);
         reset = 1;
         #(CLK_PERIOD*4);
@@ -88,8 +90,8 @@ module tb ();
         write_register( 12, 8'he2 );    // envelope MSB
         write_register( 13, 8'h02 );    // envelope shape/cycle
 
-        //#100000000;
-        #(25000000*4);
+        #1000000;
+        //#(25000000*4);
 
         $finish;
     end

@@ -73,8 +73,8 @@ module ay3891x #(
     wire        adcc_out;
 
     prescaler #(
-        .IN_FREQ(CLK_FREQ*16),
-        .OUT_FREQ(AY_CLK_FREQ)
+        .IN_FREQ(CLK_FREQ),
+        .OUT_FREQ(AY_CLK_FREQ/16)
     ) ay_prescaler16 (
         .reset(reset),
         .clk(clk),
@@ -82,7 +82,7 @@ module ay3891x #(
     );
     prescaler #(
         .IN_FREQ(CLK_FREQ),
-        .OUT_FREQ(CLK_FREQ/256)
+        .OUT_FREQ(AY_CLK_FREQ/256)
     ) ay_prescaler256 (
         .reset(reset),
         .clk(clk),
