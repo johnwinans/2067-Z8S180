@@ -82,7 +82,8 @@ module ay3891x #(
     );
     prescaler #(
         .IN_FREQ(CLK_FREQ),
-        .OUT_FREQ(AY_CLK_FREQ/256)
+//        .OUT_FREQ(AY_CLK_FREQ/256)        // something wrong, this runs at the wrong speed
+        .OUT_FREQ(AY_CLK_FREQ/16)
     ) ay_prescaler256 (
         .reset(reset),
         .clk(clk),
