@@ -65,12 +65,13 @@ $display( "/16:%d, /256:%d ", uut.ay_prescaler16.CLK_DIV, uut.ay_prescaler256.CL
         @(posedge clk);
         write_register( 0, 8'h11 );     // A
         write_register( 1, 8'h00 );
-        write_register( 8, 8'h0e );     // amp, no envelope
+        //write_register( 8, 8'h0e );     // amp, no envelope
+        write_register( 8, 8'h10 );     // amp, envelope
         //write_register( 7, 8'hf0 );     // enable all tones & noise on A
         write_register( 7, 8'hf8 );     // enable all tones & no noise
 
         #10000;
-
+/*
         @(posedge clk);
         write_register( 2, 8'h22 );     // B
         write_register( 3, 8'h00 );
@@ -82,15 +83,16 @@ $display( "/16:%d, /256:%d ", uut.ay_prescaler16.CLK_DIV, uut.ay_prescaler256.CL
         write_register( 4, 8'h33 );     // C
         write_register( 5, 8'h00 );
         write_register( 10, 8'h0c );     // amp, no envelope
-
+*/
         #10000;
         @(posedge clk);
         write_register( 6, 8'h03 );     // noise period
-        write_register( 11, 8'he1 );    // envelope LSB
-        write_register( 12, 8'he2 );    // envelope MSB
-        write_register( 13, 8'h02 );    // envelope shape/cycle
+        write_register( 11, 8'h02 );    // envelope LSB
+        write_register( 12, 8'h00 );    // envelope MSB
+        write_register( 13, 8'h0a );    // envelope shape/cycle
 
         #1000000;
+        //#100000000;
         //#(25000000*4);
 
         $finish;

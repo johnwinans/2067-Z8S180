@@ -36,7 +36,7 @@ module tb ();
     localparam CLK_FREQ         = 25000000;
     localparam CLK_PERIOD       = (1.0/CLK_FREQ)*1000000000;
     localparam AY_CLK_FREQ      = CLK_FREQ/4;					// 97656;	// %256
-    localparam AY_CLK_PERIOD    = (1.0/AY_CLK_FREQ)*1000000000;
+    localparam AY_CLK_PERIOD    = (1.0/AY_CLK_FREQ);
 
     always #(CLK_PERIOD/2) clk = ~clk;
 
@@ -72,6 +72,11 @@ module tb ();
         reset <= 0;
         #(CLK_PERIOD*4);
 
+`ifndef NOPE
+        write_env( 4'b1110, 1);
+        #100000;
+        $finish;
+`endif
         write_env( 4'b0000, 10 );
         #(CLK_PERIOD*800);
 
