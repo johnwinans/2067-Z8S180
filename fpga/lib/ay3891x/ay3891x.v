@@ -42,7 +42,6 @@ module ay3891x #(
     localparam AY_CLK_FREQ = 1789773;
 
     wire        clk16;                  // 1.789773/16 MHZ clock
-    wire        clk256;                 // 1.789773/256 MHZ clock
     wire        shape_tick;             // true after the envelop shape r13 has been written
     wire [7:0]  r0;                     // fine tune A
     wire [7:0]  r1;                     // course tune A
@@ -79,15 +78,6 @@ module ay3891x #(
         .reset(reset),
         .clk(clk),
         .out_tick(clk16)
-    );
-    prescaler #(
-        .IN_FREQ(CLK_FREQ),
-//        .OUT_FREQ(AY_CLK_FREQ/256)        // something wrong, this runs at the wrong speed
-        .OUT_FREQ(AY_CLK_FREQ/16)
-    ) ay_prescaler256 (
-        .reset(reset),
-        .clk(clk),
-        .out_tick(clk256)
     );
 
     ay_regs regs (
@@ -179,7 +169,7 @@ module ay3891x #(
     ay_env env (
         .reset(reset),
         .clk(clk),
-        .env_clk_tick(clk256),           // %256 tick clock
+        .env_clk_tick(clk16),
         .shape_tick(shape_tick),
         .shape(r13[3:0]),
         .period( { r12, r11 } ),
