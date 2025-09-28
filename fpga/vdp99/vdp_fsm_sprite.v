@@ -187,9 +187,9 @@ module vdp_fsm_sprite #(
     end
 
     // FSM temp sprite variables
-    localparam VVID_BEGIN = 48;                                         // first vga active video line (even)
-    wire [7:0] vdp_row      = (px_row + 1 - VVID_BEGIN) >>> 1;          // truncate to 8 to make comparisons easier
-    wire [7:0] sprite_delta = vdp_row - (vram_dout+1);                  // which line of a sprite we are rendering
+    localparam VVID_BEGIN = 48;                                 // first vga active video line (even)
+    wire [7:0] vdp_row      = (px_row + 1 - VVID_BEGIN) >>> 1;  // truncate to 8 to make comparisons easier
+    wire [7:0] sprite_delta = vdp_row - (vram_dout+1);          // which line of a sprite we are rendering
     reg  [5:0] sprite_size;
 
     always @(*) begin
@@ -357,7 +357,8 @@ $display("sprite:%d sat_off_reg:%x NAME  name:%x", sprite_ctr_reg, sat_off_reg, 
             vdp_dma_rd_tick_next = vdp_ssiz;            // if we are 16x16 then read the other half, else not & waste cycle
             fg_color_next = vram_dout[3:0];
             // vram_dout[7] is the early-clock flag, shift the hpos to the left
-            hpos_next = (vram_dout[7] ? hpos_reg - 32 : hpos_reg) + HPOS_OFFSET;
+            //hpos_next = (vram_dout[7] ? hpos_reg - 32 : hpos_reg) + HPOS_OFFSET;  // logical but complex
+            hpos_next = hpos_reg + ( vram_dout[7] ? 0 : HPOS_OFFSET );              // simpler
 `ifdef SIMULATION
 $display("sprite:%d sat_off_reg:%x COLOR color:%x ec:%b", sprite_ctr_reg, sat_off_reg, fg_color_next, vram_dout[7]);
 `endif
