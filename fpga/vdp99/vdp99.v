@@ -215,26 +215,9 @@ module vdp99 #(
         end
     end
 
-`ifdef async_output
     assign color = color_reg;
     assign hsync = hsync_out;
     assign vsync = vsync_out;
-`else
-    // Synchronize the VGA output signals to avoid propagation delay issues mainly with
-    // color_reg caused by it being passed through many stages of priority encoders.
-    reg [3:0]   color_pipe;
-    reg         hsync_pipe;
-    reg         vsync_pipe;
-
-    always @(posedge pxclk) begin
-        color_pipe <= color_reg;
-        hsync_pipe <= hsync_out;
-        vsync_pipe <= vsync_out;
-    end
-    assign color = color_pipe;
-    assign hsync = hsync_pipe;
-    assign vsync = vsync_pipe;
-`endif
 
     assign irq = vdp_ie ? irq_status : 0;
     wire [7:0]  vdp_status = { irq_status, sprite_fifth_flag, sprite_collision, sprite_fifth_sprite };
