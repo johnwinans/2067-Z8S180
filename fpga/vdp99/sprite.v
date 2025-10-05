@@ -81,13 +81,13 @@ module sprite
         pattern_next = pattern_reg;
         fg_color_next = fg_color_reg;
 
-        pxvdp_next = pxvdp_reg+1;
+        pxvdp_next = pxvdp_reg+1;           // counts VGA pixels (in spite of the name)
 
         if (load_tick) begin
             active_next = 0;
             mag_next = mag;
             hpos_next = hpos;
-            hpos_phase_next = hpos[0];
+            hpos_phase_next = hpos[0];      // used when smag=1 to shift on even/odd columns
             pattern_next = pattern;
             fg_color_next = fg_color;
         end
