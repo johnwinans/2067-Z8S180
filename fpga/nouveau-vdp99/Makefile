@@ -19,6 +19,7 @@ TBFILES= \
 	$(LIB_UTILS_FILES) \
 	color_palette.v\
 	z80_vdp99.v\
+	z80_vga99.v\
 	z80_ay3891x.v
 
 FILES=\

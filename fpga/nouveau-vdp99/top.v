@@ -84,6 +84,9 @@ module top (
     output wire [15:0]  tp          // handy-dandy test-point outputs
     );
 
+    wire [7:0] vdp_dout;
+    wire vdp_irq;
+
     localparam RAM_START = 20'h1000;
 
     assign tp = { iorq_wr_tick, iorq_rd_tick, phi, e, iorq_n, we_n, oe_n, ce_n, wr_n, rd_n, mreq_n, m1_n };
@@ -245,11 +248,10 @@ module top (
     wire ioreq_rd_vdp = iorq_rd && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
     wire ioreq_wr_vdp = iorq_wr && (a[7:1] == 7'b1000000);  // true for ports 80 and 81
 
-    wire [7:0] vdp_dout;
+`ifdef no_sync_vga
     wire [3:0] vdp_color;
     wire vdp_hsync;
     wire vdp_vsync;
-    wire vdp_irq;
 
     z80_vdp99 #( .VRAM_SIZE(NUM_VRAM_BRAMS*512) ) vdp (
         .reset(reset),
@@ -276,6 +278,24 @@ module top (
 
     assign vga_hsync = ~vdp_hsync;
     assign vga_vsync = ~vdp_vsync;
+`else
+    z80_vga99 #( .VRAM_SIZE(NUM_VRAM_BRAMS*512) ) vdp (
+        .reset(reset),
+        .phi(phi),
+        .pxclk(hwclk),
+        .cpu_mode(a[0]),
+        .cpu_din(d),
+        .cpu_dout(vdp_dout),
+        .irq(vdp_irq),
+        .cpu_wr(ioreq_wr_vdp),
+        .cpu_rd(ioreq_rd_vdp),
+        .red(vga_red),
+        .grn(vga_grn),
+        .blu(vga_blu),
+        .hsync(vga_hsync),
+        .vsync(vga_vsync)
+    );
+`endif
 
     // show some signals from the GPIO ports on the LEDs for reference
     assign led = {~sd_miso,sd_det,3'b111,~gpio_out[2:0]};
