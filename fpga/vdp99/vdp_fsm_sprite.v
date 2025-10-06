@@ -264,6 +264,8 @@ module vdp_fsm_sprite #(
 
         sprite_state_reg[SPRITE_VERT]: begin            // reading SAT entry vert pos
             sprite_state_next[SPRITE_DELTA] = 1;        // wait for the VRAM to finish
+            if ( ~fifth_flag_reg )
+                fifth_sprite_next = sat_off_reg[6:2];   // the 5th sprite index
         end
 
         sprite_state_reg[SPRITE_DELTA]: begin           // vram_dout = VDP row number
@@ -279,11 +281,8 @@ $display("px_row:%d vert:%d vdp_row:%3d delta:%2d sprite:%d", px_row, vram_dout,
 $display("5th sprite sat_off_reg:%x", sat_off_reg);
 `endif
                         // This is the 5th sprite
-                        if ( ~fifth_flag_reg ) begin
-                            // if not already reporting one...
-                            fifth_sprite_next = sat_off_reg[6:2];   // the 5th sprite index
-                            fifth_flag_next = 1;
-                        end
+                        fifth_flag_next = 1;
+
                         sprite_state_next[SPRITE_IDLE] = 1;
                     end else begin
 `ifdef SIMULATION
