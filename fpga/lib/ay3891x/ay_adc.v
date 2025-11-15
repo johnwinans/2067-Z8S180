@@ -22,11 +22,15 @@
 `timescale 1ns/1ns
 `default_nettype none
 
+/**
+* Logarithmically scale the given amp input signal used as the duty cycle
+* of a PWM output signal.
+***************************************************************************/
 module ay_adc (
     input wire          reset,
     input wire          clk,
     input wire [3:0]    amp,            // the desired signal amplitude
-    input wire          in,             // the input signal
+    input wire          in,             // the input signal (high/low)
     output wire         out             // the PWM modulated output signal
     );
 
@@ -44,7 +48,8 @@ module ay_adc (
             .out(pwm_out)
         );
 
-    // a RMS voltage look-up table
+    // An RMS voltage look-up table.
+    // Meh.. Best we can do with the clock rate we have to work with.
     always @(*) begin
         case (amp)
             4'h0:   log_amp = 0;

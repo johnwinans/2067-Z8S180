@@ -173,11 +173,11 @@ module ay3891x #(
         .shape_tick(shape_tick),
         .shape(r13[3:0]),
         .period( { r12, r11 } ),
-        .out(env_amp)
+        .out(env_amp)                   // this is a linear 4-bit number
     );
 
 
-    // amplitude controlers
+    // amplitude controllers
     ay_adc adca (
         .reset(reset|~muxa_out),        // reset when wave is low so not cause pulse-crawl
         .clk(clk),

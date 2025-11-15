@@ -59,7 +59,7 @@ module ay_env (
     wire alt = shape[1];
     wire hold = shape[0];
 
-    // a RMS voltage look-up table
+    // Generate a linear 4-bit amplitude value.
     always @(*) begin
         period_ctr_next = period_ctr_reg;
         amp_next = amp_reg;
