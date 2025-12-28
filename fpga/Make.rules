@@ -64,7 +64,6 @@ SYNTH 	 	?= synth_ice40
 NEXTPNR 	?= nextpnr-ice40
 NEXTPNR_OPT	?=
 NEXTPNR_FMT	?= asc
-ARACHNE		?= arachne-pnr
 PACK		?= icepack
 
 DEVICE		?= up5k
@@ -79,10 +78,6 @@ FREQ		?= 25
 ###################################################################
 
 # useful for single-file builds
-%.blif : %.v
-	$(COMPILE.v) -p "$(SYNTH) -top top -blif $@" $<
-
-# useful for single-file builds
 %.json : %.v
 	$(COMPILE.v) -p "$(SYNTH) -top top -json $@" $<
 
@@ -90,10 +85,6 @@ FREQ		?= 25
 # Use nextpnr-ice40 to build from a JSON file
 %.asc : %.json
 	$(NEXTPNR) --$(DEVICE) --package $(PACKAGE) --$(PIN_FMT) $(PINMAP) --freq $(FREQ) $(NEXTPNR_OPT) --$(NEXTPNR_FMT) $@ --json $<
-
-# Use arachne-pnr to build from a BLIF file 
-%.asc : %.blif
-	$(ARACHNE) -d $(DEVICE) --package $(PACKAGE) -p $(PINMAP) -o $@ $< 
 
 
 # make a binary config file from an ASC file
@@ -105,6 +96,6 @@ FREQ		?= 25
 	vvp $<
 
 clean::
-	rm -f *.bin *.vvp *.vcd *.asc *.blif *.json *.rpt
+	rm -f *.bin *.vvp *.vcd *.asc *.json *.rpt
 
 world:: clean all
